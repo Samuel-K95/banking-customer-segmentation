@@ -4,13 +4,15 @@
 
 The Data Layer has been successfully extracted from the initial exploratory notebooks, subjected to rigorous data engineering, and modularized into a reproducible, production-ready Python architecture within the `src/customer_segmentation/` package. 
 
+It is now fully dockerized and compliant with the strict engineering requirements set forth in `02-data-layer.md`.
+
 ---
 
 ## 1. Dataset Selection & Justification
 
-The overarching goal of this project is to build a comprehensive **Banking Customer Intelligence Platform**. To demonstrate full-spectrum competency across traditional Machine Learning and deep Representation Learning, we deliberately selected two distinct, complementary financial datasets.
+The overarching goal of this project is to build a comprehensive **Banking Customer Intelligence Platform**. To demonstrate full-spectrum competency across traditional Machine Learning and deep Representation Learning, we have constructed three distinct modeling tracks.
 
-### Track A: Indian Bank Transactions (Classical ML / Behavioral)
+### Track A: Indian Bank Transactions (Behavioral Snapshot)
 *   **What it is:** A massive log of individual customer bank transactions (~1.04 million rows) containing transaction dates, times, balances, and amounts.
 *   **Why it was chosen:** It strictly captures the *behavioral liquidity* of a customer (how often they spend, how much they hold). It allows us to perform traditional **RFM (Recency, Frequency, Monetary)** aggregation. Because the resulting RFM features are dense, continuous numeric variables, they are the mathematically perfect candidate for traditional distance-based algorithms like **K-Means Clustering**.
 
@@ -18,56 +20,59 @@ The overarching goal of this project is to build a comprehensive **Banking Custo
 *   **What it is:** A 13.6 million row (2.3 GB) time-series dataset tracking monthly product ownership (mortgages, credit cards, pensions) across 24 distinct banking products. 
 *   **Why it was chosen:** It strictly captures the *structural portfolio* of a customer. Because most customers only own 1 or 2 products, the resulting matrix is highly dimensional and extremely sparse. Traditional K-Means fails here due to the "curse of dimensionality" on equidistant sparse binary vectors. This makes the dataset an undeniable, perfect candidate for **Deep Learning Autoencoders**, which excel at compressing sparse categorical matrices into dense latent embeddings.
 
-*(Note: Other datasets, like the 1999 Berka dataset and IBM AML synthetic data, were rejected for being either too antiquated for modern digital banking or heavily biased toward fraud detection rather than behavioral segmentation).*
+### Track C: Berka Financial Dataset (Longitudinal Transactions)
+*   **What it is:** The classic 1999 Czech banking dataset, containing linked relational tables (`trans`, `account`, `client`).
+*   **Why it was added:** While initially sidelined for being older, we realized its deep relational structure (credits vs. withdrawals over time) provides a longitudinal purity that the Indian Bank snapshot lacks. It acts as an elite secondary benchmark for K-Means/GMM clustering.
 
 ---
 
 ## 2. Engineering & Feature Transformation
 
-Raw financial data is rarely ready for ML out of the box. Both datasets presented severe, real-world data engineering challenges that were formally resolved in our `.py` pipelines.
+Raw financial data is rarely ready for ML out of the box. All three datasets presented severe, real-world data engineering challenges that were formally resolved in our `.py` pipelines.
 
 ### Indian Bank Dataset Fixes (`build_indian_bank_features.py`)
-1.  **The Century Pivot Error:** The dataset's `CustomerDOB` used two-digit years (e.g., `67`). Standard parsing converted this to `2067`, resulting in impossible negative ages. We implemented mathematical rules to explicitly subtract 100 years from dates parsed beyond 2005.
-2.  **Temporal Context (2016 Base Year):** Customers' ages were calculated relative to `2016` (when the transactions actually occurred) rather than the present day, preventing a 10-year artificial skew in customer age segments.
-3.  **RFM Aggregation:** 1 million raw transactions were successfully collapsed into unique, customer-level profiles measuring `Recency_Days`, `Transaction_Count`, `Total_Spend`, and a custom financial health proxy (`Spend_to_Balance_Ratio`).
-4.  **Skewness Normalization:** Extreme wealth outliers (balances of 115M+ INR) were handled via `np.log1p` transforms, followed by strict `StandardScaler` application to ensure Euclidean compatibility for K-Means.
+1.  **The Century Pivot Error:** The dataset's `CustomerDOB` used two-digit years (e.g., `67`). Standard parsing converted this to `2067`. We implemented mathematical rules to explicitly subtract 100 years from dates parsed beyond 2005.
+2.  **Temporal & Geographic Engineering:** We extracted `Is_Weekend` and `Is_Night_Spender` (8 PM to 4 AM) flags from the raw timestamps, and mapped raw `CustLocation` to an `Is_Tier_1_City` flag to capture urban vs. rural spending differences.
+3.  **Volatility Capture:** Beyond standard RFM, we explicitly calculated `Std_Transaction_Amt` to differentiate erratic spenders from highly consistent customers.
 
 ### Santander Dataset Fixes (`build_santander_features.py`)
-1.  **Memory-Safe Chunked Loading:** The 2.3 GB file crashed standard environments. We engineered a chunked iterator that filters strictly for the maximum cross-sectional date (`2016-05-28`) *during* the read process, dropping the time-series dimension and outputting a single, pristine snapshot of the final portfolios.
-2.  **Exhaustive English Translation:** All Spanish column names and product variables (e.g., `ind_cco_fin_ult1`, `renta`) were mapped via a comprehensive translation dictionary to clean English (`has_current_account`, `gross_income`).
-3.  **Regional Income Imputation:** 17% of customers were missing income data. Rather than dropping them (which introduces bias) or using a lazy global median, we imputed missing incomes by calculating the specific median income for the customer's *local province* (`province_name`), tightly preserving regional economic realities.
-4.  **Dual-Track Scaling:** We strictly separated the data into two tracks prior to ML ingestion: Demographics (Age, Income, Seniority) were passed through `StandardScaler`, while the 24 Product vectors and one-hot segments were explicitly preserved as strict `0` or `1` binary inputs to maintain stability for the PyTorch Neural Network.
+1.  **Memory-Safe Chunked Loading:** The 2.3 GB file crashed standard environments. We engineered a chunked iterator that filters strictly for the maximum cross-sectional date (`2016-05-28`) *during* the read process, outputting a single, pristine snapshot of the final portfolios.
+2.  **Exhaustive English Translation & Imputation:** All Spanish column names were mapped to English. 17% of missing incomes were imputed using the median of the customer's *local province* (`province_name`), tightly preserving regional economic realities.
+3.  **PyTorch Crash Prevention:** We discovered string flags like `foreigner_index` (containing 'S'/'N') that would crash deep learning models. We explicitly integer-encoded all Spanish binary flags and imputed structural behavior indices (`activity_index`).
+
+### Berka Dataset Fixes (`build_berka_features.py`)
+1.  **Relational Aggregation:** We cleanly joined `trans` and `account` tables on `account_id`, separating transaction types (`PRIJEM` vs `VYDAJ`) into explicit `Total_Credit` and `Total_Withdrawal` sums.
 
 ---
 
-## 3. Physical Architecture & Repository Layout
+## 3. Physical Architecture & Delivery
 
-The codebase has been refactored to explicitly mirror the architectural requirements, isolating the raw source data from the downstream ML matrices.
+The codebase has been refactored to explicitly mirror the architectural requirements of a Customer 360 feature factory.
 
-### Data Storage
-*   `data/raw/`: Exclusively holds the untouched source files (`bank_transactions.csv`, `santander/train_ver2.csv`).
-*   `data/processed/`: The designated sink for the final `.csv` feature matrices.
+### Dual Matrix Output (The "Interpretable vs. Model" Split)
+As mandated by the data layer plan, the feature pipelines now output *two* versions of every dataset to `data/processed/`:
+1.  **`_interpretable.csv`:** Contains the raw, unscaled business metrics (e.g., Age = 45). This is strictly reserved for the Analysis Layer to generate human-readable segment profiles.
+2.  **`_model.csv`:** Contains the normalized, log-transformed, and scaled values (e.g., Age = 0.23). This is strictly reserved for algorithms like K-Means and Autoencoders.
 
-### Python Modules
-The notebook exploratory code was formalized into the `src/customer_segmentation/` package:
-*   `data/indian_bank_dataset_loader.py` & `data/santander_dataset_loader.py`: Handles I/O, pathing, chunking, and renaming.
-*   `features/build_indian_bank_features.py` & `features/build_santander_features.py`: Imports the loaders and applies the exact normalization math.
+### Data Quality (DQ) Strict Gates
+We implemented `pandera` schemas directly inside the feature pipelines. Before any dataset is allowed to hit the disk, it must pass a strict programmatic schema validation (e.g., asserting `Age` is always > 18, and `total_products_owned` is an integer). **If the schema fails, the pipeline crashes immediately.**
 
----
-
-## 4. Quality Assurance & Testing
-
-Sanity checks and CI/CD ready unit tests were implemented in `tests/test_data_loaders.py` and `tests/test_feature_builders.py`. 
-
-Crucially, the feature builder tests inject *isolated, mocked DataFrames* into the pipeline. This ensures that the complex algorithmic transformations (century pivots, median imputations) are continuously verified in milliseconds without the need to load the multi-gigabyte raw datasets into memory during a test suite run.
+### Feature Dictionary
+A formal data contract and dictionary has been published at `docs/feature_dictionary.md`. It explicitly documents the data types, source columns, missingness policies, and transformations for every single engineered feature across all three tracks.
 
 ---
 
-## 5. Generated Deliverables
+## 4. Dockerization & Execution
 
-Execution of the data layer via `uv run python -m src.customer_segmentation.features.build_...` successfully generates two immutable artifacts:
+The entire Data Layer is fully containerized. A next-generation ML Engineer or Data Scientist does not need to manually run Jupyter notebooks.
 
-1.  `data/processed/track_a_features.csv`: The dense RFM matrix for K-Means.
-2.  `data/processed/track_b_features.csv`: The sparse portfolio matrix for PyTorch.
+To execute the entire ingest, quality validation, and feature building lifecycle, simply run:
+```bash
+docker build -t data-layer .
+docker run --rm -v ~/.kaggle:/root/.kaggle data-layer
+```
+*(The `run_data_layer.sh` script automatically orchestrates the download of all three datasets via the Kaggle API and runs the respective PyTorch/Sklearn feature builders).*
 
-**The Data Layer is locked and mathematically verified. The platform is now fully prepared for Phase 2: Unsupervised Modeling and Segmentation.**
+---
+
+**The Data Layer is locked, mathematically verified, strictly gated, and Dockerized. The platform is now fully prepared for Phase 2: Unsupervised Modeling and Segmentation.**

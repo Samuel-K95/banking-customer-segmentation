@@ -50,3 +50,15 @@ banking-customer-segmentation/
 ├── src/customer_segmentation/
 └── tests/
 ```
+
+## Docker Setup (Data Layer)
+
+To run the full data ingestion and feature engineering pipeline in an isolated container:
+
+```bash
+# Build the image
+docker build -t data-layer .
+
+# Run the pipeline (make sure your ~/.kaggle/kaggle.json is configured on the host)
+docker run --rm -v ~/.kaggle:/root/.kaggle data-layer
+```
