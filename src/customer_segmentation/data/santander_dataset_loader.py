@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-def load_santander_raw_data(data_path: str = "data/santander/train_ver2.csv", target_date: str = '2016-05-28') -> pd.DataFrame:
+def load_santander_raw_data(data_path: str = "data/raw/santander/train_ver2.csv", target_date: str = '2016-05-28') -> pd.DataFrame:
     """
     Loads the Santander dataset efficiently by:
     1. Using a strict subset of columns with defined dtypes.

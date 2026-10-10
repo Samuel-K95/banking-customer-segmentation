@@ -76,7 +76,7 @@ if __name__ == "__main__":
     from src.customer_segmentation.data.indian_bank_dataset_loader import load_indian_bank_raw_data
     
     print("Loading raw data...")
-    raw_df = load_indian_bank_raw_data("data/bank_transactions.csv")
+    raw_df = load_indian_bank_raw_data("data/raw/bank_transactions.csv")
     print("Building features...")
     features_df = build_rfm_features(raw_df)
     

@@ -50,7 +50,7 @@ if __name__ == "__main__":
     from src.customer_segmentation.data.santander_dataset_loader import load_santander_raw_data
     
     print("Loading raw Santander dataset (with chunking and target date filtering)...")
-    raw_df = load_santander_raw_data("data/santander/train_ver2.csv", target_date="2016-05-28")
+    raw_df = load_santander_raw_data("data/raw/santander/train_ver2.csv", target_date="2016-05-28")
     
     print("Building features...")
     features_df = build_product_portfolio_features(raw_df)
