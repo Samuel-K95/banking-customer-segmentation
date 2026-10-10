@@ -47,15 +47,15 @@ def build_product_portfolio_features(df: pd.DataFrame) -> pd.DataFrame:
     return df_current
 
 if __name__ == "__main__":
-    from src.data.santander_dataset_loader import load_santander_raw_data
+    from src.customer_segmentation.data.santander_dataset_loader import load_santander_raw_data
     
     print("Loading raw Santander dataset (with chunking and target date filtering)...")
-    raw_df = load_santander_raw_data("../../data/santander/train_ver2.csv", target_date="2016-05-28")
+    raw_df = load_santander_raw_data("data/santander/train_ver2.csv", target_date="2016-05-28")
     
     print("Building features...")
     features_df = build_product_portfolio_features(raw_df)
     
-    os.makedirs("../../data/processed", exist_ok=True)
-    out_path = "../../data/processed/track_b_features.csv"
+    os.makedirs("data/processed", exist_ok=True)
+    out_path = "data/processed/track_b_features.csv"
     features_df.to_csv(out_path, index=False)
     print(f"Saved to {out_path}")

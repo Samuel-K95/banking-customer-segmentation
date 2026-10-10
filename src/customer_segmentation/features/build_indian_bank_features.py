@@ -73,14 +73,14 @@ def build_rfm_features(df: pd.DataFrame) -> pd.DataFrame:
     return customer_df
 
 if __name__ == "__main__":
-    from src.data.indian_bank_dataset_loader import load_indian_bank_raw_data
+    from src.customer_segmentation.data.indian_bank_dataset_loader import load_indian_bank_raw_data
     
     print("Loading raw data...")
-    raw_df = load_indian_bank_raw_data("../../data/bank_transactions.csv")
+    raw_df = load_indian_bank_raw_data("data/bank_transactions.csv")
     print("Building features...")
     features_df = build_rfm_features(raw_df)
     
-    os.makedirs("../../data/processed", exist_ok=True)
-    out_path = "../../data/processed/track_a_features.csv"
+    os.makedirs("data/processed", exist_ok=True)
+    out_path = "data/processed/track_a_features.csv"
     features_df.to_csv(out_path, index=False)
     print(f"Saved to {out_path}")

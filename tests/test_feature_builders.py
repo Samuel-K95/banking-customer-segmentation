@@ -1,8 +1,8 @@
 import pytest
 import pandas as pd
 import numpy as np
-from src.features.build_indian_bank_features import build_rfm_features
-from src.features.build_santander_features import build_product_portfolio_features
+from src.customer_segmentation.features.build_indian_bank_features import build_rfm_features
+from src.customer_segmentation.features.build_santander_features import build_product_portfolio_features
 
 def test_build_rfm_features():
     # Minimal mock data to ensure the pipeline doesn't crash on standard schema
