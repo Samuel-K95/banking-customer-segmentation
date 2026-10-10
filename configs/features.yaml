@@ -1,0 +1,10 @@
+version: v1
+output_name: customer_features_v1.parquet
+
+# Populate during Day 1 after EDA
+model_columns: []
+profile_columns: []
+fairness_columns: []
+
+scaling:
+  method: robust  # robust | standard | minmax

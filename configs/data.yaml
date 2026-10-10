@@ -1,0 +1,14 @@
+primary_source:
+  name: kaggle_bank_customer_segmentation
+  kaggle_slug: shivamb/bank-customer-segmentation
+  grain: customer  # analytical grain after aggregation
+
+paths:
+  raw_dir: data/raw
+  standardized_dir: artifacts/data/standardized
+  features_dir: artifacts/features
+  quality_dir: artifacts/quality
+
+quality:
+  fail_on_duplicate_customer_id: true
+  min_rows: 1000

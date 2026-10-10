@@ -1,0 +1,78 @@
+:root {
+  --bg: #0f1714;
+  --panel: #18241e;
+  --text: #e8f0ea;
+  --muted: #9bb0a3;
+  --accent: #3d9b6e;
+  --danger: #d96868;
+  --font: "Segoe UI", system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  background: radial-gradient(circle at top left, #1c3228, var(--bg) 55%);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.app-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: end;
+  border-bottom: 1px solid #2a3d33;
+  padding-bottom: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand {
+  margin: 0;
+  font-size: 1.75rem;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+
+.tagline {
+  margin: 0.2rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+nav {
+  display: flex;
+  gap: 1rem;
+}
+
+nav a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.api-hint {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid #2f4539;
+  border-radius: 8px;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.error {
+  color: var(--danger);
+}
