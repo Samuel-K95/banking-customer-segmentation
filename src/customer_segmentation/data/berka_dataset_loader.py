@@ -25,7 +25,7 @@ def resolve_berka_dir(berka_dir: str | Path | None = None) -> Path:
         if (cand / "trans.csv").exists() or (cand / "trans.asc").exists():
             return cand
     raise FileNotFoundError(
-        "Berka directory not found. Expected data/raw/berka-dataset/ with trans.csv"
+        "Berka directory not found. Expected data/raw/berka-dataset/ or data/raw/berka/ with trans.csv"
     )
 
 
@@ -47,7 +47,11 @@ def _read_table(directory: Path, name: str) -> pd.DataFrame:
 def load_berka_raw_data(
     berka_dir: str | Path | None = None,
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-    """Load trans, account, client, loan, card tables."""
+    """Load trans, account, client, loan, card tables.
+
+    Loan/card are optional (empty frames) when files are missing — product flags
+    then stay zero in the feature builder.
+    """
     path = resolve_berka_dir(berka_dir)
     trans_df = _read_table(path, "trans")
     account_df = _read_table(path, "account")

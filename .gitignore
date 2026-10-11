@@ -1,5 +1,6 @@
 __pycache__/
 *.py[cod]
+*.egg-info/
 .venv/
 venv/
 .env
@@ -62,3 +63,8 @@ build/
 htmlcov/
 .ipynb_checkpoints/
 notebooks/.ipynb_checkpoints/
+
+# Airflow (pipelines/airflow): runtime logs, generated airflow.cfg, local env
+pipelines/airflow/logs/
+pipelines/airflow/config/
+pipelines/airflow/.env

@@ -7,7 +7,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pandera.pandas as pa
 from sklearn.preprocessing import StandardScaler
+
+from customer_segmentation.config import source_files
+from customer_segmentation.features.io import save_matrices
 
 MODEL_COLUMNS = [
     "Transaction_Count",
@@ -19,6 +23,20 @@ MODEL_COLUMNS = [
     "has_loan",
     "has_card",
 ]
+
+track_c_schema = pa.DataFrameSchema(
+    {
+        "account_id": pa.Column(int, unique=True, coerce=True),
+        "Account_Balance": pa.Column(float, nullable=False, coerce=True),
+        "Transaction_Count": pa.Column(int, pa.Check.greater_than_or_equal_to(1), nullable=False, coerce=True),
+        "Total_Credit": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=False, coerce=True),
+        "Total_Withdrawal": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=False, coerce=True),
+        "Recency_Days": pa.Column(float, nullable=False, coerce=True),
+        "Account_Age_Days": pa.Column(float, nullable=False, coerce=True),
+        "has_loan": pa.Column(int, pa.Check.isin([0, 1]), nullable=False, coerce=True),
+        "has_card": pa.Column(int, pa.Check.isin([0, 1]), nullable=False, coerce=True),
+    }
+)
 
 
 @dataclass
@@ -74,11 +92,9 @@ def build_berka_features(
     merged = agg.merge(account[["account_id", "Account_Age_Days"]], on="account_id", how="inner")
     merged = merged.drop(columns=["Last_Transaction"])
 
-    # Monetary NaNs: no transactions after join edge cases → 0
     for col in ["Account_Balance", "Total_Credit", "Total_Withdrawal"]:
         merged[col] = merged[col].fillna(0)
 
-    # Product flags
     merged["has_loan"] = 0
     if loan_df is not None and len(loan_df) and "account_id" in loan_df.columns:
         loan_accounts = set(loan_df["account_id"].unique())
@@ -102,12 +118,11 @@ def build_berka_features(
     merged = merged.dropna(subset=core).reset_index(drop=True)
 
     interpretable = merged[["account_id"] + MODEL_COLUMNS].copy()
+    interpretable = track_c_schema.validate(interpretable)
 
     model_df = interpretable.copy()
-    # Log-compress skewed monetary / age (shift negatives on balance)
     for col in ["Account_Balance", "Total_Credit", "Total_Withdrawal", "Account_Age_Days", "Transaction_Count"]:
         model_df[col] = np.log1p(np.maximum(model_df[col].astype(float), 0))
-    # Recency: leave as-is then scale; binaries untouched before scale
     scaler = StandardScaler()
     model_df[MODEL_COLUMNS] = scaler.fit_transform(model_df[MODEL_COLUMNS].astype(float))
 
@@ -136,9 +151,14 @@ def transform_berka_model_matrix(
 
 def build_and_save_berka_features(
     berka_dir: str | Path | None = None,
-    processed_dir: str | Path = "data/processed",
+    processed_dir: str | Path | None = None,
 ) -> BerkaFeatureBundle:
-    from customer_segmentation.data.berka_dataset_loader import load_berka_raw_data, resolve_berka_dir, _read_table
+    from customer_segmentation.data.berka_dataset_loader import (
+        _read_table,
+        load_berka_raw_data,
+        resolve_berka_dir,
+    )
+    from customer_segmentation.features.io import track_outputs
 
     trans, account, _client, loan, card = load_berka_raw_data(berka_dir)
     path = resolve_berka_dir(berka_dir)
@@ -148,14 +168,31 @@ def build_and_save_berka_features(
         disp = None
 
     bundle = build_berka_features(trans, account, loan, card, disp)
-    out = Path(processed_dir)
-    out.mkdir(parents=True, exist_ok=True)
-    bundle.interpretable.to_csv(out / "track_c_berka_interpretable.csv", index=False)
-    bundle.model.to_csv(out / "track_c_berka_model.csv", index=False)
+    out = Path(processed_dir) if processed_dir is not None else None
+    save_matrices("track_c", bundle.interpretable, bundle.model, out)
+    # Keep return type for segmentation pipelines; paths come from configs/data.yaml
+    _ = track_outputs("track_c", out)
     return bundle
 
 
-if __name__ == "__main__":
+def run(out_dir: Path | None = None) -> dict:
+    """Track C end to end: load Berka tables, build features, save both matrices.
+
+    Used by the data-layer script and Airflow DAG (`build_berka_features.run`).
+    """
+    berka_dir = source_files("berka")[0].parent
+    print(f"Loading raw Berka dataset from {berka_dir}...")
+    from customer_segmentation.data.berka_dataset_loader import _read_table, load_berka_raw_data
+
+    trans_df, account_df, _client, loan_df, card_df = load_berka_raw_data(berka_dir)
+    try:
+        disp_df = _read_table(Path(berka_dir), "disp")
+    except FileNotFoundError:
+        disp_df = None
     print("Building Berka features...")
-    result = build_and_save_berka_features()
-    print(f"Done: {len(result.interpretable)} accounts -> data/processed/")
+    bundle = build_berka_features(trans_df, account_df, loan_df, card_df, disp_df)
+    return save_matrices("track_c", bundle.interpretable, bundle.model, out_dir)
+
+
+if __name__ == "__main__":
+    run()
