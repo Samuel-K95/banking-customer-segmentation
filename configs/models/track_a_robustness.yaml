@@ -1,0 +1,92 @@
+version: 1
+track: track_a
+description: >-
+  Task 07 behavioral audit, post-P1 train-only ratio clipping sensitivity,
+  and repeat-customer-only K-Means robustness experiment.
+
+data:
+  model_file: data/processed/track_a_features_model.csv
+  interpretable_file: data/processed/track_a_features_interpretable.csv
+  identifier_column: CustomerID
+  feature_contract_file: configs/models/feature_contracts.yaml
+  preprocessor_artifact: artifacts/preprocessors/track_a.joblib
+  row_count: 837951
+  chunk_rows: 50000
+  features:
+    - AccountBalance
+    - Transaction_Count
+    - Avg_Transaction_Amt
+    - Std_Transaction_Amt
+    - Total_Spend
+    - Avg_Spend_Ratio
+    - Recency_Days
+    - Weekend_Spend_Ratio
+    - Night_Spend_Ratio
+  ratio_feature: Avg_Spend_Ratio
+  log1p_features:
+    - AccountBalance
+    - Avg_Transaction_Amt
+    - Std_Transaction_Amt
+    - Total_Spend
+
+sampling:
+  evaluation_manifest: artifacts/experiments/samples/track_a_evaluation_n3000_5496dbb5ee72.csv
+  training_manifests:
+    "42": artifacts/experiments/samples/track_a_comparison_train_seed42_n50000_d23d078cbe1c.csv
+    "2024": artifacts/experiments/samples/track_a_comparison_train_seed2024_n50000_889a5996e041.csv
+  expected_training_rows: 50000
+  expected_evaluation_rows: 3000
+  seeds: [42, 2024]
+  k_values: [2, 3]
+
+audit:
+  task05_algorithms: [kmeans, gaussian_mixture]
+  task06_families: [ae_nine_feature, ae_eight_feature, kmeans_eight_feature]
+  candidate_k_values: [2, 3]
+  profile_splits: [train, evaluation]
+  feature_quantiles: [0.1, 0.25, 0.5, 0.75, 0.9]
+
+sensitivity:
+  type: post_p1_train_only_quantile_clipping
+  lower_quantile: 0.005
+  upper_quantile: 0.995
+  quantile_method: linear
+  feature: Avg_Spend_Ratio
+  seeds: [42, 2024]
+  k_values: [2, 3]
+  n_init: 10
+  max_iter: 300
+  algorithm: lloyd
+  metric_spaces:
+    original: original_p1_9d
+    clipped: post_p1_ratio_clip_q005_q995_9d
+
+repeat_only:
+  enabled: true
+  cohort: at_least_two_transactions
+  seeds: [42, 2024]
+  k_values: [2, 3]
+  n_init: 10
+  max_iter: 300
+  algorithm: lloyd
+  log1p_features:
+    - AccountBalance
+    - Avg_Transaction_Amt
+    - Std_Transaction_Amt
+    - Total_Spend
+  scaler: StandardScaler
+  scaler_fit_scope: repeat-customer training manifest only
+  metric_space: repeat_only_trainfit_scaled_9d
+
+metrics:
+  silhouette_max_rows: 3000
+  silhouette_seed: 13579
+
+execution:
+  comparison_board: artifacts/experiments/comparison_board.csv
+  diagnostic_root: artifacts/diagnostics/track_a
+  model_directory: artifacts/models/robustness
+  assignment_directory: artifacts/segments/candidates
+  run_metadata_directory: artifacts/experiments/run_metadata
+  sample_directory: artifacts/experiments/samples
+  mlflow_experiment: track-a-robustness
