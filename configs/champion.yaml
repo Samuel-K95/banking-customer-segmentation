@@ -1,6 +1,45 @@
-# Frozen after Day-3 selection — do not edit casually; bump version instead.
-status: unset
-model_version: null
-feature_version: null
-config_path: null
-notes: "Set after champion selection meeting."
+# Frozen after segmentation-layer selection — bump model_version on change.
+status: registered
+model_version: v1
+feature_version: berka_rfm_product_v1
+tag: prod_segmentation_v1
+run_id: c_ae_lat4_k6
+track: C
+dataset: berka
+method: ae_kmeans
+latent_dim: 4
+n_clusters: 6
+artifact_dir: artifacts/segmentation/champion_v1
+config_path: configs/segmentation.yaml
+
+# Metric leader (recorded, not selected)
+metric_leader:
+  run_id: b_ae_lat8_k3
+  track: B
+  silhouette: 0.512
+  note: Highest silhouette; product portfolio only — no transactions.
+
+metrics:
+  # From modular pipeline run (artifacts/segmentation/champion_v1/metrics.json)
+  silhouette: 0.466
+  db_index: 0.659
+  ch_index: 3775
+  stability_ari_kmeans_multiseed: 0.964
+  stability_ari_kmeans_subsample: 0.980
+  stability_ari_ae_latent_kmeans: 0.996
+  note: Notebook-era sil~0.417 retained in narrative reports; pipeline re-run improved slightly.
+
+selection_rationale: >
+  Assignment requires behavioral groups a bank can act on.
+  Berka is the only track with transactions + product holding.
+  Silhouette gap vs Santander (0.095) does not override that.
+
+segments:
+  0: New basic accounts
+  1: Long-tenure high-activity basic
+  2: Loan-centric
+  3: Dormant
+  4: Card-centric savers
+  5: Financially stressed
+
+notes: "Do not edit casually; bump model_version and re-register artifacts."

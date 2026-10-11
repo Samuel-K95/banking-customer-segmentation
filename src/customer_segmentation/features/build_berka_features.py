@@ -1,92 +1,141 @@
-import pandas as pd
+"""Berka feature engineering: RFM + balance + loan/card flags."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from pathlib import Path
+
 import numpy as np
+import pandas as pd
 from sklearn.preprocessing import StandardScaler
-import os
-import pandera as pa
 
-# Pandera Schema
-track_c_schema = pa.DataFrameSchema({
-    "Account_Balance": pa.Column(float, nullable=False, coerce=True),
-    "Transaction_Count": pa.Column(int, pa.Check.greater_than_or_equal_to(1), nullable=False, coerce=True),
-    "Total_Credit": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=False, coerce=True),
-    "Total_Withdrawal": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=False, coerce=True)
-})
+MODEL_COLUMNS = [
+    "Transaction_Count",
+    "Account_Balance",
+    "Total_Credit",
+    "Total_Withdrawal",
+    "Recency_Days",
+    "Account_Age_Days",
+    "has_loan",
+    "has_card",
+]
 
-def build_berka_features(trans_df: pd.DataFrame, account_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Builds features from the Berka transactions and accounts tables."""
-    
-    # 1. Clean transactions
-    trans_df = trans_df.copy()
-    
-    # Berka dates are typically YYMMDD (e.g., 930101)
-    trans_df['date'] = pd.to_datetime(trans_df['date'], format='%y%m%d', errors='coerce')
-    
-    # Types: "PRIJEM" (Credit), "VYDAJ" (Withdrawal), "VYBER" (Withdrawal in cash)
-    trans_df['Is_Credit'] = trans_df['type'].isin(['PRIJEM', 'CREDIT']).astype(int)
-    trans_df['Is_Withdrawal'] = trans_df['type'].isin(['VYDAJ', 'VYBER', 'WITHDRAWAL']).astype(int)
-    
-    trans_df['amount_credit'] = trans_df['amount'] * trans_df['Is_Credit']
-    trans_df['amount_withdrawal'] = trans_df['amount'] * trans_df['Is_Withdrawal']
-    
-    max_date = trans_df['date'].max()
-    
-    # 2. Aggregation per account_id
-    agg_dict = {
-        'date': 'max',
-        'trans_id': 'count',
-        'balance': 'last',
-        'amount_credit': 'sum',
-        'amount_withdrawal': 'sum'
-    }
-    
-    account_features = trans_df.groupby('account_id').agg(agg_dict).reset_index()
-    account_features = account_features.rename(columns={
-        'date': 'Last_Transaction',
-        'trans_id': 'Transaction_Count',
-        'balance': 'Account_Balance',
-        'amount_credit': 'Total_Credit',
-        'amount_withdrawal': 'Total_Withdrawal'
-    })
-    
-    account_features['Recency_Days'] = (max_date - account_features['Last_Transaction']).dt.days
-    
-    # Join with account creation info
-    account_df['date'] = pd.to_datetime(account_df['date'], format='%y%m%d', errors='coerce')
-    account_df['Account_Age_Days'] = (max_date - account_df['date']).dt.days
-    
-    # Merge
-    merged_df = account_features.merge(account_df[['account_id', 'Account_Age_Days']], on='account_id', how='inner')
-    merged_df = merged_df.drop(columns=['Last_Transaction'])
-    
-    interpretable_df = merged_df.copy()
-    
-    interpretable_df = track_c_schema.validate(interpretable_df)
-        
-    model_df = interpretable_df.copy()
-    
-    # Log Transforms
-    for col in ['Account_Balance', 'Total_Credit', 'Total_Withdrawal', 'Account_Age_Days']:
-        # Shift slightly for log if negative balances exist, though usually positive
-        model_df[col] = np.log1p(np.maximum(model_df[col], 0))
-        
-    features = [c for c in model_df.columns if c != 'account_id']
+
+@dataclass
+class BerkaFeatureBundle:
+    interpretable: pd.DataFrame
+    model: pd.DataFrame
+    scaler: StandardScaler
+    feature_columns: list[str]
+    id_col: str = "account_id"
+
+
+def _parse_berka_date(series: pd.Series) -> pd.Series:
+    if np.issubdtype(series.dtype, np.datetime64):
+        return series
+    return pd.to_datetime(series.astype(str).str.zfill(6), format="%y%m%d", errors="coerce")
+
+
+def build_berka_features(
+    trans_df: pd.DataFrame,
+    account_df: pd.DataFrame,
+    loan_df: pd.DataFrame | None = None,
+    card_df: pd.DataFrame | None = None,
+    disp_df: pd.DataFrame | None = None,
+) -> BerkaFeatureBundle:
+    """Build interpretable + scaled model matrices for Track C."""
+    trans = trans_df.copy()
+    account = account_df.copy()
+
+    trans["date"] = _parse_berka_date(trans["date"])
+    account["date"] = _parse_berka_date(account["date"])
+
+    trans["is_credit"] = trans["type"].isin(["PRIJEM", "CREDIT"]).astype(int)
+    trans["is_withdrawal"] = trans["type"].isin(["VYDAJ", "VYBER", "WITHDRAWAL"]).astype(int)
+    trans["amt_credit"] = trans["amount"] * trans["is_credit"]
+    trans["amt_withdrawal"] = trans["amount"] * trans["is_withdrawal"]
+
+    max_date = trans["date"].max()
+
+    agg = (
+        trans.groupby("account_id")
+        .agg(
+            Last_Transaction=("date", "max"),
+            Transaction_Count=("trans_id", "count"),
+            Account_Balance=("balance", "last"),
+            Total_Credit=("amt_credit", "sum"),
+            Total_Withdrawal=("amt_withdrawal", "sum"),
+        )
+        .reset_index()
+    )
+    agg["Recency_Days"] = (max_date - agg["Last_Transaction"]).dt.days
+    account["Account_Age_Days"] = (max_date - account["date"]).dt.days
+
+    merged = agg.merge(account[["account_id", "Account_Age_Days"]], on="account_id", how="inner")
+    merged = merged.drop(columns=["Last_Transaction"])
+
+    # Monetary NaNs: no transactions after join edge cases → 0
+    for col in ["Account_Balance", "Total_Credit", "Total_Withdrawal"]:
+        merged[col] = merged[col].fillna(0)
+
+    # Product flags
+    merged["has_loan"] = 0
+    if loan_df is not None and len(loan_df) and "account_id" in loan_df.columns:
+        loan_accounts = set(loan_df["account_id"].unique())
+        merged["has_loan"] = merged["account_id"].isin(loan_accounts).astype(int)
+
+    merged["has_card"] = 0
+    if (
+        card_df is not None
+        and disp_df is not None
+        and len(card_df)
+        and "disp_id" in card_df.columns
+        and "disp_id" in disp_df.columns
+    ):
+        card_disp = set(card_df["disp_id"].unique())
+        owners = disp_df.loc[disp_df["disp_id"].isin(card_disp), "account_id"].unique()
+        merged["has_card"] = merged["account_id"].isin(owners).astype(int)
+    elif card_df is not None and "account_id" in getattr(card_df, "columns", []):
+        merged["has_card"] = merged["account_id"].isin(card_df["account_id"].unique()).astype(int)
+
+    core = ["Recency_Days", "Transaction_Count", "Account_Age_Days"]
+    merged = merged.dropna(subset=core).reset_index(drop=True)
+
+    interpretable = merged[["account_id"] + MODEL_COLUMNS].copy()
+
+    model_df = interpretable.copy()
+    # Log-compress skewed monetary / age (shift negatives on balance)
+    for col in ["Account_Balance", "Total_Credit", "Total_Withdrawal", "Account_Age_Days", "Transaction_Count"]:
+        model_df[col] = np.log1p(np.maximum(model_df[col].astype(float), 0))
+    # Recency: leave as-is then scale; binaries untouched before scale
     scaler = StandardScaler()
-    model_df[features] = scaler.fit_transform(model_df[features])
-    
-    return interpretable_df, model_df
+    model_df[MODEL_COLUMNS] = scaler.fit_transform(model_df[MODEL_COLUMNS].astype(float))
 
-if __name__ == "__main__":
-    from src.customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
-    
-    print("Loading raw Berka dataset...")
+    return BerkaFeatureBundle(
+        interpretable=interpretable,
+        model=model_df,
+        scaler=scaler,
+        feature_columns=list(MODEL_COLUMNS),
+        id_col="account_id",
+    )
+
+
+def build_and_save_berka_features(
+    berka_dir: str | Path | None = None,
+    processed_dir: str | Path = "data/processed",
+) -> BerkaFeatureBundle:
+    from customer_segmentation.data.berka_dataset_loader import load_berka_raw_data, resolve_berka_dir, _read_table
+
+    trans, account, _client, loan, card = load_berka_raw_data(berka_dir)
+    path = resolve_berka_dir(berka_dir)
     try:
-        trans_df, account_df, _ = load_berka_raw_data("data/raw/berka")
-        print("Building Berka features...")
-        interpretable_df, model_df = build_berka_features(trans_df, account_df)
-        
-        os.makedirs("data/processed", exist_ok=True)
-        interpretable_df.to_csv("data/processed/track_c_berka_interpretable.csv", index=False)
-        model_df.to_csv("data/processed/track_c_berka_model.csv", index=False)
-        print("Saved interpretable and model matrices to data/processed/")
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
+        disp = _read_table(path, "disp")
+    except FileNotFoundError:
+        disp = None
+
+    bundle = build_berka_features(trans, account, loan, card, disp)
+    out = Path(processed_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    bundle.interpretable.to_csv(out / "track_c_berka_interpretable.csv", index=False)
+    bundle.model.to_csv(out / "track_c_berka_model.csv", index=False)
+    return bundle

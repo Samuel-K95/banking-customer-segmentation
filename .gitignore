@@ -21,6 +21,16 @@ artifacts/**
 !artifacts/.gitkeep
 !artifacts/experiments/
 !artifacts/experiments/*.csv
+!artifacts/segmentation/
+!artifacts/segmentation/**
+!artifacts/segmentation/**/*.md
+!artifacts/segmentation/**/*.json
+!artifacts/segmentation/**/*.csv
+!artifacts/segmentation/**/*.png
+# Keep model binaries local unless explicitly force-added
+artifacts/segmentation/**/*.pt
+artifacts/segmentation/**/*.joblib
+artifacts/segmentation/**/*.pkl
 experiments/**
 !experiments/.gitkeep
 !experiments/**/.gitkeep
