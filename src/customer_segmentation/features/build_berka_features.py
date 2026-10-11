@@ -1,10 +1,13 @@
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
-import os
-import pandera as pa
+import argparse
+from pathlib import Path
 
-# Pandera Schema
+import pandas as pd
+import pandera.pandas as pa
+
+from customer_segmentation.features.preprocessing import prepare_model_matrix
+
+DEFAULT_PREPROCESSOR = Path("artifacts/preprocessors/track_c.joblib")
+
 track_c_schema = pa.DataFrameSchema({
     "Account_Balance": pa.Column(float, nullable=False, coerce=True),
     "Transaction_Count": pa.Column(int, pa.Check.greater_than_or_equal_to(1), nullable=False, coerce=True),
@@ -12,8 +15,14 @@ track_c_schema = pa.DataFrameSchema({
     "Total_Withdrawal": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=False, coerce=True)
 })
 
-def build_berka_features(trans_df: pd.DataFrame, account_df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Builds features from the Berka transactions and accounts tables."""
+def build_berka_features(
+    trans_df: pd.DataFrame,
+    account_df: pd.DataFrame,
+    *,
+    preprocessor_path: str | Path | None = DEFAULT_PREPROCESSOR,
+    fit_preprocessor: bool = True,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Build account-grain features; this does not map accounts to customers."""
     
     # 1. Clean transactions
     trans_df = trans_df.copy()
@@ -51,42 +60,62 @@ def build_berka_features(trans_df: pd.DataFrame, account_df: pd.DataFrame) -> tu
     account_features['Recency_Days'] = (max_date - account_features['Last_Transaction']).dt.days
     
     # Join with account creation info
+    account_df = account_df.copy()
     account_df['date'] = pd.to_datetime(account_df['date'], format='%y%m%d', errors='coerce')
     account_df['Account_Age_Days'] = (max_date - account_df['date']).dt.days
     
     # Merge
-    merged_df = account_features.merge(account_df[['account_id', 'Account_Age_Days']], on='account_id', how='inner')
+    merged_df = account_features.merge(
+        account_df[['account_id', 'Account_Age_Days']],
+        on='account_id',
+        how='inner',
+        validate='one_to_one',
+    )
     merged_df = merged_df.drop(columns=['Last_Transaction'])
     
     interpretable_df = merged_df.copy()
     
     interpretable_df = track_c_schema.validate(interpretable_df)
         
-    model_df = interpretable_df.copy()
-    
-    # Log Transforms
-    for col in ['Account_Balance', 'Total_Credit', 'Total_Withdrawal', 'Account_Age_Days']:
-        # Shift slightly for log if negative balances exist, though usually positive
-        model_df[col] = np.log1p(np.maximum(model_df[col], 0))
-        
-    features = [c for c in model_df.columns if c != 'account_id']
-    scaler = StandardScaler()
-    model_df[features] = scaler.fit_transform(model_df[features])
-    
+    features = [column for column in interpretable_df.columns if column != 'account_id']
+    log_columns = ['Account_Balance', 'Total_Credit', 'Total_Withdrawal', 'Account_Age_Days']
+    model_df = prepare_model_matrix(
+        interpretable_df,
+        track="track_c",
+        identifier_columns=["account_id"],
+        log1p_columns=log_columns,
+        clip_nonnegative_columns=log_columns,
+        scaled_features=features,
+        artifact_path=preprocessor_path,
+        fit=fit_preprocessor,
+    )
+
     return interpretable_df, model_df
 
-if __name__ == "__main__":
-    from src.customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
-    
+
+def main() -> None:
+    from customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
+
+    parser = argparse.ArgumentParser(description="Build Track C Berka account-level features.")
+    parser.add_argument("--preprocessor", default=str(DEFAULT_PREPROCESSOR))
+    parser.add_argument("--reuse-preprocessor", action="store_true")
+    args = parser.parse_args()
+
     print("Loading raw Berka dataset...")
-    try:
-        trans_df, account_df, _ = load_berka_raw_data("data/raw/berka")
-        print("Building Berka features...")
-        interpretable_df, model_df = build_berka_features(trans_df, account_df)
-        
-        os.makedirs("data/processed", exist_ok=True)
-        interpretable_df.to_csv("data/processed/track_c_berka_interpretable.csv", index=False)
-        model_df.to_csv("data/processed/track_c_berka_model.csv", index=False)
-        print("Saved interpretable and model matrices to data/processed/")
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
+    trans_df, account_df, _ = load_berka_raw_data("data/raw/berka")
+    print("Building Berka account-level features...")
+    interpretable_df, model_df = build_berka_features(
+        trans_df,
+        account_df,
+        preprocessor_path=args.preprocessor,
+        fit_preprocessor=not args.reuse_preprocessor,
+    )
+
+    Path("data/processed").mkdir(parents=True, exist_ok=True)
+    interpretable_df.to_csv("data/processed/track_c_berka_interpretable.csv", index=False)
+    model_df.to_csv("data/processed/track_c_berka_model.csv", index=False)
+    print(f"Saved Track C account matrices and preprocessor to data/processed/ and {args.preprocessor}")
+
+
+if __name__ == "__main__":
+    main()
