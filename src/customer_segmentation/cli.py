@@ -28,6 +28,37 @@ def main() -> None:
         help="Root for experiments/ and segmentation/ outputs",
     )
 
+    p_champ = sub.add_parser(
+        "champion-info",
+        help="Load modular ChampionModel and print summary + decision map",
+    )
+    p_champ.add_argument(
+        "--artifact-dir",
+        default="artifacts/segmentation/champion_v1",
+        help="Path to registered champion bundle",
+    )
+
+    p_score = sub.add_parser(
+        "score-berka",
+        help="Score Berka interpretable CSV with ChampionModel",
+    )
+    p_score.add_argument(
+        "--input",
+        default="data/processed/track_c_berka_interpretable.csv",
+        help="Interpretable feature CSV",
+    )
+    p_score.add_argument(
+        "--artifact-dir",
+        default="artifacts/segmentation/champion_v1",
+        help="Path to registered champion bundle",
+    )
+    p_score.add_argument(
+        "--output",
+        default="artifacts/segmentation/champion_v1/scored_batch.csv",
+        help="Where to write scored assignments",
+    )
+    p_score.add_argument("--limit", type=int, default=None, help="Optional row limit")
+
     args = parser.parse_args()
     if args.version:
         print(__version__)
@@ -42,6 +73,33 @@ def main() -> None:
             epochs=args.epochs,
         )
         print(json.dumps({"status": "ok", "champion_dir": summary["champion_dir"]}, indent=2))
+        return
+
+    if args.command == "champion-info":
+        from customer_segmentation.models.champion import ChampionModel
+
+        champ = ChampionModel.load(args.artifact_dir)
+        payload = champ.summary()
+        payload["decision_map"] = champ.decision_map().to_dict(orient="records")
+        print(json.dumps(payload, indent=2, default=str))
+        return
+
+    if args.command == "score-berka":
+        from pathlib import Path
+
+        import pandas as pd
+
+        from customer_segmentation.models.champion import ChampionModel
+
+        champ = ChampionModel.load(args.artifact_dir)
+        df = pd.read_csv(args.input)
+        if args.limit:
+            df = df.head(args.limit)
+        scored = champ.score_interpretable(df)
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        scored.to_csv(out, index=False)
+        print(json.dumps({"status": "ok", "n": len(scored), "output": str(out)}, indent=2))
         return
 
     parser.print_help()

@@ -33,6 +33,7 @@ def register_champion(
     scaler: Any | None = None,
     kmeans: Any | None = None,
     encoder_state: dict[str, Any] | None = None,
+    segment_catalog: dict[str, Any] | None = None,
     notes: str = "",
 ) -> dict[str, Path]:
     """Write a versioned champion bundle under artifacts/segmentation/."""
@@ -56,6 +57,13 @@ def register_champion(
         out_dir / "feature_columns.json",
         {"feature_version": feature_version, "columns": feature_columns},
     )
+
+    if segment_catalog is not None:
+        paths["segment_catalog"] = write_json(out_dir / "segment_catalog.json", segment_catalog)
+        paths["decision_map"] = out_dir / "decision_map.csv"
+        from customer_segmentation.models.segment_intel import decision_map_frame
+
+        decision_map_frame(segment_catalog).to_csv(paths["decision_map"], index=False)
 
     if scaler is not None:
         paths["scaler"] = out_dir / "scaler.joblib"
@@ -84,6 +92,7 @@ def register_champion(
         "n_segments": int(assignments["segment_id"].nunique()) if "segment_id" in assignments else None,
         "notes": notes,
         "files": {k: str(v.relative_to(out_dir)) for k, v in paths.items()},
+        "load": "customer_segmentation.models.champion.ChampionModel.load",
     }
     paths["manifest"] = write_json(out_dir / "manifest.json", manifest)
     return paths

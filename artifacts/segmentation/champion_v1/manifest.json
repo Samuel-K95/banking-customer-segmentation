@@ -17,6 +17,9 @@
     "feature_columns": "feature_columns.json",
     "scaler": "scaler.joblib",
     "kmeans": "kmeans.joblib",
-    "encoder": "encoder.pt"
-  }
+    "encoder": "encoder.pt",
+    "segment_catalog": "segment_catalog.json",
+    "decision_map": "decision_map.csv"
+  },
+  "load": "customer_segmentation.models.champion.ChampionModel.load"
 }

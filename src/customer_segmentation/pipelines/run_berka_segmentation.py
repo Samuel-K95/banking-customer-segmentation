@@ -11,8 +11,15 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from customer_segmentation.features.build_berka_features import build_and_save_berka_features
-from customer_segmentation.models.autoencoder import TORCH_OK, distance_confidence, train_ae_kmeans
+from customer_segmentation.models.autoencoder import (
+    TORCH_OK,
+    distance_confidence,
+    train_ae_cluster,
+    train_ae_kmeans,
+    train_autoencoder,
+)
 from customer_segmentation.models.registry import register_champion
+from customer_segmentation.models.segment_intel import build_segment_catalog
 from customer_segmentation.models.stability import multi_seed_ari, subsample_ari
 from customer_segmentation.models.traditional import (
     best_by_silhouette,
@@ -135,14 +142,19 @@ def run_berka_segmentation(
     ae_results: dict[int, Any] = {}
     champion = None
     if TORCH_OK:
-        print("=== Autoencoder + K-Means ===")
+        print("=== Autoencoder + K-Means / GMM ===")
         losses_by_lat: dict[int, list[float]] = {}
+        ae_gmm_lat4 = None
         for lat in (4, 8):
-            ae = train_ae_kmeans(
+            trained = train_autoencoder(
+                X, latent_dim=lat, epochs=epochs, random_state=RANDOM_STATE
+            )
+            ae = train_ae_cluster(
                 X,
                 latent_dim=lat,
                 n_clusters=k_stab,
-                epochs=epochs,
+                method="kmeans",
+                trained=trained,
                 random_state=RANDOM_STATE,
             )
             ae_results[lat] = ae
@@ -158,11 +170,36 @@ def run_berka_segmentation(
                 )
             )
             print(
-                f"  lat={lat} sil={ae.metrics['silhouette']:.3f} "
+                f"  AE+KMeans lat={lat} sil={ae.metrics['silhouette']:.3f} "
                 f"DB={ae.metrics['db_index']:.3f} CH={ae.metrics['ch_index']:.0f}"
             )
+            # GMM head on the same latent (winner latent=4 gets the full compare)
+            if lat == 4:
+                ae_gmm_lat4 = train_ae_cluster(
+                    X,
+                    latent_dim=lat,
+                    n_clusters=k_stab,
+                    method="gmm",
+                    trained=trained,
+                    random_state=RANDOM_STATE,
+                )
+                rows.append(
+                    _row(
+                        f"c_ae_lat{lat}_gmm_k{k_stab}",
+                        "ae_gmm",
+                        k_stab,
+                        lat,
+                        ae_gmm_lat4.metrics,
+                        recommended=False,
+                    )
+                )
+                print(
+                    f"  AE+GMM    lat={lat} sil={ae_gmm_lat4.metrics['silhouette']:.3f} "
+                    f"DB={ae_gmm_lat4.metrics['db_index']:.3f} "
+                    f"CH={ae_gmm_lat4.metrics['ch_index']:.0f}"
+                )
         viz.plot_ae_loss(losses_by_lat, fig_dir / "ae_recon_loss.png")
-        # Champion by project policy: AE lat=4 (behavioral + best DB among AE)
+        # Champion by project policy: AE lat=4 + K-Means (AE+GMM is on the board for comparison)
         champion = ae_results[4]
     else:
         print("PyTorch unavailable — champion falls back to K-Means k=6")
@@ -222,6 +259,14 @@ def run_berka_segmentation(
         .mean()
         .round(2)
     )
+    pop = bundle.interpretable[feat_cols].mean()
+    counts = {int(s): int(n) for s, n in zip(*np.unique(labels, return_counts=True))}
+    segment_catalog = build_segment_catalog(
+        profiles,
+        population=pop,
+        sizes=counts,
+        total_n=len(labels),
+    )
 
     viz.plot_size_bars(labels, fig_dir / "size_bars.png", title="Champion segment sizes")
     viz.plot_pca_segments(space, labels, fig_dir / "pca_segments.png", title="Champion latent/feature PCA")
@@ -270,6 +315,7 @@ def run_berka_segmentation(
         scaler=bundle.scaler,
         kmeans=getattr(champion, "kmeans", None),
         encoder_state=encoder_state,
+        segment_catalog=segment_catalog,
         notes="Champion = Track C AE lat=4 k=6 per assignment behavioral criteria.",
     )
 

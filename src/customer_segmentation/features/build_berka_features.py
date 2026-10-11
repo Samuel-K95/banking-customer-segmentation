@@ -120,6 +120,20 @@ def build_berka_features(
     )
 
 
+def transform_berka_model_matrix(
+    interpretable: pd.DataFrame,
+    scaler: StandardScaler,
+    feature_columns: list[str] | None = None,
+) -> np.ndarray:
+    """Apply the same log1p + frozen StandardScaler used at training time."""
+    cols = list(feature_columns or MODEL_COLUMNS)
+    frame = interpretable[cols].copy()
+    for col in ["Account_Balance", "Total_Credit", "Total_Withdrawal", "Account_Age_Days", "Transaction_Count"]:
+        if col in frame.columns:
+            frame[col] = np.log1p(np.maximum(frame[col].astype(float), 0))
+    return scaler.transform(frame.astype(float)).astype(np.float64)
+
+
 def build_and_save_berka_features(
     berka_dir: str | Path | None = None,
     processed_dir: str | Path = "data/processed",

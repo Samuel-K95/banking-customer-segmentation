@@ -34,12 +34,9 @@ selection_rationale: >
   Berka is the only track with transactions + product holding.
   Silhouette gap vs Santander (0.095) does not override that.
 
-segments:
-  0: New basic accounts
-  1: Long-tenure high-activity basic
-  2: Loan-centric
-  3: Dormant
-  4: Card-centric savers
-  5: Financially stressed
+# Segment IDs are frozen in artifacts/segmentation/champion_v1/segment_catalog.json
+# (names resolved from centroids at registration — do not hardcode offers by ID alone).
+# Load via: customer_segmentation.models.champion.ChampionModel.load(...)
+segments_source: artifacts/segmentation/champion_v1/segment_catalog.json
 
-notes: "Do not edit casually; bump model_version and re-register artifacts."
+notes: "Do not edit casually; bump model_version and re-register artifacts. Use ChampionModel for scoring."

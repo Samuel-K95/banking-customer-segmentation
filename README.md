@@ -80,8 +80,22 @@ docker compose run --rm segmentation-layer
 Outputs land on the host via volume mounts:
 
 - `artifacts/experiments/comparison_board_track_c.csv`
-- `artifacts/segmentation/champion_v1/` (assignments, metrics, figures, manifest)
+- `artifacts/segmentation/champion_v1/` (assignments, metrics, figures, manifest, `segment_catalog.json`)
 - `data/processed/track_c_berka_*.csv`
+
+**Modular champion (load / score — not notebook-only):**
+
+```python
+from customer_segmentation.models.champion import ChampionModel
+
+champ = ChampionModel.load("artifacts/segmentation/champion_v1")
+scored = champ.score_interpretable(interpretable_df)  # segment_id, name, play, confidence
+```
+
+```bash
+PYTHONPATH=src python -m customer_segmentation.cli champion-info
+PYTHONPATH=src python -m customer_segmentation.cli score-berka --limit 100
+```
 
 Without Compose:
 

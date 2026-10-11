@@ -32,13 +32,16 @@ src/customer_segmentation/
     stability.py        # multi-seed + subsample ARI
     traditional.py      # K-Means, GMM, Hierarchical sweeps
     autoencoder.py      # AE train + cluster latent
+    champion.py         # ChampionModel.load / encode / score
+    segment_intel.py    # naming rules, personas, decision map
     viz.py              # save PNG figures
-    registry.py         # write champion artifacts + manifest
+    registry.py         # write champion artifacts + manifest + catalog
   pipelines/
     run_berka_segmentation.py
-  features/build_berka_features.py   # + has_loan / has_card
+  features/build_berka_features.py   # + has_loan / has_card + transform_
   data/berka_dataset_loader.py       # berka-dataset path + loan/card
-  cli.py                             # bcs segment-berka
+  serve/app.py                       # FastAPI → ChampionModel
+  cli.py                             # bcs segment-berka | champion-info | score-berka
 ```
 
 ## Artifact layout
