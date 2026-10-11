@@ -12,6 +12,7 @@ dependencies = [
   "pandas>=2.1",
   "numpy>=1.26",
   "scikit-learn>=1.4",
+  "joblib>=1.3",
   "pyyaml>=6.0",
   "fastapi>=0.110",
   "uvicorn[standard]>=0.27",
@@ -20,6 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.3"]
+data = ["kaggle>=1.6"]
 
 [project.scripts]
 bcs = "customer_segmentation.cli:main"
