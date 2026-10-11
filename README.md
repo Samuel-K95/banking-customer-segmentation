@@ -51,14 +51,45 @@ banking-customer-segmentation/
 └── tests/
 ```
 
-## Docker Setup (Data Layer)
+## Docker Setup
 
-To run the full data ingestion and feature engineering pipeline in an isolated container:
+One image, two layers (see `docker-compose.yml`).
+
+### Data layer (ingest + features)
 
 ```bash
-# Build the image
-docker build -t data-layer .
+docker compose build
+docker compose run --rm data-layer
+```
 
-# Run the pipeline (make sure your ~/.kaggle/kaggle.json is configured on the host)
-docker run --rm -v ~/.kaggle:/root/.kaggle data-layer
+Equivalent one-off (legacy):
+
+```bash
+docker build -t bcs-platform .
+docker run --rm -v "%CD%/data:/app/data" -v "%USERPROFILE%/.kaggle:/root/.kaggle" bcs-platform
+```
+
+### Segmentation layer (Track C bake-off + champion_v1)
+
+Requires Berka CSVs already under `data/raw/berka-dataset/` (run the data layer first, or mount existing data).
+
+```bash
+docker compose run --rm segmentation-layer
+```
+
+Outputs land on the host via volume mounts:
+
+- `artifacts/experiments/comparison_board_track_c.csv`
+- `artifacts/segmentation/champion_v1/` (assignments, metrics, figures, manifest)
+- `data/processed/track_c_berka_*.csv`
+
+Without Compose:
+
+```bash
+docker run --rm ^
+  -v "%CD%/data:/app/data" ^
+  -v "%CD%/artifacts:/app/artifacts" ^
+  -v "%CD%/configs:/app/configs" ^
+  -e MPLBACKEND=Agg ^
+  bcs-platform ./scripts/run_segmentation_layer.sh
 ```

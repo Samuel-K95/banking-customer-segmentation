@@ -22,6 +22,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.3"]
+# Local AE training without Docker (Docker image installs CPU torch separately)
+segmentation = ["torch>=2.1"]
 
 [project.scripts]
 bcs = "customer_segmentation.cli:main"

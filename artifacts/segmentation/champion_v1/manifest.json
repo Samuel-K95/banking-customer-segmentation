@@ -4,7 +4,7 @@
   "method": "ae_kmeans",
   "model_version": "v1",
   "feature_version": "berka_rfm_product_v1",
-  "registered_at": "2026-10-11T17:57:25.779818+00:00",
+  "registered_at": "2026-10-11T20:20:22.642526+00:00",
   "tag": "prod_segmentation_v1",
   "n_customers": 4500,
   "n_segments": 6,

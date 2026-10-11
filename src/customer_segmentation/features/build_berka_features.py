@@ -139,3 +139,9 @@ def build_and_save_berka_features(
     bundle.interpretable.to_csv(out / "track_c_berka_interpretable.csv", index=False)
     bundle.model.to_csv(out / "track_c_berka_model.csv", index=False)
     return bundle
+
+
+if __name__ == "__main__":
+    print("Building Berka features...")
+    result = build_and_save_berka_features()
+    print(f"Done: {len(result.interpretable)} accounts -> data/processed/")

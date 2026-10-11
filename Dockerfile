@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-# Install system dependencies
+# System deps (curl for uv; build tools keep some scientific wheels happy)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
@@ -13,18 +13,23 @@ WORKDIR /app
 # Copy dependency files first
 COPY pyproject.toml uv.lock requirements.txt ./
 
-# Copy the source code BEFORE syncing, as uv sync installs the project itself (needs README and src/)
+# Copy the source code BEFORE syncing (uv sync installs the project)
 COPY . .
 
-# Sync dependencies using uv (creates a virtual environment automatically in .venv)
+# Sync project deps, then add tooling used by each layer
 RUN uv sync --frozen && \
-    uv pip install kaggle
+    uv pip install kaggle && \
+    # CPU PyTorch for Autoencoder track (keeps image smaller than CUDA wheels)
+    uv pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-# Set up the data directories
-RUN mkdir -p data/raw data/processed
+# Runtime directories (overridden by compose volume mounts in practice)
+RUN mkdir -p data/raw data/processed artifacts/experiments artifacts/segmentation
 
-# Make the run script executable
-RUN chmod +x scripts/run_data_layer.sh
+RUN chmod +x scripts/run_data_layer.sh scripts/run_segmentation_layer.sh
 
-# Default command
+# Headless matplotlib inside containers
+ENV MPLBACKEND=Agg
+ENV PYTHONUNBUFFERED=1
+
+# Default remains the data layer for backward compatibility with README examples
 CMD ["./scripts/run_data_layer.sh"]

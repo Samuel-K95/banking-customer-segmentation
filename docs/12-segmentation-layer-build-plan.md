@@ -68,10 +68,21 @@ artifacts/
 
 ## Incremental phases
 
-1. **Modules + configs** (this PR slice)
-2. **Berka pipeline CLI run** → populate artifacts
-3. **Docs** — segment count justification + champion.yaml freeze
-4. Later (optional): Indian Bank / Santander pipelines using the same modules
+1. **Modules + configs** — done
+2. **Berka pipeline CLI run** → populate artifacts — done
+3. **Docs** — segment count justification + champion.yaml freeze — done
+4. **Docker** — `scripts/run_segmentation_layer.sh` + `docker compose` service `segmentation-layer` (same image as data-layer)
+5. Later (optional): Indian Bank / Santander pipelines using the same modules
+
+## Docker
+
+```bash
+docker compose build
+docker compose run --rm data-layer            # if Berka CSVs missing
+docker compose run --rm segmentation-layer    # bake-off + champion_v1
+```
+
+Image installs CPU PyTorch for the AE track. Volumes mount `data/`, `artifacts/`, `configs/`, `reports/`.
 
 ## Selection policy (declared)
 
