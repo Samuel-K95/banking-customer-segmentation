@@ -1,0 +1,48 @@
+version: 1
+experiment: berka_temporal_behavior_validation_v1
+
+snapshot:
+  feature_directory: data/processed/berka_snapshot/v1/asof_1997-12-31
+  as_of_date: "1997-12-31"
+baseline:
+  configuration: configs/models/berka_behavioral_baselines_v1_1.yaml
+  artifact_directory: artifacts/berka_behavioral_baselines/v1.1/asof_1997-12-31
+  assignment_seed: 42
+  k: 2
+  algorithms: [kmeans, gaussian_mixture]
+
+population:
+  minimum_tenure_days: 365
+  split_manifest: account_split.csv
+  expected_training_accounts: 2701
+  expected_held_out_accounts: 901
+
+windows:
+  prior_start_inclusive: "1997-01-01"
+  prior_end_inclusive: "1997-12-31"
+  evaluation_start_inclusive: "1998-01-01"
+  evaluation_end_inclusive: "1998-12-31"
+
+outcomes:
+  credit_types: [PRIJEM, CREDIT]
+  debit_types: [VYDAJ, VYBER, WITHDRAWAL]
+  amount_policy: absolute source amount; type determines direction
+  undefined_statistics: missing, never imputed or replaced by zero
+  inactive_account_counts_and_totals: zero
+  active_month_frequency: missing when active_months is zero
+  negative_balance_frequency: missing when no valid balance is observed
+  regularity: median and sample standard deviation of transaction-date gaps
+
+uncertainty:
+  method: deterministic account bootstrap percentile interval
+  repetitions: 2000
+  seed: 20261012
+  confidence_level: 0.95
+
+artifacts:
+  output_directory: artifacts/berka_temporal_behavior_validation/v1/asof_1997-12-31
+  save_account_outcomes: true
+  save_segment_summaries: true
+  save_year_over_year_changes: true
+  save_bootstrap_contrasts: true
+  preserve_frozen_assignments: true
