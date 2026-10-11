@@ -1,14 +1,40 @@
-primary_source:
-  name: kaggle_bank_customer_segmentation
-  kaggle_slug: shivamb/bank-customer-segmentation
-  grain: customer  # analytical grain after aggregation
+# Data-layer settings. Paths are relative to the project root
+# (BCIP_PROJECT_DIR if set, otherwise the repo root).
 
 paths:
   raw_dir: data/raw
-  standardized_dir: artifacts/data/standardized
-  features_dir: artifacts/features
+  processed_dir: data/processed
   quality_dir: artifacts/quality
+  runs_dir: artifacts/runs
+
+sources:
+  indian_bank:
+    kaggle: shivamb/bank-customer-segmentation
+    files: [bank_transactions.csv]
+  santander:
+    kaggle_competition: santander-product-recommendation
+    kaggle_mirror: silviosantana/s-product-recomendation
+    files: [santander/train_ver2.csv]
+    snapshot_date: "2016-05-28"
+  berka:
+    kaggle: marceloventura/the-berka-dataset
+    files: [berka/trans.csv, berka/account.csv, berka/client.csv]
+
+# One feature track per source. Outputs land in processed_dir as
+# <output_prefix>_interpretable.csv and <output_prefix>_model.csv.
+tracks:
+  track_a:
+    source: indian_bank
+    output_prefix: track_a_features
+    id_column: CustomerID
+  track_b:
+    source: santander
+    output_prefix: track_b_features
+    id_column: customer_id
+  track_c:
+    source: berka
+    output_prefix: track_c_berka
+    id_column: account_id
 
 quality:
-  fail_on_duplicate_customer_id: true
   min_rows: 1000

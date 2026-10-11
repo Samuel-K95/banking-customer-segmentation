@@ -1,9 +1,15 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pandera.pandas as pa
 from sklearn.preprocessing import StandardScaler
+
+from customer_segmentation.config import source_files
+from customer_segmentation.data.indian_bank_dataset_loader import (
+    load_indian_bank_raw_data,
+)
+from customer_segmentation.features.io import save_matrices
 
 # Define Pandera Schema for the Interpretable Matrix
 track_a_schema = pa.DataFrameSchema({
@@ -93,19 +99,16 @@ def build_rfm_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         
     return interpretable_df, model_df
 
-if __name__ == "__main__":
-    from customer_segmentation.data.indian_bank_dataset_loader import (
-        load_indian_bank_raw_data,
-    )
-    
-    print("Loading raw data...")
-    raw_df = load_indian_bank_raw_data("data/raw/bank_transactions.csv")
+
+def run(out_dir: Path | None = None) -> dict:
+    """Track A end to end: load raw Indian Bank data, build features, save both matrices."""
+    (raw_csv,) = source_files("indian_bank")
+    print(f"Loading raw data from {raw_csv}...")
+    raw_df = load_indian_bank_raw_data(raw_csv)
     print("Building features...")
     interpretable_df, model_df = build_rfm_features(raw_df)
-    
-    os.makedirs("data/processed", exist_ok=True)
-    
-    # Save both versions per the data layer plan
-    interpretable_df.to_csv("data/processed/track_a_features_interpretable.csv", index=False)
-    model_df.to_csv("data/processed/track_a_features_model.csv", index=False)
-    print("Saved interpretable and model matrices to data/processed/")
+    return save_matrices("track_a", interpretable_df, model_df, out_dir)
+
+
+if __name__ == "__main__":
+    run()

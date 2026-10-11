@@ -1,9 +1,13 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pandera.pandas as pa
 from sklearn.preprocessing import StandardScaler
+
+from customer_segmentation.config import source_files
+from customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
+from customer_segmentation.features.io import save_matrices
 
 # Pandera Schema
 track_c_schema = pa.DataFrameSchema({
@@ -76,15 +80,16 @@ def build_berka_features(trans_df: pd.DataFrame, account_df: pd.DataFrame) -> tu
     
     return interpretable_df, model_df
 
-if __name__ == "__main__":
-    from customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
-    
-    print("Loading raw Berka dataset...")
-    trans_df, account_df, _ = load_berka_raw_data("data/raw/berka")
+
+def run(out_dir: Path | None = None) -> dict:
+    """Track C end to end: load the Berka tables, build features, save both matrices."""
+    berka_dir = source_files("berka")[0].parent
+    print(f"Loading raw Berka dataset from {berka_dir}...")
+    trans_df, account_df, _ = load_berka_raw_data(berka_dir)
     print("Building Berka features...")
     interpretable_df, model_df = build_berka_features(trans_df, account_df)
+    return save_matrices("track_c", interpretable_df, model_df, out_dir)
 
-    os.makedirs("data/processed", exist_ok=True)
-    interpretable_df.to_csv("data/processed/track_c_berka_interpretable.csv", index=False)
-    model_df.to_csv("data/processed/track_c_berka_model.csv", index=False)
-    print("Saved interpretable and model matrices to data/processed/")
+
+if __name__ == "__main__":
+    run()

@@ -1,9 +1,13 @@
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pandera.pandas as pa
 from sklearn.preprocessing import StandardScaler
+
+from customer_segmentation.config import load_data_config, source_files
+from customer_segmentation.data.santander_dataset_loader import load_santander_raw_data
+from customer_segmentation.features.io import save_matrices
 
 # Define Pandera Schema for the Interpretable Matrix
 track_b_schema = pa.DataFrameSchema({
@@ -78,19 +82,17 @@ def build_product_portfolio_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd
         
     return interpretable_df, model_df
 
-if __name__ == "__main__":
-    from customer_segmentation.data.santander_dataset_loader import (
-        load_santander_raw_data,
-    )
-    
-    print("Loading raw Santander dataset (with chunking and target date filtering)...")
-    raw_df = load_santander_raw_data("data/raw/santander/train_ver2.csv", target_date="2016-05-28")
-    
+
+def run(out_dir: Path | None = None) -> dict:
+    """Track B end to end: load the Santander snapshot, build features, save both matrices."""
+    (raw_csv,) = source_files("santander")
+    snapshot_date = load_data_config()["sources"]["santander"]["snapshot_date"]
+    print(f"Loading raw Santander dataset from {raw_csv} (snapshot {snapshot_date}, chunked)...")
+    raw_df = load_santander_raw_data(raw_csv, target_date=snapshot_date)
     print("Building features...")
     interpretable_df, model_df = build_product_portfolio_features(raw_df)
-    
-    os.makedirs("data/processed", exist_ok=True)
-    
-    interpretable_df.to_csv("data/processed/track_b_features_interpretable.csv", index=False)
-    model_df.to_csv("data/processed/track_b_features_model.csv", index=False)
-    print("Saved interpretable and model matrices to data/processed/")
+    return save_matrices("track_b", interpretable_df, model_df, out_dir)
+
+
+if __name__ == "__main__":
+    run()
