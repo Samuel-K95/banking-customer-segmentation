@@ -59,6 +59,45 @@ To run the full data ingestion and feature engineering pipeline in an isolated c
 # Build the image
 docker build -t data-layer .
 
-# Run the pipeline (make sure your ~/.kaggle/kaggle.json is configured on the host)
-docker run --rm -v ~/.kaggle:/root/.kaggle data-layer
+# Run the pipeline (make sure your Kaggle credentials are in ~/.kaggle on the host).
+# Mount data/ so the downloads and the processed matrices survive the container.
+docker run --rm -v ~/.kaggle:/root/.kaggle -v "$PWD/data:/app/data" data-layer
 ```
+
+Without Docker (needs the `kaggle` CLI on your PATH):
+
+```bash
+uv sync --extra dev
+bash scripts/run_data_layer.sh
+uv run pytest
+```
+
+The script stops at the first failing step. Santander is downloaded from the
+competition when your Kaggle account has accepted its rules, otherwise from a public
+mirror of the same `train_ver2.csv`.
+
+## Airflow (data-layer DAG)
+
+`pipelines/airflow/` runs the same steps as an Airflow 3 DAG, `bcip_data_layer`:
+
+```text
+download_<source> → check_raw_<source> → build_track_<x>   (one chain per dataset, in parallel)
+                                                    └──► dq_report
+```
+
+- Each task calls the project's own functions, and the repo is mounted into the
+  containers, so code changes need no rebuild.
+- `check_raw_*` fails on missing files or columns and records a SHA-256 for each raw file.
+- `dq_report` writes `artifacts/quality/dq_report_<run_id>.json` (plus `dq_report_latest.json`)
+  and fails the run if any track breaks a gate in `configs/data.yaml` (`quality:`).
+
+```bash
+cd pipelines/airflow
+cp .env.example .env               # set AIRFLOW_UID to `id -u`
+docker compose up -d --build       # UI: http://localhost:8080 (airflow / airflow)
+docker compose exec airflow-scheduler airflow dags unpause bcip_data_layer
+docker compose exec airflow-scheduler airflow dags trigger bcip_data_layer
+docker compose down                # stop; add -v to also drop Airflow's database
+```
+
+Downloads are skipped when the files are already in `data/raw/`.

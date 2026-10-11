@@ -69,7 +69,7 @@ The entire Data Layer is fully containerized. A next-generation ML Engineer or D
 To execute the entire ingest, quality validation, and feature building lifecycle, simply run:
 ```bash
 docker build -t data-layer .
-docker run --rm -v ~/.kaggle:/root/.kaggle data-layer
+docker run --rm -v ~/.kaggle:/root/.kaggle -v "$PWD/data:/app/data" data-layer
 ```
 *(The `run_data_layer.sh` script automatically orchestrates the download of all three datasets via the Kaggle API and runs the respective PyTorch/Sklearn feature builders).*
 

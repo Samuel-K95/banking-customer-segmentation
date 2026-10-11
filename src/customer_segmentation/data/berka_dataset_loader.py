@@ -1,5 +1,7 @@
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
+
 
 def load_berka_raw_data(berka_dir: str = "data/raw/berka") -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
@@ -14,10 +16,10 @@ def load_berka_raw_data(berka_dir: str = "data/raw/berka") -> tuple[pd.DataFrame
         
     # The Berka dataset files are typically delimited by ';' or ','
     try:
-        trans_df = pd.read_csv(path / "trans.csv", sep=";")
+        trans_df = pd.read_csv(path / "trans.csv", sep=";", low_memory=False)
     except FileNotFoundError:
         # Sometimes Kaggle extracts them without .csv or with different separators, handle gracefully
-        trans_df = pd.read_csv(path / "trans.asc", sep=";")
+        trans_df = pd.read_csv(path / "trans.asc", sep=";", low_memory=False)
         
     try:
         account_df = pd.read_csv(path / "account.csv", sep=";")

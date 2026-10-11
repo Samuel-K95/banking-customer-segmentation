@@ -1,12 +1,19 @@
-import pandas as pd
+from pathlib import Path
+
 import numpy as np
-from datetime import datetime
+import pandas as pd
+import pandera.pandas as pa
 from sklearn.preprocessing import StandardScaler
-import os
-import pandera as pa
+
+from customer_segmentation.config import source_files
+from customer_segmentation.data.indian_bank_dataset_loader import (
+    load_indian_bank_raw_data,
+)
+from customer_segmentation.features.io import save_matrices
 
 # Define Pandera Schema for the Interpretable Matrix
 track_a_schema = pa.DataFrameSchema({
+    "CustomerID": pa.Column(str, unique=True, nullable=False),
     "Age": pa.Column(float, pa.Check.in_range(18.0, 100.0), nullable=True, coerce=True),
     "AccountBalance": pa.Column(float, nullable=False, coerce=True),
     "Transaction_Count": pa.Column(int, pa.Check.greater_than_or_equal_to(1), nullable=False, coerce=True),
@@ -18,18 +25,15 @@ def build_rfm_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     df = df.dropna().copy()
     
     # Demographics
-    try:
-        df['DOB'] = pd.to_datetime(df['CustomerDOB'], format='%d/%m/%y', errors='coerce')
-        df.loc[df['DOB'].dt.year > 2005, 'DOB'] -= pd.DateOffset(years=100)
-        df['Age'] = 2016 - df['DOB'].dt.year
-        df['Age'] = np.where((df['Age'] < 18) | (df['Age'] > 100), np.nan, df['Age'])
-    except Exception:
-        pass
+    df['DOB'] = pd.to_datetime(df['CustomerDOB'], format='%d/%m/%y', errors='coerce')
+    df.loc[df['DOB'].dt.year > 2005, 'DOB'] -= pd.DateOffset(years=100)
+    df['Age'] = 2016 - df['DOB'].dt.year
+    df['Age'] = np.where((df['Age'] < 18) | (df['Age'] > 100), np.nan, df['Age'])
 
     if 'CustGender' in df.columns:
         df = pd.get_dummies(df, columns=['CustGender'], drop_first=True, dtype=int)
         
-    tier_1 = ['MUMBAI', 'DELHI', 'BANGALORE', 'CHENNAI', 'HYDERABAD', 'KOLKATA', 'PUNE', 'AHMEDABAD']
+    tier_1 = ['MUMBAI', 'DELHI', 'NEW DELHI', 'BANGALORE', 'CHENNAI', 'HYDERABAD', 'KOLKATA', 'PUNE', 'AHMEDABAD']
     if 'CustLocation' in df.columns:
         df['Is_Tier_1_City'] = df['CustLocation'].str.upper().isin(tier_1).astype(int)
 
@@ -65,7 +69,7 @@ def build_rfm_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     if gender_col:
         agg_dict['Gender_M'] = (gender_col, 'first')
 
-    customer_df = df.groupby('CustomerID').agg(**agg_dict)
+    customer_df = df.groupby('CustomerID').agg(**agg_dict).reset_index()
     customer_df['Std_Transaction_Amt'] = customer_df['Std_Transaction_Amt'].fillna(0)
     customer_df = customer_df.dropna()
     customer_df['Recency_Days'] = (max_date - customer_df['Last_Transaction']).dt.days
@@ -95,17 +99,16 @@ def build_rfm_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
         
     return interpretable_df, model_df
 
-if __name__ == "__main__":
-    from src.customer_segmentation.data.indian_bank_dataset_loader import load_indian_bank_raw_data
-    
-    print("Loading raw data...")
-    raw_df = load_indian_bank_raw_data("data/raw/bank_transactions.csv")
+
+def run(out_dir: Path | None = None) -> dict:
+    """Track A end to end: load raw Indian Bank data, build features, save both matrices."""
+    (raw_csv,) = source_files("indian_bank")
+    print(f"Loading raw data from {raw_csv}...")
+    raw_df = load_indian_bank_raw_data(raw_csv)
     print("Building features...")
     interpretable_df, model_df = build_rfm_features(raw_df)
-    
-    os.makedirs("data/processed", exist_ok=True)
-    
-    # Save both versions per the data layer plan
-    interpretable_df.to_csv("data/processed/track_a_features_interpretable.csv", index=False)
-    model_df.to_csv("data/processed/track_a_features_model.csv", index=False)
-    print("Saved interpretable and model matrices to data/processed/")
+    return save_matrices("track_a", interpretable_df, model_df, out_dir)
+
+
+if __name__ == "__main__":
+    run()
