@@ -1,12 +1,15 @@
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
 import os
-import pandera as pa
+
+import numpy as np
+import pandas as pd
+import pandera.pandas as pa
+from sklearn.preprocessing import StandardScaler
 
 # Define Pandera Schema for the Interpretable Matrix
 track_b_schema = pa.DataFrameSchema({
-    "age": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=True, coerce=True),
+    "customer_id": pa.Column(int, unique=True, nullable=False, coerce=True),
+    "age": pa.Column(float, pa.Check.in_range(0.0, 100.0), nullable=True, coerce=True),
+    "seniority_months": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=True, coerce=True),
     "gross_income": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=True, coerce=True),
     "total_products_owned": pa.Column(float, pa.Check.greater_than_or_equal_to(0.0), nullable=False, coerce=True)
 })
@@ -17,6 +20,11 @@ def build_product_portfolio_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd
     
     df_current['age'] = pd.to_numeric(df_current['age'], errors='coerce')
     df_current['seniority_months'] = pd.to_numeric(df_current['seniority_months'], errors='coerce')
+
+    # The raw file uses -999999 as a "missing" code for seniority, and has ages up to 164.
+    # Treat both as missing so they get median-imputed instead of wrecking the scaler.
+    df_current.loc[df_current['seniority_months'] < 0, 'seniority_months'] = np.nan
+    df_current.loc[df_current['age'] > 100, 'age'] = np.nan
     
     if 'province_name' in df_current.columns:
         province_medians = df_current.groupby('province_name')['gross_income'].transform('median')
@@ -71,7 +79,9 @@ def build_product_portfolio_features(df: pd.DataFrame) -> tuple[pd.DataFrame, pd
     return interpretable_df, model_df
 
 if __name__ == "__main__":
-    from src.customer_segmentation.data.santander_dataset_loader import load_santander_raw_data
+    from customer_segmentation.data.santander_dataset_loader import (
+        load_santander_raw_data,
+    )
     
     print("Loading raw Santander dataset (with chunking and target date filtering)...")
     raw_df = load_santander_raw_data("data/raw/santander/train_ver2.csv", target_date="2016-05-28")

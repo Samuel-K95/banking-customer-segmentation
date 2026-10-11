@@ -1,8 +1,9 @@
-import pandas as pd
-import numpy as np
-from sklearn.preprocessing import StandardScaler
 import os
-import pandera as pa
+
+import numpy as np
+import pandas as pd
+import pandera.pandas as pa
+from sklearn.preprocessing import StandardScaler
 
 # Pandera Schema
 track_c_schema = pa.DataFrameSchema({
@@ -76,17 +77,14 @@ def build_berka_features(trans_df: pd.DataFrame, account_df: pd.DataFrame) -> tu
     return interpretable_df, model_df
 
 if __name__ == "__main__":
-    from src.customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
+    from customer_segmentation.data.berka_dataset_loader import load_berka_raw_data
     
     print("Loading raw Berka dataset...")
-    try:
-        trans_df, account_df, _ = load_berka_raw_data("data/raw/berka")
-        print("Building Berka features...")
-        interpretable_df, model_df = build_berka_features(trans_df, account_df)
-        
-        os.makedirs("data/processed", exist_ok=True)
-        interpretable_df.to_csv("data/processed/track_c_berka_interpretable.csv", index=False)
-        model_df.to_csv("data/processed/track_c_berka_model.csv", index=False)
-        print("Saved interpretable and model matrices to data/processed/")
-    except FileNotFoundError as e:
-        print(f"Error: {e}")
+    trans_df, account_df, _ = load_berka_raw_data("data/raw/berka")
+    print("Building Berka features...")
+    interpretable_df, model_df = build_berka_features(trans_df, account_df)
+
+    os.makedirs("data/processed", exist_ok=True)
+    interpretable_df.to_csv("data/processed/track_c_berka_interpretable.csv", index=False)
+    model_df.to_csv("data/processed/track_c_berka_model.csv", index=False)
+    print("Saved interpretable and model matrices to data/processed/")

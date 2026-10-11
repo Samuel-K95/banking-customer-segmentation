@@ -59,6 +59,19 @@ To run the full data ingestion and feature engineering pipeline in an isolated c
 # Build the image
 docker build -t data-layer .
 
-# Run the pipeline (make sure your ~/.kaggle/kaggle.json is configured on the host)
-docker run --rm -v ~/.kaggle:/root/.kaggle data-layer
+# Run the pipeline (make sure your Kaggle credentials are in ~/.kaggle on the host).
+# Mount data/ so the downloads and the processed matrices survive the container.
+docker run --rm -v ~/.kaggle:/root/.kaggle -v "$PWD/data:/app/data" data-layer
 ```
+
+Without Docker (needs the `kaggle` CLI on your PATH):
+
+```bash
+uv sync --extra dev
+bash scripts/run_data_layer.sh
+uv run pytest
+```
+
+The script stops at the first failing step. Santander is downloaded from the
+competition when your Kaggle account has accepted its rules, otherwise from a public
+mirror of the same `train_ver2.csv`.
