@@ -1,0 +1,89 @@
+version: 1
+track: track_a
+description: >-
+  Task 09 matched, leakage-safe CPU autoencoder comparison on the Task 08 2+
+  population, nine-feature train-fitted preprocessing, manifests, and holdout.
+
+data:
+  raw_transactions_file: data/raw/bank_transactions.csv
+  interpretable_file: data/processed/track_a_features_interpretable.csv
+  feature_contract_file: configs/models/feature_contracts.yaml
+  identifier_column: CustomerID
+  row_count: 837951
+  chunk_rows: 50000
+  as_of_date: "2016-11-01"
+  feature_order:
+    - AccountBalance
+    - Transaction_Count
+    - Avg_Transaction_Amt
+    - Std_Transaction_Amt
+    - Total_Spend
+    - Avg_Spend_Ratio
+    - Recency_Days
+    - Weekend_Spend_Ratio
+    - Night_Spend_Ratio
+
+task08:
+  run_id: task08_track_a_p2_20261011T135839451060Z_f80fa838
+  cohort: two_plus
+  minimum_transactions: 2
+  preprocessing_variant: nine_feature_trainfit
+  training_rows: 50000
+  evaluation_rows: 10000
+  train_manifests:
+    "42": artifacts/experiments/samples/task08_track_a_p2_20261011T135839451060Z_f80fa838/two_plus_train_seed42_n50000.csv
+    "2024": artifacts/experiments/samples/task08_track_a_p2_20261011T135839451060Z_f80fa838/two_plus_train_seed2024_n50000.csv
+  evaluation_manifest: artifacts/experiments/samples/task08_track_a_p2_20261011T135839451060Z_f80fa838/two_plus_evaluation_n10000.csv
+  preprocessors:
+    "42": artifacts/models/p2_leakage_safe/task08_track_a_p2_20261011T135839451060Z_f80fa838/task08_track_a_p2_20261011T135839451060Z_f80fa838_two_plus_nine_feature_trainfit_seed42_preprocessor.joblib
+    "2024": artifacts/models/p2_leakage_safe/task08_track_a_p2_20261011T135839451060Z_f80fa838/task08_track_a_p2_20261011T135839451060Z_f80fa838_two_plus_nine_feature_trainfit_seed2024_preprocessor.joblib
+  comparison_board: artifacts/experiments/comparison_board.csv
+  audit_directory: artifacts/diagnostics/track_a/task08_track_a_p2_20261011T135839451060Z_f80fa838/ratio_clip_audit_20261011
+
+sampling:
+  seeds: [42, 2024]
+  internal_validation_fraction: 0.1
+  internal_validation_seed_offset: 91731
+
+autoencoder:
+  input_dim: 9
+  hidden_dims: [32, 16]
+  latent_dim: 4
+  optimizer: AdamW
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  loss: SmoothL1Loss
+  huber_beta: 1.0
+  batch_size: 512
+  max_epochs: 100
+  early_stopping_patience: 10
+  early_stopping_min_delta: 0.00001
+  loss_divergence_factor: 100.0
+  max_loss: 1000000.0
+  device: cpu
+  num_threads: 1
+  deterministic_algorithms: true
+
+clustering:
+  algorithm: KMeans
+  k_values: [2, 3]
+  n_init: 10
+  max_iter: 300
+  init: k-means++
+  algorithm_variant: lloyd
+
+metrics:
+  silhouette_max_rows: 3000
+  silhouette_seed: 13579
+  original_space: task09_p2_original_nine_trainfit_9d
+  latent_space: task09_scaled_latent_4d
+
+execution:
+  model_directory: artifacts/models/task09_autoencoder
+  history_directory: artifacts/experiments/task09_autoencoder/history
+  internal_split_directory: artifacts/experiments/samples/task09_autoencoder
+  assignment_directory: artifacts/segments/candidates
+  profile_directory: artifacts/experiments/task09_autoencoder/profiles
+  run_metadata_directory: artifacts/experiments/run_metadata
+  diagnostic_directory: artifacts/diagnostics/track_a
+  mlflow_experiment: track-a-task09-final-autoencoder
