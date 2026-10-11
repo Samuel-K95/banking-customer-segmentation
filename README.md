@@ -100,5 +100,4 @@ docker compose exec airflow-scheduler airflow dags trigger bcip_data_layer
 docker compose down                # stop; add -v to also drop Airflow's database
 ```
 
-Kaggle credentials are mounted read-only from `~/.kaggle` (override with `KAGGLE_DIR`).
 Downloads are skipped when the files are already in `data/raw/`.
