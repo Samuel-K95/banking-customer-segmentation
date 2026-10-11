@@ -1,0 +1,126 @@
+version: 1.1
+experiment: berka_behavioral_baselines_v1_1
+description: >-
+  Account-grain K-Means and diagonal-covariance Gaussian Mixture baselines on
+  the 1997-12-31 Berka snapshot. All fitting uses a train-only preprocessing
+  pipeline and a shared deterministic account holdout.
+
+data:
+  snapshot_directory: data/processed/berka_snapshot/v1/asof_1997-12-31
+  as_of_date: "1997-12-31"
+  minimum_tenure_days: 365
+  identifier_column: account_id
+  expected_snapshot_rows: 4500
+  output_directory: artifacts/berka_behavioral_baselines/v1.1/asof_1997-12-31
+
+split:
+  training_fraction: 0.75
+  random_seed: 8675309
+
+features:
+  selected:
+    - account_tenure_days
+    - recency_days
+    - credit_frequency_per_day
+    - debit_frequency_per_day
+    - gross_money_movement
+    - net_cash_flow
+    - transaction_amount_median
+    - balance_std
+    - negative_balance_frequency
+    - interarrival_days_median
+    - interarrival_days_std
+    - recent_90d_transaction_frequency_per_day
+    - activity_change_count
+  derived:
+    gross_money_movement: credit_amount_total + debit_amount_total
+  positive_log1p:
+    - account_tenure_days
+    - recency_days
+    - credit_frequency_per_day
+    - debit_frequency_per_day
+    - gross_money_movement
+    - transaction_amount_median
+    - balance_std
+    - interarrival_days_median
+    - interarrival_days_std
+    - recent_90d_transaction_frequency_per_day
+  signed_asinh:
+    - net_cash_flow
+    - activity_change_count
+  bounded_unchanged:
+    - negative_balance_frequency
+  clipping_quantiles: [0.01, 0.99]
+  excluded:
+    - account_id: identifier, never a clustering input
+    - credit_transaction_share: strongly redundant with debit frequency (absolute Spearman correlation 0.854 in training split)
+    - balance_median: strongly redundant with balance_std (absolute Spearman correlation 0.816); retained for profiles, excluded from model inputs
+    - credit_amount_total: paired with debit total as gross_money_movement to avoid separate correlated weights
+    - debit_amount_total: paired with credit total as gross_money_movement to avoid separate correlated weights
+    - activity_change_ratio: redundant with activity_change_count and undefined when prior-period activity is zero
+    - observation_days: tenure plus one; deterministic duplicate of account_tenure_days
+    - has_90d_history: constant within the eligible population
+    - has_365d_history: constant within the eligible population
+    - transaction_count: strongly related to transaction frequency and tenure
+    - credit_transaction_count: count features are exposure-sensitive and redundant with tenure-normalized frequency
+    - debit_transaction_count: count features are exposure-sensitive and redundant with tenure-normalized frequency
+    - unclassified_transaction_count: constant zero in the validated snapshot
+    - debit_transaction_share: complementary to credit_transaction_share
+    - transaction_amount_mean: redundant transaction-size summary versus median
+    - transaction_amount_std: redundant transaction-size summary
+    - transaction_amount_p90: redundant transaction-size summary
+    - transaction_amount_max: redundant transaction-size summary
+    - balance_mean: redundant level statistic versus balance median
+    - negative_balance_count: exposure-dependent counterpart to negative_balance_frequency
+    - interarrival_days_mean: redundant with median inter-arrival time
+    - recent_90d_transaction_count: count is exposure-sensitive; recent frequency is selected
+    - recent_90d_credit_count: recent directional activity summarized by frequency
+    - recent_90d_debit_count: recent directional activity summarized by frequency
+    - recent_90d_credit_total: redundant recent flow summary
+    - recent_90d_debit_total: redundant recent flow summary
+    - recent_90d_net_cash_flow: redundant recent flow summary
+    - recent_window_days_observed: constant 90 in eligible population
+    - prior_90d_transaction_count: used to derive activity change
+    - prior_90d_credit_total: redundant prior-period flow summary
+    - prior_90d_debit_total: redundant prior-period flow summary
+  diagnostics:
+    correlations: spearman
+    outliers: Tukey 1.5-IQR count, diagnostic only (no train/test data removal)
+
+preprocessing:
+  imputation: training median after feature-specific transforms
+  scaling: StandardScaler fitted on training accounts
+  fit_scope: training accounts only
+  transforms:
+    positive_skewed: log1p, followed by training-fitted 1st/99th percentile clipping
+    signed_heavy_tailed: asinh, followed by training-fitted 1st/99th percentile clipping
+    bounded_negative_balance_frequency: unchanged before training-fitted clipping and scaling
+
+models:
+  seeds: [42, 2024, 123]
+  cluster_counts: [2, 3, 4, 5, 6]
+  kmeans:
+    n_init: 10
+    max_iter: 500
+    algorithm: lloyd
+  gaussian_mixture:
+    covariance_type: diag
+    n_init: 3
+    max_iter: 500
+    tolerance: 0.001
+    regularization: 0.00001
+
+evaluation:
+  split: held_out_accounts
+  silhouette_rows: all
+  tiny_cluster_threshold_percent: 5.0
+  severe_cluster_threshold_percent: 1.0
+  stability: pairwise_adjusted_rand_index_across_seeds_on_same_holdout
+  unstable_pairwise_mean_ari_threshold: 0.75
+
+artifacts:
+  save_candidate_models: true
+  save_holdout_assignments: true
+  save_train_fitted_preprocessor: true
+  save_feature_diagnostics: true
+  separate_from_experiment_ledger: true
