@@ -5,20 +5,34 @@ paths:
   raw_dir: data/raw
   processed_dir: data/processed
   quality_dir: artifacts/quality
-  runs_dir: artifacts/runs
 
+# `required_columns` is what the raw check (validate/raw_checks.py) looks for in each
+# file header before any feature code runs; `sep` is the file's delimiter.
 sources:
   indian_bank:
     kaggle: shivamb/bank-customer-segmentation
     files: [bank_transactions.csv]
+    sep: ","
+    required_columns:
+      bank_transactions.csv: [TransactionID, CustomerID, CustomerDOB, CustGender, CustLocation,
+                              CustAccountBalance, TransactionDate, TransactionTime, "TransactionAmount (INR)"]
   santander:
     kaggle_competition: santander-product-recommendation
     kaggle_mirror: silviosantana/s-product-recomendation
     files: [santander/train_ver2.csv]
+    sep: ","
     snapshot_date: "2016-05-28"
+    required_columns:
+      santander/train_ver2.csv: [fecha_dato, ncodpers, age, antiguedad, renta, segmento, sexo, nomprov,
+                                 ind_actividad_cliente, ind_cco_fin_ult1, ind_recibo_ult1]
   berka:
     kaggle: marceloventura/the-berka-dataset
     files: [berka/trans.csv, berka/account.csv, berka/client.csv]
+    sep: ";"
+    required_columns:
+      berka/trans.csv: [trans_id, account_id, date, type, amount, balance]
+      berka/account.csv: [account_id, date]
+      berka/client.csv: [client_id]
 
 # One feature track per source. Outputs land in processed_dir as
 # <output_prefix>_interpretable.csv and <output_prefix>_model.csv.
@@ -36,5 +50,8 @@ tracks:
     output_prefix: track_c_berka
     id_column: account_id
 
+# Gates for the DQ report (validate/report.py). A failing gate fails the run.
 quality:
   min_rows: 1000
+  max_null_cells: 0
+  max_duplicate_ids: 0
