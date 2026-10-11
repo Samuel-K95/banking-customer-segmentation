@@ -1,6 +1,8 @@
 # Track C — Berka Czech Bank Segmentation
 ### Banking Customer Segmentation · Week 4 Project Report
 
+> **This is the selected segmentation for the project.** Model `c_ae_lat4_k6` (autoencoder, 4 latent dimensions, 6 clusters). Santander scores higher on silhouette (0.512 versus 0.417). Berka is selected because it is the only track with both transaction behavior and product holding, which is what the assignment asks the system to explain. See `champion_recommendation.md`.
+
 ---
 
 ## Quick-Start Glossary
@@ -225,7 +227,7 @@ The final silhouette score is the average across all 4,500 accounts.
 | 0.50 to 0.70 | Strong, well-separated segments |
 | Above 0.70 | Near-perfect (rare in real data) |
 
-**Track C result: 0.417** — good. Accounts within each of the 6 clusters are meaningfully more similar to their group than to neighbouring groups. This is the second-best silhouette across all three tracks (Track B scored 0.512).
+**Track C result: 0.417** — good. Accounts within each of the 6 clusters are meaningfully more similar to their group than to neighbouring groups. Santander's best silhouette is 0.512. That gap is acknowledged in the champion memo and is not the selection rule. Berka's Davies-Bouldin score (0.731) is the best of the three tracks.
 
 ### Davies-Bouldin Index (range: 0 to ∞, lower is better)
 

@@ -1,6 +1,8 @@
 # Track A — Indian Bank Customer Segmentation
 ### Banking Customer Segmentation · Week 4 Project Report
 
+> **Starting dataset, not the selected segmentation.** The assignment names this Kaggle set as the primary source. Its best model is `a_ae_ld8_k6`, and the groups separate mainly by when customers transact. The segmentation the project uses is Track C (Berka), `c_ae_lat4_k6`, because that data contains both transaction behavior and product holding. See `champion_recommendation.md`.
+
 ---
 
 ## Quick-Start Glossary

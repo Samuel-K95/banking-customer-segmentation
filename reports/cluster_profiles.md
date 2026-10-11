@@ -401,14 +401,16 @@ The stability ARI of 1.000 means two independent models — each trained on a co
 
 ## Cross-Track Comparison: What drives clusters in each dataset?
 
-| Driver | Track A (Indian Bank) | Track B (Santander) | Track C (Berka) |
+**Selected segmentation: Track C.** Santander has the higher silhouette. Berka is the profile set a bank can act on, because the groups are defined by activity, balance, and whether the account holds a loan or a card. Indian Bank is the required starting dataset; its groups mostly separate by time of day.
+
+| Driver | Track A (Indian Bank) | Track B (Santander) | Track C (Berka) — selected |
 |---|---|---|---|
-| **Primary axis** | Transaction timing pattern (when they bank) | Seniority + product depth (how mature the relationship is) | Product ownership (loan/card yes/no) |
-| **Secondary axis** | Account balance | Income level | Activity level (active vs dormant) |
+| **Primary axis** | Transaction timing pattern (when they bank) | Seniority + product depth (how mature the relationship is) | Product ownership (loan/card yes/no) together with activity |
+| **Secondary axis** | Account balance | Income level | Balance and dormancy |
 | **Most distinctive segment** | Seg 5 (huge transactions, near-zero balance) | Seg 2 (10+ yr tenure, full product suite) | Seg 3 (dormant 1.5 years) |
 | **Highest value segment** | Seg 1 (highest balance, daytime wealthy) | Seg 2 (affluent long-tenure investors) | Seg 4 (highest balance, 100% card, zero debt) |
-| **Highest risk segment** | Seg 4 (young, low-balance, micro-transactions — future churn risk) | Seg 0 (no relationship depth — easy to switch) | Seg 5 (negative balance — default risk) |
-| **Biggest opportunity** | Seg 5 (high-volume pass-through → business banking) | Seg 1 → Seg 2 migration (pension + mortgage) | Seg 1 (loyal, active, zero products — first loan offer) |
+| **Highest risk segment** | Seg 4 (young, low-balance, micro-transactions — future churn risk) | Seg 0 (no relationship depth — easy to switch) | Seg 5 (negative balance) |
+| **Biggest opportunity** | Seg 5 (high-volume pass-through → business banking) | Seg 1 → Seg 2 migration (pension + mortgage) | Seg 1 (loyal, active, zero products — first product offer) |
 
 ---
 

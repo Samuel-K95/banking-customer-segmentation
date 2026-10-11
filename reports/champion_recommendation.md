@@ -7,7 +7,7 @@
 
 | Term | Plain-English Meaning |
 |---|---|
-| **Champion model** | The single best-performing model selected after comparing all candidates across all evaluation criteria |
+| **Champion model** | The segmentation we would hand a bank. Chosen for meaningful behavior, stability, interpretability, and banking use — not for the highest clustering score alone |
 | **Silhouette Score** | A number between −1 and +1 that measures how well-separated the clusters are. Customers closer to their own cluster than to any other cluster score near +1. Scores above 0.25 are acceptable; above 0.50 is strong |
 | **Davies-Bouldin Index** | Measures the ratio of cluster width (how spread-out accounts are within a cluster) to cluster separation (how far apart cluster centres are). Lower = better. Below 1.0 = clusters are wider apart than they are wide |
 | **Stability ARI** | Measures whether the exact same cluster structure emerges when two independent models are trained on different halves of the data. 1.0 = perfect agreement; 0.0 = no relationship (essentially random) |
@@ -22,85 +22,76 @@
 
 ## Bottom Line
 
-> **Use: Track B (Santander) + Autoencoder + K-Means, k=3, latent_dim=8**
-> **Model ID: `b_ae_lat8_k3`**
+> **Use: Track C (Berka) + Autoencoder + K-Means, k=6, latent_dim=4**
+> **Model ID: `c_ae_lat4_k6`**
 >
-> It has the best cluster quality, the largest real-world dataset, perfect reproducibility, and segments that map directly onto actionable banking strategies.
+> The assignment asks which customer groups exist, what **behaviors** distinguish them, and how a bank would use that. Berka is the only track that contains both transaction behavior and product holding. Santander has the higher silhouette, and that gap is real, but it is not large enough to override a dataset with no transactions.
 
 ---
 
 ## Cross-Track Comparison Table
 
-| Track | Dataset | Customers | Champion Model | Silhouette ↑ | DB Index ↓ | Stability ARI ↑ | k |
+| Track | Role | What the data actually contains | Champion model | Silhouette ↑ | DB Index ↓ | Stability ARI ↑ | k |
 |---|---|---|---|---|---|---|---|
-| **B — Santander** | Product portfolio | 931,000 | AE + K-Means (lat=8) | **0.512** | 0.891 | **1.000** | 3 |
-| C — Berka | Czech bank relational | 4,500 | AE + K-Means (lat=4) | 0.417 | **0.731** | 0.864* | 6 |
-| A — Indian Bank | Transaction ledger | 837,000 | AE + K-Means (lat=8) | 0.332 | 1.099 | — | 6 |
+| **C — Berka** | **Selected segmentation** | Transactions, balances, recency, tenure, loan, card | AE + K-Means (lat=4) | 0.417 | **0.731** | 0.864* | 6 |
+| B — Santander | Metric comparison only | Demographics and product ownership. No transactions | AE + K-Means (lat=8) | **0.512** | 0.891 | **1.000** | 3 |
+| A — Indian Bank | Required starting dataset | Transaction ledger, engineered into timing and spend features | AE + K-Means (lat=8) | 0.332 | 1.099 | — | 6 |
 
-↑ = higher is better. ↓ = lower is better. *Track C stability was measured for K-Means, not AE.
+↑ = higher is better. ↓ = lower is better. *Track C stability was measured for K-Means, not the autoencoder.
+
+The silhouette gap between Santander (0.512) and Berka (0.417) is 0.095. Both sit in the usable range. Berka has the best Davies-Bouldin score of the three (0.731), which means its clusters are the most compact relative to how far apart they sit.
 
 ---
 
-## Why Track B (Santander) Is the Champion
+## Why the highest score is not the selection
 
-### Reason 1: Best Silhouette Score — 0.512
+The assignment says the comparison exists so we can decide which approach produces groups that are meaningful, stable, interpretable, and useful for banking applications. The assessment criteria put more weight on reasoning and practical relevance than on a high clustering metric.
 
-**What silhouette means, precisely:** For every individual customer, the silhouette score computes how much closer that customer is to their own cluster than to the nearest other cluster. The overall score is the average across all customers.
+Santander wins silhouette and stability. Those numbers describe a clean split of customers by **what they already own** and how long they have been with the bank. The file has no payment amounts, no transaction dates, and no balance history. A bank cannot answer "what behaviors distinguish these groups?" from that file.
 
-- A score of 0.512 means that, on average across 931,000 customers, each customer is **51% more similar to their own cluster-mates than to customers in the next-closest cluster**
-- Scores above 0.50 indicate strong, commercially meaningful separation
-- Track A's 0.332 means customers are 33% more similar to their group — usable but weaker
-- Track C's 0.417 is good but still below the 0.50 threshold for "strong" clustering
+Indian Bank is the dataset the assignment names as the starting point, and it does contain transactions. After feature engineering, the six groups separated mainly by **when** people transact (night, weekend, weekday) rather than by a full picture of activity, balance, and products. Recency came out as 0 days in every segment. That is a real finding, and it is not enough for the behavioral applications the brief asks for. The assignment allows a second public dataset when the starting variables cannot support that analysis.
 
-### Reason 2: Perfect Stability — ARI = 1.000
+Berka is that second dataset. Each account has transaction counts, credits, withdrawals, balance, recency, account age, and whether a loan or a card exists.
 
-**What stability testing involves:**
-1. Take all 931,000 Santander customers
-2. Randomly split them into two groups of ~465,000 each
-3. Train the Autoencoder + K-Means model on each group completely independently
-4. Compare the cluster assignments: does each customer end up in the same type of group in both models?
-5. Repeat 10 times with different random splits
+---
 
-**What ARI = 1.000 means:** Every single one of 10 independent trials produced identical cluster assignments (with zero variance — ± 0.000). The 3-group structure is a genuine, stable property of the Santander customer base, not a result of random initialisation. This is the gold standard for reliability in unsupervised learning.
+## Why Track C (Berka) is the segmentation we use
 
-For context:
-- ARI = 1.000 → perfect match between two independent models
-- ARI = 0.800 → strong but not perfect consistency
-- ARI = 0.000 → cluster assignments are essentially random
+### 1. It is the only track with both behavior and products
 
-Track B's ARI = 1.000 is the highest possible score — an extremely rare result in real-world clustering.
+| What the brief asks for | Indian Bank | Santander | Berka |
+|---|---|---|---|
+| Transaction behavior | Timing of spend, weak recency signal | Not in the data | Count, credit, withdrawal, recency |
+| Balance patterns | Yes | Not in the data | Yes, including a negative-balance group |
+| Product usage | Not in the data | 18 product flags | Loan and card |
+| Engagement and lifecycle | Account age, but recency did not separate groups | Seniority in months | Recency and account age, including a group inactive for about 1.5 years |
 
-### Reason 3: Largest Validated Dataset — 931,000 Customers
+### 2. The groups are explainable in banking language
 
-Statistical patterns are more reliable when discovered on more data. Finding the same 3 customer types consistently across 931,000 real Santander customers is much stronger evidence than finding 6 clusters in 4,500 accounts (Track C) or 837,000 transaction records where individual customers may appear only once (Track A).
-
-The Track B model was trained on a random sample of 100,000 customers (for computational efficiency), but the full dataset of 931,000 was used for validation. The fact that ARI = 1.000 means the model generalises across the entire population.
-
-### Reason 4: Most Directly Actionable Segments
-
-The 3 Santander segments each have an immediate, obvious business use because the features used in clustering (product ownership) directly correspond to what the bank sells:
-
-| Segment | Who they are | What to do — immediately |
+| Segment | What makes them similar | Banking use |
 |---|---|---|
-| **0 — Mass Market** | Young, new customers, current account only, below-median income | Offer: savings account → first credit card |
-| **1 — Established Middle** | 3–5 year customers, 3–5 products, active and engaged | Offer: mortgage, pension plan, personal loan |
-| **2 — Affluent Senior** | 8–15 year customers, 6+ products, high income, investments | Retain: premium advisory, wealth management, estate planning |
+| 0 — New basic accounts | About 2 years old, light activity, almost no loan or card | Onboarding and a first card offer |
+| 1 — Long-tenure high-activity basic | About 4.5 years, 314 transactions, no loan and no card | Highest-value cross-sell: the relationship already exists |
+| 2 — Loan-centric | Every account has a loan, high flows, recently active | Card and protection offers tied to the loan |
+| 3 — Dormant | Last transaction about 539 days ago, only 27 transactions | Retention or closure, not a sales push |
+| 4 — Card-centric savers | Every account has a card, highest balance, no loan | Premium card and a first loan to solvent customers |
+| 5 — Financially stressed | Average balance about −6,500 CZK, withdrawals exceed credits | Service and risk review, not investment products |
 
-There is zero ambiguity about what to do with each segment — the product ownership features *are* the bank's product catalogue.
+### 3. The metric case is close, and Berka wins one of the three quality scores
 
----
+| | Santander `b_ae_lat8_k3` | Berka `c_ae_lat4_k6` |
+|---|---|---|
+| Silhouette | **0.512** | 0.417 |
+| Davies-Bouldin | 0.891 | **0.731** |
+| Stability | **ARI 1.000** on the autoencoder | ARI 0.864 on K-Means |
 
-## Why Track C Is Second-Best (and When to Use It Instead)
+A silhouette of 0.417 means an account is, on average, clearly closer to its own group than to the next group. It is below Santander's 0.512, and that should be stated. It is not a weak or arbitrary clustering. K-Means on the same Berka data reproduced the six-group structure with ARI 0.864 across random restarts, so the groups are not a one-off initialisation.
 
-Track C's Autoencoder (latent=4, k=6) achieved the **best Davies-Bouldin Index (0.731)** across all three tracks. DB measures cluster compactness relative to cluster separation — Track C's clusters are the most internally tight relative to the distances between them.
+### What we give up by choosing Berka
 
-**When to use Track C instead of B:**
-
-Track C is the only dataset that includes **loan repayment history with default status**. The `loan` table records whether each loan was repaid on time (`A`) or defaulted (`D`). This means Track C's segments can be **labelled with credit risk** — turning the unsupervised clustering into a supervised credit risk prediction tool.
-
-If your goal is building a **credit risk model** rather than a product recommendation engine, Track C is the right starting point.
-
-**Limitation:** 4,500 accounts is very small. Results may not generalise to a full bank's customer base without revalidation on larger data.
+- **Size.** 4,500 accounts versus about 931,000 Santander customers. The patterns are interpretable, and they still need revalidation on a larger, current book before anyone treats them as production policy.
+- **Era and place.** Czech bank, 1993–1998, amounts in koruna. The behaviors (dormant, overdrawn, loan-only, card-only) transfer as types of customers. The currency levels do not.
+- **Stability was not measured on the autoencoder itself.** The 0.864 ARI is the K-Means run. The selected model is the autoencoder. That gap should be closed before deployment by repeating the stability test on the latent representations.
 
 ---
 
@@ -147,50 +138,50 @@ The general principle: **latent dimensions should match the intrinsic dimensiona
 ```yaml
 # configs/champion.yaml
 
+# ─── Selection rule ──────────────────────────────────────────────
+# Highest silhouette is recorded, not used as the selection rule.
+# Selected for behavioral coverage, interpretability, and banking use.
+metric_leader: b_ae_lat8_k3     # Santander, silhouette 0.512 — comparison only
+
 # ─── Dataset ─────────────────────────────────────────────────────
-track: B
-dataset: santander_product_recommendation
-raw_file: train_ver2.csv
-training_sample_size: 100000    # rows sampled from 931,453 total
+track: C
+dataset: berka
+accounts: 4500
+role: selected_segmentation
+starting_dataset: indian_bank   # assignment primary source; supplemented
 
 # ─── Model architecture ──────────────────────────────────────────
 model: ae_kmeans                # Autoencoder + K-Means
-latent_dim: 8                   # 8 compressed dimensions (from 24 input features)
-encoder_layers: [24, 16, 8]     # progressive compression
-decoder_layers: [8, 16, 24]     # symmetric reconstruction path
-
-# ─── Clustering ──────────────────────────────────────────────────
-n_clusters: 3                   # k=3 (validated by ARI=1.000 stability test)
-kmeans_n_init: 20               # number of random restarts for K-Means
+latent_dim: 4                   # 4 compressed dimensions (from 8 input features)
+n_clusters: 6
 
 # ─── Performance ─────────────────────────────────────────────────
-silhouette: 0.512               # strong (>0.50 threshold)
-db_index: 0.891                 # good (<1.00 threshold)
-ch_index: 90835
-stability_ari: 1.000            # perfect stability
-run_id: b_ae_lat8_k3
+silhouette: 0.417
+db_index: 0.731                 # best Davies-Bouldin of the three tracks
+ch_index: 3474
+stability_ari_kmeans: 0.864     # measured on K-Means, not yet on the AE
+run_id: c_ae_lat4_k6
 
 # ─── Segment names ───────────────────────────────────────────────
 segments:
-  0: Mass Market                # young, basic, low-seniority
-  1: Established Middle         # multi-product, active, mid-tenure
-  2: Affluent Senior            # high-income, investments, 10+ yr tenure
+  0: New basic accounts
+  1: Long-tenure high-activity basic
+  2: Loan-centric
+  3: Dormant
+  4: Card-centric savers
+  5: Financially stressed
 ```
 
 ---
 
-## What to Do With This Result
+## What to do with this result
 
-1. **Export the trained model** — Save the AE encoder weights (`.pt` PyTorch file) and K-Means centroids (`.pkl` file) so new customers can be scored without retraining
+1. **Treat Berka as the segmentation the report defends.** Indian Bank stays as the required starting analysis. Santander stays as the metric and representation-learning comparison.
 
-2. **Build a scoring pipeline** — When a new customer record arrives:
-   - Extract the 24 features (age, seniority, product flags)
-   - Pass through the saved encoder → 8 latent numbers
-   - Assign to the nearest K-Means centroid → segment 0, 1, or 2
-   - Route to the corresponding marketing campaign
+2. **Export the trained model** — Save the Berka encoder weights and the six K-Means centroids so a new account can be scored from the same eight features: transaction count, balance, total credit, total withdrawal, recency, account age, loan flag, card flag.
 
-3. **Monthly refresh** — Santander's data was monthly snapshots. Re-run segment assignment each month. Track customers who move between segments (e.g. Segment 0 → 1 = progression; Segment 2 → 0 = churn risk)
+3. **Connect each segment to one banking action, with the evidence named.** Dormant accounts (segment 3, recency about 539 days) are a retention case. High-activity accounts with no loan and no card (segment 1) are a product case. Negative-balance accounts (segment 5) are a service and risk case. Do not present the clusters themselves as a churn or default predictor unless a separate supervised model is trained and evaluated.
 
-4. **A/B test the strategy** — Split each segment into a "treatment" group (receives the targeted campaign) and a "control" group (receives no specific campaign). Measure revenue uplift to quantify the business value of segmentation
+4. **Repeat the stability test on the autoencoder.** The published ARI of 0.864 is the K-Means run. The selected model is `c_ae_lat4_k6`.
 
-5. **Fairness audit** — Before deploying, check that segment membership is not strongly correlated with protected characteristics (gender, age band, region). A model that systematically assigns certain demographic groups to the lowest-value segment could create regulatory or ethical problems
+5. **Fairness check on behavior versus demographics.** Berka has district and client fields. Check whether segment membership is driven by region or age rather than by activity, balance, and product holding, and write down the limitation if it is.

@@ -1,6 +1,8 @@
 # Track B — Santander Product Portfolio Segmentation
 ### Banking Customer Segmentation · Week 4 Project Report
 
+> **Metric comparison, not the selected segmentation.** This track has the best silhouette (0.512) and perfect stability (ARI 1.000). The file has demographics and product ownership only — no transactions — so it cannot answer the assignment question about behavior. The selected model is Track C, `c_ae_lat4_k6`. See `champion_recommendation.md`.
+
 ---
 
 ## Quick-Start Glossary
@@ -306,19 +308,23 @@ The EDA findings drove every modelling decision:
 
 ---
 
-## 7. Why Track B Is the Strongest Result
+## 7. Where Track B sits in the project decision
 
-Comparing the champion models across all three tracks:
+Track B has the best silhouette (0.512) and perfect stability (ARI 1.000). Those are the strongest clustering numbers in the project. They are not the reason a dataset is selected.
 
-| Metric | Track B (Santander) | Track C (Berka) | Track A (Indian Bank) |
+| | Track B (Santander) | Track C (Berka) | Track A (Indian Bank) |
 |---|---|---|---|
 | Silhouette | **0.512** | 0.417 | 0.332 |
+| Davies-Bouldin | 0.891 | **0.731** | 1.099 |
 | Stability ARI | **1.000** | 0.864* | — |
-| Dataset size | **931,000** | 4,500 | 837,000 |
+| Transactions in the data | No | Yes | Yes |
+| Product holding in the data | Yes | Yes (loan, card) | No |
 
-*Track C stability was from K-Means, not AE.*
+*Track C stability was measured on K-Means, not the autoencoder.*
 
-Track B wins on every criterion: best cluster quality, perfect reproducibility, largest validated dataset, and most directly actionable segments (product ownership maps straight to cross-sell campaigns).
+Santander records who the customer is and which products they hold. It does not record amounts, dates, or balances. The three groups are product-maturity stages. That is a useful comparison, and it shows the autoencoder can separate a sparse product matrix. It cannot answer the assignment question about which **behaviors** distinguish customers.
+
+**Selected segmentation: Track C, `c_ae_lat4_k6`.** The silhouette gap versus Santander is 0.095. Berka is the track that contains both transaction behavior and product holding, which is what the brief asks the system to explain. The full reasoning is in `champion_recommendation.md`.
 
 ---
 
