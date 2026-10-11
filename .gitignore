@@ -19,6 +19,8 @@ data/external/**
 !data/external/.gitkeep
 artifacts/**
 !artifacts/.gitkeep
+!artifacts/experiments/
+!artifacts/experiments/*.csv
 experiments/**
 !experiments/.gitkeep
 !experiments/**/.gitkeep
@@ -26,6 +28,7 @@ experiments/**
 reports/**
 !reports/.gitkeep
 !reports/README.md
+!reports/*.md
 notebooks/**
 !notebooks/.gitkeep
 !notebooks/**/.gitkeep

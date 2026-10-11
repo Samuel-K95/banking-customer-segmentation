@@ -1,0 +1,17 @@
+run_id,track,method,k,latent_dim,silhouette,db_index,ch_index,stability_ari,recommended
+c_ae_lat4_k6,berka,ae_kmeans,6,4,0.4172,0.7307,3474.0,,False
+c_ae_lat8_k6,berka,ae_kmeans,6,8,0.3988,0.7594,2019.0,,False
+c_kmeans_k6,berka,kmeans,6,-,0.3633,0.8443,1727.0,0.864,False
+c_hier_k6,berka,hierarchical,6,-,0.3348,0.8917,1509.0,,True
+c_kmeans_k5,berka,kmeans,5,-,0.3323,0.9042,1505.0,,False
+c_kmeans_k8,berka,kmeans,8,-,0.3202,0.8574,1760.0,,False
+c_kmeans_k4,berka,kmeans,4,-,0.3195,1.0603,1415.0,,False
+c_kmeans_k3,berka,kmeans,3,-,0.3141,1.281,1383.0,,False
+c_gmm_k4,berka,gmm,4,-,0.3084,1.851,710.0,,False
+c_gmm_k5,berka,gmm,5,-,0.3079,1.3969,681.0,,False
+c_hier_k7,berka,hierarchical,7,-,0.3015,0.9522,1618.0,,False
+c_kmeans_k7,berka,kmeans,7,-,0.3,0.8972,1735.0,,False
+c_gmm_k3,berka,gmm,3,-,0.2711,2.2527,608.0,,False
+c_gmm_k8,berka,gmm,8,-,0.235,1.6581,546.0,,False
+c_gmm_k6,berka,gmm,6,-,0.2313,2.1983,806.0,,False
+c_gmm_k7,berka,gmm,7,-,0.2146,1.5579,558.0,,False

@@ -1,0 +1,17 @@
+run_id,track,method,k,latent_dim,silhouette,db_index,ch_index,stability_ari,recommended
+a_ae_ld8_k6,indian_bank,ae_kmeans,6,8,0.3317,1.0992,48528.0,,False
+a_ae_ld16_k6,indian_bank,ae_kmeans,6,16,0.1863,1.4079,23403.0,,False
+a_gmm_k3,indian_bank,gmm,3,-,0.1783,2.0183,6423.0,,False
+a_gmm_k7,indian_bank,gmm,7,-,0.1727,1.9325,5191.0,,False
+a_kmeans_k6,indian_bank,kmeans,6,-,0.1651,1.5487,1701.0,0.799,True
+a_kmeans_k4,indian_bank,kmeans,4,-,0.1646,1.9085,1735.0,,False
+a_kmeans_k3,indian_bank,kmeans,3,-,0.1615,2.0168,1902.0,,False
+a_kmeans_k7,indian_bank,kmeans,7,-,0.1592,1.9308,1364.0,,False
+a_kmeans_k5,indian_bank,kmeans,5,-,0.1588,1.995,1527.0,,False
+a_gmm_k6,indian_bank,gmm,6,-,0.1583,2.158,5226.0,,False
+a_kmeans_k8,indian_bank,kmeans,8,-,0.158,1.6965,1244.0,,False
+a_gmm_k5,indian_bank,gmm,5,-,0.156,2.2535,5278.0,,False
+a_gmm_k4,indian_bank,gmm,4,-,0.1502,2.0947,5847.0,,False
+a_hier_k6,indian_bank,hierarchical,6,-,0.1406,1.8562,628.0,,False
+a_hier_k7,indian_bank,hierarchical,7,-,0.1386,1.8682,586.0,,False
+a_gmm_k8,indian_bank,gmm,8,-,0.1342,1.978,4223.0,,False
