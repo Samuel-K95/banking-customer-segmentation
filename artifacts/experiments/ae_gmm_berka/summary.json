@@ -1,0 +1,40 @@
+{
+  "latent_dim": 4,
+  "k": 6,
+  "same_encoder": true,
+  "ari_kmeans_vs_gmm_labels": 0.4509,
+  "ae_kmeans": {
+    "silhouette": 0.4661717712879181,
+    "db_index": 0.6594413861192406,
+    "ch_index": 3774.916259765625,
+    "stability_ari": 0.9958619928581163,
+    "sizes": [
+      721,
+      1431,
+      671,
+      1623,
+      42,
+      12
+    ]
+  },
+  "ae_gmm": {
+    "silhouette": 0.2971847951412201,
+    "db_index": 1.9486841352345607,
+    "ch_index": 1573.1280517578125,
+    "stability_ari": 0.9249485286407102,
+    "sizes": [
+      1460,
+      668,
+      666,
+      185,
+      1459,
+      62
+    ],
+    "bic": 28465.3913893925,
+    "aic": 27894.73828125,
+    "low_confidence_frac": 0.009777777777777778
+  },
+  "higher_silhouette": "ae_kmeans",
+  "note": "Same AE latent space; only the clustering head differs. GMM adds soft membership (confidence = max component probability).",
+  "outputs": "artifacts\\experiments\\ae_gmm_berka"
+}

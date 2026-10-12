@@ -1,0 +1,49 @@
+{
+  "run_id": "c_ae_lat4_k6_leakage_safe",
+  "track": "berka",
+  "method": "ae_kmeans",
+  "model_version": "production_candidate_v1",
+  "feature_version": "berka_rfm_product_v1_leakage_safe",
+  "registered_at": "2026-10-12T10:18:41.480101+00:00",
+  "tag": "prod_segmentation_production_candidate_v1",
+  "n_customers": 3602,
+  "n_segments": 6,
+  "notes": "Production candidate promoted from leakage-safe twin. Freeze PROVISIONAL \u2014 compliance sign-off and true prospective vintage still required.",
+  "files": {
+    "assignments": "assignments.csv",
+    "profiles": "segment_profiles.csv",
+    "comparison_board": "comparison_board.csv",
+    "metrics": "metrics.json",
+    "feature_columns": "feature_columns.json",
+    "segment_catalog": "segment_catalog.json",
+    "decision_map": "decision_map.csv",
+    "scaler": "scaler.joblib",
+    "kmeans": "kmeans.joblib",
+    "encoder": "encoder.pt"
+  },
+  "load": "customer_segmentation.models.champion.ChampionModel.load",
+  "as_of_date": "1997-12-31",
+  "freeze_status": "PROVISIONAL",
+  "promoted_at": "2026-10-12T10:39:14.193387+00:00",
+  "source_research_dir": "artifacts\\segmentation\\research\\champion_v1_leakage_safe",
+  "archive_demo_dir": "artifacts\\segmentation\\product\\champion_v1",
+  "serving_contract": {
+    "as_of_date": "1997-12-31",
+    "model_version": "production_candidate_v1",
+    "minimum_tenure_days": 365,
+    "feature_columns": [
+      "Transaction_Count",
+      "Account_Balance",
+      "Total_Credit",
+      "Total_Withdrawal",
+      "Recency_Days",
+      "Account_Age_Days",
+      "has_loan",
+      "has_card"
+    ]
+  },
+  "rollback": {
+    "previous_demo_archive": "artifacts\\segmentation\\product\\champion_v1",
+    "instruction": "Point CLI/API back to archive or re-promote a prior hashed bundle"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "verdict": "PASS_WITH_LIMITATIONS",
+  "limitation": "1998 check is retrospective and uses the same Berka vintage that informed development; it is not an independent prospective holdout.",
+  "train_as_of": "1997-12-31",
+  "future_as_of": "1998-12-31",
+  "n_common_accounts": 3602,
+  "ari_replay_vs_stored_1997": 1.0,
+  "ari_1997_vs_1998_assignments": 0.5816687991295365,
+  "agreement_rate_1997_vs_1998": 0.8178789561354803,
+  "segment_profiles": [
+    {
+      "segment_id": 0,
+      "n_1997": 1176,
+      "n_1998": 567,
+      "n_stayed": 566,
+      "median_balance_1997": 26425.6,
+      "median_balance_1998": 23256.7,
+      "median_txn_1997": 92.0,
+      "median_txn_1998": 139.0
+    },
+    {
+      "segment_id": 1,
+      "n_1997": 1329,
+      "n_1998": 1860,
+      "n_stayed": 1314,
+      "median_balance_1997": 33119.8,
+      "median_balance_1998": 37874.15,
+      "median_txn_1997": 269.0,
+      "median_txn_1998": 297.0
+    },
+    {
+      "segment_id": 2,
+      "n_1997": 489,
+      "n_1998": 551,
+      "n_stayed": 483,
+      "median_balance_1997": 39814.5,
+      "median_balance_1998": 49966.4,
+      "median_txn_1997": 222.0,
+      "median_txn_1998": 289.0
+    },
+    {
+      "segment_id": 3,
+      "n_1997": 584,
+      "n_1998": 576,
+      "n_stayed": 570,
+      "median_balance_1997": 55404.35,
+      "median_balance_1998": 64477.75,
+      "median_txn_1997": 183.0,
+      "median_txn_1998": 259.5
+    },
+    {
+      "segment_id": 4,
+      "n_1997": 18,
+      "n_1998": 37,
+      "n_stayed": 8,
+      "median_balance_1997": -3133.0,
+      "median_balance_1998": -5284.5,
+      "median_txn_1997": 243.5,
+      "median_txn_1998": 236.0
+    },
+    {
+      "segment_id": 5,
+      "n_1997": 6,
+      "n_1998": 11,
+      "n_stayed": 5,
+      "median_balance_1997": 10074.15,
+      "median_balance_1998": 10000.0,
+      "median_txn_1997": 37.5,
+      "median_txn_1998": 23.0
+    }
+  ],
+  "generated_at": "2026-10-12T10:41:10.704766+00:00",
+  "model_version": "production_candidate_v1"
+}

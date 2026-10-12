@@ -1,7 +1,7 @@
 """Loadable champion segmentation model (AE encoder + K-Means + catalog).
 
 Usage:
-    champ = ChampionModel.load("artifacts/segmentation/champion_v1")
+    champ = ChampionModel.load("artifacts/segmentation/champion")
     out = champ.score(X_scaled)           # segment_id, confidence, name, play
     out = champ.score_interpretable(df)   # applies log1p + frozen scaler
 """
@@ -52,7 +52,7 @@ class ChampionModel:
 
     @classmethod
     def default_dir(cls, root: str | Path = ".") -> Path:
-        return Path(root) / "artifacts" / "segmentation" / "champion_v1"
+        return Path(root) / "artifacts" / "segmentation" / "champion"
 
     @classmethod
     def load(cls, artifact_dir: str | Path | None = None) -> ChampionModel:

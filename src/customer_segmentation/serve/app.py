@@ -1,101 +1,36 @@
-"""FastAPI — segment scoring via modular ChampionModel."""
+"""FastAPI app — champion model, decisions, reports, inference."""
 
 from __future__ import annotations
 
-from functools import lru_cache
-from pathlib import Path
-from typing import Any
-
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import FastAPI
 
 from customer_segmentation import __version__
+from customer_segmentation.serve.routers import decisions, inference, meta, model, reports
 
 app = FastAPI(
-    title="Banking Customer Segmentation and Behavioral Intelligence",
+    title="Banking Customer Segmentation API",
+    description=(
+        "Production-candidate champion API: model introspection, decision layer, "
+        "reports, single/batch inference with serving-contract enforcement."
+    ),
     version=__version__,
 )
 
+API_PREFIX = "/v1"
 
-class FeatureRow(BaseModel):
-    account_id: int | str | None = None
-    Transaction_Count: float
-    Account_Balance: float
-    Total_Credit: float
-    Total_Withdrawal: float
-    Recency_Days: float
-    Account_Age_Days: float
-    has_loan: float = Field(ge=0, le=1)
-    has_card: float = Field(ge=0, le=1)
+app.include_router(meta.router, prefix=API_PREFIX)
+app.include_router(model.router, prefix=API_PREFIX)
+app.include_router(decisions.router, prefix=API_PREFIX)
+app.include_router(reports.router, prefix=API_PREFIX)
+app.include_router(inference.router, prefix=API_PREFIX)
 
 
-class ScoreRequest(BaseModel):
-    customers: list[FeatureRow]
-
-
-@lru_cache(maxsize=1)
-def _champion():
-    from customer_segmentation.models.champion import ChampionModel
-
-    # Prefer cwd artifact; fall back to package-relative if needed
-    for cand in (
-        ChampionModel.default_dir("."),
-        Path(__file__).resolve().parents[3] / "artifacts" / "segmentation" / "champion_v1",
-    ):
-        if cand.exists():
-            return ChampionModel.load(cand)
-    raise FileNotFoundError("champion_v1 artifacts not found")
-
-
-@app.get("/v1/health")
-def health() -> dict[str, str]:
-    return {"status": "ok", "version": __version__}
-
-
-@app.get("/v1/champion")
-def champion_info() -> dict[str, Any]:
-    try:
-        return _champion().summary()
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
-
-
-@app.get("/v1/segments")
-def list_segments() -> dict[str, Any]:
-    try:
-        champ = _champion()
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
-    return {"segments": list(champ.catalog.get("segments", {}).values())}
-
-
-@app.get("/v1/segments/{segment_id}/applications")
-def segment_applications(segment_id: int) -> dict[str, Any]:
-    try:
-        champ = _champion()
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
-    meta = champ.catalog.get("segments", {}).get(str(segment_id))
-    if not meta:
-        raise HTTPException(status_code=404, detail=f"Unknown segment_id={segment_id}")
+@app.get("/")
+def root() -> dict:
     return {
-        "segment_id": segment_id,
-        "name": meta.get("name"),
-        "application": meta.get("decision"),
-        "one_liner": meta.get("one_liner"),
+        "service": "banking-customer-segmentation",
+        "version": __version__,
+        "health": "/v1/health",
+        "catalog": "/v1/catalog",
+        "docs": "/docs",
     }
-
-
-@app.post("/v1/customers/segment")
-def score_customers(body: ScoreRequest) -> dict[str, Any]:
-    try:
-        champ = _champion()
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=503, detail=str(e)) from e
-
-    import pandas as pd
-
-    rows = [c.model_dump() for c in body.customers]
-    df = pd.DataFrame(rows)
-    scored = champ.score_interpretable(df, id_col="account_id")
-    return {"model": champ.run_id, "n": len(scored), "assignments": scored.to_dict(orient="records")}

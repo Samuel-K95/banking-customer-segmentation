@@ -1,0 +1,52 @@
+run_id,family,method,k,silhouette,db_index,ch_index,n_clusters_found,noise_frac,min_frac,max_frac,size_ok,elapsed_s,notes,bic,latent_dim,hidden,noise_std,epochs,recon_loss
+hier_average_k6,classical,hierarchical,6,0.6559,0.4924,253.7,6,0.0,0.0004,0.9878,False,0.71,average linkage,,,,,,
+ae_lat4_h64_hdbscan,autoencoder,ae_hdbscan,4,0.5753,0.5742,3628.5,4,0.012444444444444444,0.0383,0.6868,False,5.59,deeper capacity,,4.0,64.0,0.0,40.0,0.00987
+ae_lat4_long_hdbscan,autoencoder,ae_hdbscan,4,0.5693,0.6239,4407.1,4,0.012444444444444444,0.0383,0.6868,False,10.18,longer train,,4.0,32.0,0.0,80.0,0.00795
+ae_lat4_h64_gmm_k6,autoencoder,ae_gmm,6,0.5346,1.6621,1667.1,6,0.0,0.0042,0.6453,False,5.68,deeper capacity,,4.0,64.0,0.0,40.0,0.00987
+ae_lat4_long_gmm_k6,autoencoder,ae_gmm,6,0.5188,1.6038,1867.9,6,0.0,0.0084,0.6471,False,10.23,longer train,,4.0,32.0,0.0,80.0,0.00795
+ae_lat4_h32_hdbscan,autoencoder,ae_hdbscan,4,0.5066,0.7608,3311.3,4,0.013333333333333334,0.0383,0.6867,False,6.13,current champion latent,,4.0,32.0,0.0,40.0,0.012
+dae_lat4_n01_hdbscan,autoencoder,ae_hdbscan,4,0.4813,0.8201,2962.3,4,0.013555555555555555,0.0383,0.6869,False,6.36,denoising noise=0.10,,4.0,32.0,0.1,40.0,0.01899
+ae_lat2_h32_kmeans_k6,autoencoder,ae_kmeans,6,0.4766,0.5726,7684.9,6,0.0,0.0027,0.4509,False,9.01,very compressed,,2.0,32.0,0.0,40.0,0.08472
+ae_lat2_h32_hdbscan,autoencoder,ae_hdbscan,5,0.4713,0.643,6888.3,5,0.015555555555555555,0.0093,0.6804,False,9.02,very compressed,,2.0,32.0,0.0,40.0,0.08472
+ae_lat4_long_kmeans_k6,autoencoder,ae_kmeans,6,0.4693,0.6522,4037.8,6,0.0,0.0027,0.3622,False,10.14,longer train,,4.0,32.0,0.0,80.0,0.00795
+ae_lat4_h32_kmeans_k6,autoencoder,ae_kmeans,6,0.464,0.6675,3641.0,6,0.0,0.0027,0.3602,False,5.98,current champion latent,,4.0,32.0,0.0,40.0,0.012
+dae_lat4_n02_hdbscan,autoencoder,ae_hdbscan,4,0.4623,0.8717,2663.6,4,0.013777777777777778,0.0383,0.6868,False,5.24,denoising noise=0.20,,4.0,32.0,0.2,40.0,0.03289
+ae_lat2_h32_gmm_k6,autoencoder,ae_gmm,6,0.4586,0.803,3644.2,6,0.0,0.008,0.6764,False,9.04,very compressed,,2.0,32.0,0.0,40.0,0.08472
+ae_lat4_h64_kmeans_k6,autoencoder,ae_kmeans,6,0.4526,0.6444,3482.7,6,0.0,0.0027,0.3964,False,5.58,deeper capacity,,4.0,64.0,0.0,40.0,0.00987
+dae_lat4_n01_kmeans_k6,autoencoder,ae_kmeans,6,0.4519,0.6839,3391.8,6,0.0,0.0027,0.3582,False,6.33,denoising noise=0.10,,4.0,32.0,0.1,40.0,0.01899
+dae_lat4_n02_kmeans_k6,autoencoder,ae_kmeans,6,0.45,0.685,3262.5,6,0.0,0.0027,0.36,False,5.19,denoising noise=0.20,,4.0,32.0,0.2,40.0,0.03289
+ae_lat4_long_minibatch_k6,autoencoder,ae_minibatch,6,0.4325,0.7974,2551.8,6,0.0,0.0378,0.3862,True,10.03,longer train,,4.0,32.0,0.0,80.0,0.00795
+ae_lat2_h32_minibatch_k6,autoencoder,ae_minibatch,6,0.4158,0.6962,4553.2,6,0.0,0.0091,0.2749,False,8.84,very compressed,,2.0,32.0,0.0,40.0,0.08472
+ae_lat16_h32_hdbscan,autoencoder,ae_hdbscan,5,0.4117,0.8799,1753.9,5,0.004888888888888889,0.0089,0.6809,False,5.98,near-identity risk,,16.0,32.0,0.0,40.0,0.00177
+ae_lat8_h32_kmeans_k6,autoencoder,ae_kmeans,6,0.3812,0.8077,2036.7,6,0.0,0.0027,0.3982,False,6.53,wider latent,,8.0,32.0,0.0,40.0,0.0054
+spectral_k6,classical,spectral,6,0.3785,0.961,1224.8,6,0.0,0.0091,0.3742,False,1.65,graph / manifold,,,,,,
+ae_lat16_h32_kmeans_k6,autoencoder,ae_kmeans,6,0.3779,0.823,2337.8,6,0.0,0.0027,0.39,False,5.68,near-identity risk,,16.0,32.0,0.0,40.0,0.00177
+ae_lat16_h32_gmm_k6,autoencoder,ae_gmm,6,0.3742,0.8296,2309.8,6,0.0,0.0027,0.3547,False,5.64,near-identity risk,,16.0,32.0,0.0,40.0,0.00177
+kmeans_k6,classical,kmeans,6,0.371,0.8114,1801.9,6,0.0,0.0027,0.3807,False,2.31,,,,,,,
+pca8_kmeans_k6,linear_rep,pca_kmeans,6,0.371,0.8114,1801.9,6,0.0,0.0027,0.3807,False,0.23,linear baseline vs AE,,8.0,,,,
+pca2_kmeans_k6,linear_rep,pca_kmeans,6,0.3578,0.856,3459.6,6,0.0,0.094,0.2296,True,0.27,linear baseline vs AE,,2.0,,,,
+pca4_kmeans_k6,linear_rep,pca_kmeans,6,0.3576,0.8131,2172.6,6,0.0,0.0027,0.3136,False,0.21,linear baseline vs AE,,4.0,,,,
+ae_lat4_h64_minibatch_k6,autoencoder,ae_minibatch,6,0.3551,0.8973,1922.7,6,0.0,0.0378,0.2649,True,5.42,deeper capacity,,4.0,64.0,0.0,40.0,0.00987
+ae_lat4_h32_minibatch_k6,autoencoder,ae_minibatch,6,0.3532,1.0622,1961.1,6,0.0,0.0967,0.2818,True,5.92,current champion latent,,4.0,32.0,0.0,40.0,0.012
+hier_ward_k6,classical,hierarchical,6,0.3378,0.8403,1536.3,6,0.0,0.0031,0.3678,False,0.68,ward,,,,,,
+dae_lat4_n02_minibatch_k6,autoencoder,ae_minibatch,6,0.323,1.2119,1721.4,6,0.0,0.0431,0.2553,True,5.05,denoising noise=0.20,,4.0,32.0,0.2,40.0,0.03289
+dae_lat4_n01_minibatch_k6,autoencoder,ae_minibatch,6,0.3219,1.255,1691.9,6,0.0,0.108,0.2173,True,6.22,denoising noise=0.10,,4.0,32.0,0.1,40.0,0.01899
+ae_lat8_h32_gmm_k6,autoencoder,ae_gmm,6,0.3219,1.6848,1051.9,6,0.0,0.0256,0.3604,False,7.06,wider latent,,8.0,32.0,0.0,40.0,0.0054
+ae_lat8_h32_hdbscan,autoencoder,ae_hdbscan,5,0.3208,1.0513,911.2,5,0.023555555555555555,0.0093,0.6746,False,6.62,wider latent,,8.0,32.0,0.0,40.0,0.0054
+gmm_bic_k5,classical,gmm_bic,5,0.3176,1.8566,581.0,5,0.0,0.0064,0.6507,False,0.35,BIC-scored GMM,-120977.9,,,,,
+gmm_k6,classical,gmm,6,0.307,2.1859,528.6,6,0.0,0.0116,0.6391,False,0.84,soft membership,,,,,,
+gmm_bic_k6,classical,gmm_bic,6,0.307,2.1859,528.6,6,0.0,0.0116,0.6391,False,0.6,BIC-scored GMM,-123612.5,,,,,
+hdbscan_default,density,hdbscan,6,0.3038,0.9637,828.9,6,0.014444444444444444,0.009,0.6688,False,0.55,noise allowed,,,,,,
+ae_lat16_h32_minibatch_k6,autoencoder,ae_minibatch,6,0.3018,1.0824,1779.6,6,0.0,0.0118,0.2398,False,5.59,near-identity risk,,16.0,32.0,0.0,40.0,0.00177
+hdbscan_small,density,hdbscan,6,0.3013,0.9783,831.1,6,0.011555555555555555,0.009,0.6675,False,0.69,finer density modes,,,,,,
+ae_lat4_h32_gmm_k6,autoencoder,ae_gmm,6,0.295,1.9403,1500.4,6,0.0,0.0111,0.3367,False,6.25,current champion latent,,4.0,32.0,0.0,40.0,0.012
+dae_lat4_n02_gmm_k6,autoencoder,ae_gmm,6,0.2925,1.6377,1491.6,6,0.0,0.0038,0.4111,False,5.4,denoising noise=0.20,,4.0,32.0,0.2,40.0,0.03289
+dae_lat4_n01_gmm_k6,autoencoder,ae_gmm,6,0.2889,1.8136,1486.0,6,0.0,0.0044,0.3764,False,6.56,denoising noise=0.10,,4.0,32.0,0.1,40.0,0.01899
+minibatch_kmeans_k6,classical,minibatch_kmeans,6,0.2772,1.0518,1097.7,6,0.0,0.148,0.1878,True,0.13,scalable K-Means,,,,,,
+gmm_bic_k3,classical,gmm_bic,3,0.2763,2.0035,598.1,3,0.0,0.0511,0.7591,False,0.15,BIC-scored GMM,-66646.4,,,,,
+birch_k6,classical,birch,6,0.2745,0.8072,1012.1,6,0.0,0.0011,0.6867,False,0.75,hierarchical CF-tree,,,,,,
+ae_lat8_h32_minibatch_k6,autoencoder,ae_minibatch,6,0.2716,1.1434,987.3,6,0.0,0.1429,0.218,True,6.29,wider latent,,8.0,32.0,0.0,40.0,0.0054
+gmm_bic_k4,classical,gmm_bic,4,0.2687,2.1,501.1,4,0.0,0.0267,0.6411,False,0.33,BIC-scored GMM,-94138.6,,,,,
+dbscan_eps_auto,density,dbscan,9,0.2046,0.8882,310.7,9,0.15733333333333333,0.0024,0.7479,False,0.43,eps≈0.45 from knn,,,,,,
+gmm_bic_k8,classical,gmm_bic,8,0.1761,1.8721,724.9,8,0.0,0.0091,0.3771,False,1.02,BIC-scored GMM,-129903.2,,,,,
+gmm_bic_k7,classical,gmm_bic,7,0.1748,2.2092,490.4,7,0.0,0.0124,0.3918,False,0.58,BIC-scored GMM,-128568.5,,,,,

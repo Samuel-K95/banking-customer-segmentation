@@ -1,0 +1,58 @@
+{
+  "run_id": "c_ae_lat4_k6_leakage_safe",
+  "method": "ae_kmeans",
+  "k": 6,
+  "latent_dim": 4,
+  "as_of_date": "1997-12-31",
+  "minimum_tenure_days": 365,
+  "n_eligible": 3602,
+  "n_train": 2701,
+  "n_holdout": 901,
+  "split_seed": 8675309,
+  "holdout_silhouette": 0.4591466188430786,
+  "holdout_db_index": 0.6229882125486007,
+  "holdout_ch_index": 852.2150268554688,
+  "train_silhouette": 0.4604634940624237,
+  "silhouette": 0.4591466188430786,
+  "db_index": 0.6229882125486007,
+  "ch_index": 852.2150268554688,
+  "stability_ari_ae_latent_kmeans": 0.9974820320540685,
+  "stability_ari_ae_latent_kmeans_min": 0.9962230480811027,
+  "stability_ari_raw_kmeans_k6": 1.0,
+  "parallel_kmeans_k2_holdout": {
+    "silhouette": 0.2967728910901734,
+    "db_index": 1.4088334320535112,
+    "ch_index": 208.11946301955882
+  },
+  "parallel_kmeans_k2_seed_ari": {
+    "mean_ari": 0.99802553559045,
+    "min_ari": 0.9970383033856751,
+    "n_pairs": 3.0
+  },
+  "size": {
+    "counts": [
+      1176,
+      1329,
+      489,
+      584,
+      18,
+      6
+    ],
+    "fractions": [
+      0.32648528595224874,
+      0.36896168795113826,
+      0.13575791227096057,
+      0.16213214880621876,
+      0.004997223764575236,
+      0.001665741254858412
+    ],
+    "ok": false,
+    "min_frac": 0.001665741254858412,
+    "max_frac": 0.36896168795113826
+  },
+  "low_confidence_frac": 0.05302609661299278,
+  "tiny_segments_policy": "exception_queue_not_mass_campaign",
+  "selection_policy": "Leakage-safe AE lat=4 k=6 remains the product path; k=2 on the same matrix is the research twin (not a CRM replacement).",
+  "freeze_status": "PROVISIONAL",
+  "model_version": "production_candidate_v1"
+}

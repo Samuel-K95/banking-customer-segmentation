@@ -1,4 +1,4 @@
-"""Generate notebooks/10_Champion_Berka_Decision_Layer.ipynb"""
+"""Generate notebooks/champion/10_Champion_Berka_Decision_Layer.ipynb"""
 
 from __future__ import annotations
 
@@ -24,7 +24,7 @@ cells = [
     md(
         """# 10 — Champion Segmentation → Decision Layer (Berka)
 
-**Champion:** `c_ae_lat4_k6` = Autoencoder (latent=4) + K-Means **k=6** on Track C (Berka)
+**CURRENT CHAMPION:** `c_ae_lat4_k6_leakage_safe` = leakage-safe Autoencoder (latent=4) + K-Means **k=6** on Berka
 
 This notebook is the single place to see the full story:
 
@@ -36,7 +36,7 @@ This notebook is the single place to see the full story:
 
 Aligned to `03-segmentation-layer.md` and `04-analysis-and-decision-layer.md`.
 
-**Artifacts:** `artifacts/segmentation/champion_v1/` · **Reports:** `champion_recommendation.md`, `cluster_profiles.md`
+**Model:** `artifacts/segmentation/champion/` · **Decisions:** `artifacts/decision/champion/` · **Reports:** `reports/champion/` · **One-pager:** `CURRENT_CHAMPION.md`
 """
     ),
     md(
@@ -70,10 +70,15 @@ from sklearn.decomposition import PCA
 from sklearn.tree import DecisionTreeClassifier, export_text
 from sklearn.metrics import silhouette_score, davies_bouldin_score
 
-ROOT = Path("..").resolve()
+# Resolve repo root whether cwd is repo, notebooks/, or notebooks/champion/
+_here = Path.cwd().resolve()
+ROOT = next(
+    (p for p in [_here, _here.parent, _here.parent.parent] if (p / "src" / "customer_segmentation").exists()),
+    _here,
+)
 sys.path.insert(0, str(ROOT / "src"))
 
-from customer_segmentation.features.build_berka_features import (
+from customer_segmentation.features.build_berka_segmentation_features import (
     MODEL_COLUMNS,
     build_and_save_berka_features,
 )
@@ -89,17 +94,19 @@ sns.set_context("notebook")
 RANDOM_STATE = 42
 np.random.seed(RANDOM_STATE)
 
-CHAMP = ROOT / "artifacts" / "segmentation" / "champion_v1"
+CHAMP = ROOT / "artifacts" / "segmentation" / "champion"
+DECISION = ROOT / "artifacts" / "decision" / "champion"
 FIG = CHAMP / "figures"
 FIG.mkdir(parents=True, exist_ok=True)
 OUT_NB = ROOT / "artifacts" / "experiments" / "champion_notebook"
 OUT_NB.mkdir(parents=True, exist_ok=True)
 
-RUN_ID = "c_ae_lat4_k6"
-print("ROOT   =", ROOT)
-print("CHAMP  =", CHAMP)
-print("TORCH  =", TORCH_OK)
-print("exists =", CHAMP.exists())
+RUN_ID = "c_ae_lat4_k6_leakage_safe"
+print("ROOT     =", ROOT)
+print("CHAMPION =", CHAMP)
+print("DECISION =", DECISION)
+print("TORCH    =", TORCH_OK)
+print("exists   =", CHAMP.exists())
 """
     ),
     md(
@@ -257,7 +264,7 @@ print(
     md(
         """## 4. Load champion via modular `ChampionModel`
 
-Production path: `ChampionModel.load(champion_v1)` — encoder + K-Means + scaler + segment catalog.
+Production path: `ChampionModel.load()` → `artifacts/segmentation/champion/` — encoder + K-Means + scaler + catalog.
 Notebooks should not re-implement scoring; they call this module.
 """
     ),
@@ -617,7 +624,7 @@ new / batch accounts
   → low confidence / stressed segment → human review queue
 ```
 
-Registered bundle: `artifacts/segmentation/champion_v1/` (`encoder.pt`, `kmeans.joblib`, `assignments.csv`, profiles).
+Registered bundle: `artifacts/segmentation/champion/` (`encoder.pt`, `kmeans.joblib`, `assignments.csv`, profiles).
 """
     ),
     code(
@@ -650,13 +657,14 @@ print("- Manifest:", manifest["run_id"], manifest.get("tag"))
     md(
         """## 12. Takeaways
 
-1. **Champion stays** `c_ae_lat4_k6` — Berka behavior + products beat Santander’s higher silhouette for the assignment’s banking questions.  
+1. **Current champion** is leakage-safe `c_ae_lat4_k6_leakage_safe` at `artifacts/segmentation/champion/`.  
 2. **EDA** shows correlated flows and sparse products — AE latent=4 is the right inductive bias.  
 3. **Six named segments** are explainable from recency, balance, activity, loan, and card.  
-4. **Decision map** gives each segment a different play, owner, KPI, and guardrail.  
-5. **Fairness:** demographics are out of the model matrix; still monitor district concentration and ban eligibility misuse.
+4. **Decision map** lives in `artifacts/decision/champion/` with owners, KPIs, and guardrails.  
+5. **Fairness:** demographics are out of the model matrix; still monitor district concentration and ban eligibility misuse.  
+6. **Freeze** is **PROVISIONAL** — see `reports/champion/02_freeze_readiness.md` and `CURRENT_CHAMPION.md`.
 
-Next: serve via API (`POST /v1/customers/segment`) or CRM batch export from `assignments.csv` + `decision_map.csv`.
+Next: `bcs champion-info` / API `POST /v1/customers/segment` (requires `model_version` + `as_of_date`).
 """
     ),
 ]
@@ -672,6 +680,12 @@ nb = {
     "cells": cells,
 }
 
-out = Path(__file__).resolve().parents[1] / "notebooks" / "10_Champion_Berka_Decision_Layer.ipynb"
+out = (
+    Path(__file__).resolve().parents[1]
+    / "notebooks"
+    / "champion"
+    / "10_Champion_Berka_Decision_Layer.ipynb"
+)
+out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(nb, indent=1), encoding="utf-8")
 print(f"Wrote {out} ({len(cells)} cells)")

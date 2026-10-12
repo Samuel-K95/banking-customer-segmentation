@@ -166,8 +166,8 @@ def section_page(pdf, page_title, page_subtitle, blocks):
 # DATA
 # ══════════════════════════════════════════════════════════════════════════════
 
-board_a = pd.read_csv("artifacts/experiments/comparison_board_track_a.csv")
-board_c = pd.read_csv("artifacts/experiments/comparison_board_track_c.csv")
+board_a = pd.read_csv("artifacts/experiments/bakeoffs/comparison_board_track_a.csv")
+board_c = pd.read_csv("artifacts/experiments/bakeoffs/comparison_board_track_c.csv")
 
 # Track B (Kaggle results)
 board_b_rows = [

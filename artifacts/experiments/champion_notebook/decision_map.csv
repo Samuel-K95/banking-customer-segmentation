@@ -1,0 +1,7 @@
+segment_id,segment,pct_book,evidence,play,owner,kpi,guardrail
+0,Card-centric active savers,16.02,High card penetration + highest balances + no loan,Premium card + first loan to solvent customers,Cards / Wealth,Interchange / premium upgrade; responsible first-loan take-up,Credit assessment still required
+1,New basic accounts,31.8,"Short tenure, low loan/card penetration, still recent activity",Onboarding + first card,CRM / Digital,Card attach rate; 90-day activation,Suitability checks; no aggressive credit
+2,Loan-centric high-volume,14.91,"~100% loan holding, high credit/withdrawal flows",Card attach + loan protection / refinance,Lending + Cards,Card penetration among borrowers; retention at refinance,Avoid over-leverage; PPI disclosure rules
+3,Long-tenure high-activity basic,36.07,Highest activity + long tenure + ~0 credit products,Priority cross-sell (card → personal loan),Product / CRM,Product/household lift; offer acceptance,Use txn history for pre-approve; consent + eligibility
+4,Financially stressed / overdraft risk,0.93,Negative mean balance; withdrawals ≥ credits,Service & risk review; budgeting tools,Risk / Customer Care,Overdraft cure rate; complaint reduction,Do NOT pitch investments; limit new unsecured credit
+5,Dormant long-term accounts,0.27,Recency >> other segments (months–years inactive),Win-back then closure path,Retention / Ops,Reactivation rate; dormant balance recovered / closed,Not a churn model — strategy from dormancy proxy only

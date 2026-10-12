@@ -12,7 +12,7 @@ from customer_segmentation.models.champion import ChampionModel
 from customer_segmentation.models.segment_intel import build_segment_catalog, name_from_centroid
 
 ROOT = Path(__file__).resolve().parents[1]
-CHAMP_DIR = ROOT / "artifacts" / "segmentation" / "champion_v1"
+CHAMP_DIR = ROOT / "artifacts" / "segmentation" / "champion"
 
 
 def test_name_from_centroid_rules():
@@ -60,13 +60,14 @@ def test_build_segment_catalog_keys():
     assert cat["segments"]["1"]["name"] == "Financially stressed / overdraft risk"
 
 
-@pytest.mark.skipif(not (CHAMP_DIR / "kmeans.joblib").exists(), reason="champion_v1 not registered")
+@pytest.mark.skipif(not (CHAMP_DIR / "kmeans.joblib").exists(), reason="champion bundle not registered")
 def test_champion_load_and_score():
     champ = ChampionModel.load(CHAMP_DIR)
     summary = champ.summary()
     assert summary["run_id"]
     assert summary["has_scaler"]
     assert summary["n_clusters"] == 6
+    assert "leakage_safe" in str(summary["run_id"]) or champ.model_version
 
     # score a tiny synthetic batch in interpretable scale
     rows = pd.DataFrame(

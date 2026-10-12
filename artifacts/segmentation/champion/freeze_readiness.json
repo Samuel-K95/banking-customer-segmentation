@@ -1,0 +1,63 @@
+{
+  "overall_verdict": "PROVISIONAL",
+  "champion_run_id": "c_ae_lat4_k6_leakage_safe",
+  "model_version": "production_candidate_v1",
+  "as_of_date": "1997-12-31",
+  "evaluated_at": "2026-10-12T10:54:28.886359+00:00",
+  "gates": {
+    "artifact_integrity": {
+      "verdict": "PASS",
+      "detail": "SHA-256 fingerprints in serving_contract.json"
+    },
+    "snapshot_split_train_only_fit": {
+      "verdict": "PASS",
+      "detail": "as_of=1997-12-31; tenure>=365; train=2701 holdout=901"
+    },
+    "exact_holdout_prediction_replay": {
+      "verdict": "PASS",
+      "detail": "Frozen encoder+KMeans reproduce held-out labels (see CI replay test)"
+    },
+    "segment_meaning": {
+      "verdict": "PASS",
+      "detail": "CRM personas + exception-queue policy for tiny stressed/dormant cells"
+    },
+    "fairness_owner_disponent": {
+      "verdict": "PASS",
+      "detail": "District fairness pack + OWNER/DISPONENT policy published; compliance sign-off PENDING"
+    },
+    "independent_temporal_validation": {
+      "verdict": "PASS_WITH_LIMITATIONS",
+      "detail": "1998 check is retrospective and uses the same Berka vintage that informed development; it is not an independent prospective holdout."
+    },
+    "serving_package": {
+      "verdict": "PASS",
+      "detail": "FastAPI enforces model_version+as_of_date; health exposes hashes; monitoring/segment-mix + rollback to product/ archive documented"
+    }
+  },
+  "serving_contract": {
+    "model_version": "production_candidate_v1",
+    "as_of_date": "1997-12-31",
+    "artifact_sha256": {
+      "scaler.joblib": "1ad6dc96713b0316028fb51d34be2a5d37667c157070bfe92ac6a78f5d6222ff",
+      "kmeans.joblib": "504583a9cb44d18612ac4a1a63c005a9ab2812b6038761c8a669797bf4d3f14c",
+      "encoder.pt": "ea2cf8a7978cafcbfae397483957118cd2df74dab0e3100353d55b44f61b8005",
+      "account_split.csv": "dba00059ee3157208912099c0b232dd5b566f6f93cc6861c29d955c06761a602",
+      "assignments.csv": "b3f8f1dc650fa14985eb4de2ccb6f1850ea00597026beb11b5543e616098f196"
+    }
+  },
+  "temporal_summary": {
+    "ari_1997_vs_1998": 0.5816687991295365,
+    "agreement_rate": 0.8178789561354803,
+    "n_common_accounts": 3602
+  },
+  "fairness_summary": {
+    "district_available": true,
+    "compliance_signoff": "PENDING",
+    "policy_doc": "reports\\track_c_berka\\production_owner_disponent_policy.md"
+  },
+  "not_fully_frozen_because": [
+    "Human compliance / model-risk sign-off still PENDING",
+    "Temporal validation is retrospective Berka 1998, not prospective/external",
+    "Must not use segment_id for credit eligibility, pricing, or collections"
+  ]
+}

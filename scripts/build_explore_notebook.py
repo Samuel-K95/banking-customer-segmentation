@@ -31,7 +31,7 @@ cells = [
 
 This notebook mirrors `customer_segmentation.pipelines.run_berka_explore` with richer plots so you can inspect every family.
 
-Related: `reports/berka_explore_findings.md`, `artifacts/experiments/berka_explore/`
+Related: `reports/track_c_berka/berka_explore_findings.md`, `artifacts/experiments/berka_explore/`
 """
     ),
     md("## 0. Setup"),
@@ -450,7 +450,7 @@ plt.show()
 5. **Registered champion AE(lat=4)+K-Means** stays the safe CRM choice (fixed k, stable, interpretable).
 6. **v2 candidates:** AE(h64 or long)+K-Means, or AE+HDBSCAN if you accept noise + variable k.
 
-Full write-up: `reports/berka_explore_findings.md`
+Full write-up: `reports/track_c_berka/berka_explore_findings.md`
 """
     ),
     code(

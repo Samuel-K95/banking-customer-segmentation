@@ -561,7 +561,7 @@ cells_06 = [
         "**Track:** A — RFM behavioral clustering \n",
         "**Data:** `data/processed/track_a_features_model.csv` (or raw fallback)\n",
         "**Methods:** K-Means · GMM · Hierarchical · Autoencoder+KMeans\n",
-        "**Output:** `artifacts/experiments/comparison_board_track_a.csv`\n",
+        "**Output:** `artifacts/experiments/bakeoffs/comparison_board_track_a.csv`\n",
         "\n",
         "Run cells top-to-bottom. Data loading auto-falls-back to raw if processed files are absent.\n"], "a00"),
     code(IMPORTS_A, "a01"),
@@ -1069,7 +1069,7 @@ IMPORTS_C = [
 
 LOAD_C = [
     "proc_c_model  = Path('../data/processed/track_c_berka_model.csv')",
-    "proc_c_interp = Path('../data/processed/track_c_berka_interpretable.csv')",
+    "proc_c_interp = Path('../data/processed/track_c/track_c_berka_interpretable.csv')",
     "",
     "if proc_c_model.exists() and proc_c_interp.exists():",
     "    df_model_c  = pd.read_csv(proc_c_model)",
@@ -1478,7 +1478,7 @@ cells_08 = [
         "**Track:** C — longitudinal RFM + product enrichment\n",
         "**Data:** `data/processed/track_c_berka_model.csv` (or raw berka CSVs fallback)\n",
         "**Methods:** K-Means · GMM (soft membership) · Hierarchical (full dendrogram) · AE optional\n",
-        "**Output:** `artifacts/experiments/comparison_board_track_c.csv`\n",
+        "**Output:** `artifacts/experiments/bakeoffs/comparison_board_track_c.csv`\n",
         "\n",
         "> **Recommended flag:** Hierarchical is the EDA prior for Track C (small N = 4500, longitudinal).\n",
         "> Running K-Means and GMM too for a complete comparison.\n"], "c00"),

@@ -1,0 +1,308 @@
+{
+  "behavior_vs_demographic": {
+    "model_features": [
+      "Transaction_Count",
+      "Account_Balance",
+      "Total_Credit",
+      "Total_Withdrawal",
+      "Recency_Days",
+      "Account_Age_Days",
+      "has_loan",
+      "has_card"
+    ],
+    "explicit_demographics_in_model": false,
+    "ablation_status": "Seg_behavior \u2248 Seg_full for the champion matrix because age/gender/district were never clustering inputs. Sensitivity to geography is monitored post-hoc via district concentration, not via re-clustering.",
+    "driver_audit": "Primary drivers are recency, balance sign/level, activity, and product flags (loan/card). District is not a model feature; any concentration is a usage risk."
+  },
+  "district_concentration": [
+    {
+      "segment_id": 5,
+      "segment_name": "Dormant long-term accounts",
+      "n": 12,
+      "n_districts": 10,
+      "max_district_share": 0.25,
+      "top_district_id": 47
+    },
+    {
+      "segment_id": 0,
+      "segment_name": "Card-centric active savers",
+      "n": 721,
+      "n_districts": 77,
+      "max_district_share": 0.154,
+      "top_district_id": 1
+    },
+    {
+      "segment_id": 4,
+      "segment_name": "Financially stressed / overdraft risk",
+      "n": 42,
+      "n_districts": 33,
+      "max_district_share": 0.1429,
+      "top_district_id": 1
+    },
+    {
+      "segment_id": 2,
+      "segment_name": "Loan-centric high-volume",
+      "n": 671,
+      "n_districts": 77,
+      "max_district_share": 0.1237,
+      "top_district_id": 1
+    },
+    {
+      "segment_id": 3,
+      "segment_name": "Long-tenure high-activity basic",
+      "n": 1623,
+      "n_districts": 77,
+      "max_district_share": 0.1183,
+      "top_district_id": 1
+    },
+    {
+      "segment_id": 1,
+      "segment_name": "New basic accounts",
+      "n": 1431,
+      "n_districts": 77,
+      "max_district_share": 0.1132,
+      "top_district_id": 1
+    }
+  ],
+  "representation": {
+    "available": true,
+    "top_districts": [
+      "1",
+      "70",
+      "74",
+      "54",
+      "64",
+      "72",
+      "68",
+      "5",
+      "46",
+      "52"
+    ],
+    "p_segment_given_district": [
+      {
+        "district_id": 1,
+        "0": 0.2,
+        "1": 0.292,
+        "2": 0.15,
+        "3": 0.347,
+        "4": 0.011,
+        "5": 0.0
+      },
+      {
+        "district_id": 5,
+        "0": 0.185,
+        "1": 0.246,
+        "2": 0.154,
+        "3": 0.415,
+        "4": 0.0,
+        "5": 0.0
+      },
+      {
+        "district_id": 46,
+        "0": 0.186,
+        "1": 0.458,
+        "2": 0.102,
+        "3": 0.254,
+        "4": 0.0,
+        "5": 0.0
+      },
+      {
+        "district_id": 52,
+        "0": 0.193,
+        "1": 0.281,
+        "2": 0.246,
+        "3": 0.263,
+        "4": 0.018,
+        "5": 0.0
+      },
+      {
+        "district_id": 54,
+        "0": 0.086,
+        "1": 0.375,
+        "2": 0.188,
+        "3": 0.344,
+        "4": 0.008,
+        "5": 0.0
+      },
+      {
+        "district_id": 64,
+        "0": 0.13,
+        "1": 0.304,
+        "2": 0.185,
+        "3": 0.37,
+        "4": 0.011,
+        "5": 0.0
+      },
+      {
+        "district_id": 68,
+        "0": 0.133,
+        "1": 0.325,
+        "2": 0.193,
+        "3": 0.349,
+        "4": 0.0,
+        "5": 0.0
+      },
+      {
+        "district_id": 70,
+        "0": 0.118,
+        "1": 0.355,
+        "2": 0.151,
+        "3": 0.368,
+        "4": 0.007,
+        "5": 0.0
+      },
+      {
+        "district_id": 72,
+        "0": 0.125,
+        "1": 0.341,
+        "2": 0.159,
+        "3": 0.375,
+        "4": 0.0,
+        "5": 0.0
+      },
+      {
+        "district_id": 74,
+        "0": 0.096,
+        "1": 0.348,
+        "2": 0.141,
+        "3": 0.393,
+        "4": 0.015,
+        "5": 0.007
+      }
+    ],
+    "p_district_given_segment": [
+      {
+        "segment_id": 0,
+        "1": 0.502,
+        "5": 0.054,
+        "46": 0.05,
+        "52": 0.05,
+        "54": 0.05,
+        "64": 0.054,
+        "68": 0.05,
+        "70": 0.081,
+        "72": 0.05,
+        "74": 0.059
+      },
+      {
+        "segment_id": 1,
+        "1": 0.356,
+        "5": 0.035,
+        "46": 0.059,
+        "52": 0.035,
+        "54": 0.105,
+        "64": 0.062,
+        "68": 0.059,
+        "70": 0.119,
+        "72": 0.066,
+        "74": 0.103
+      },
+      {
+        "segment_id": 2,
+        "1": 0.367,
+        "5": 0.044,
+        "46": 0.027,
+        "52": 0.062,
+        "54": 0.106,
+        "64": 0.075,
+        "68": 0.071,
+        "70": 0.102,
+        "72": 0.062,
+        "74": 0.084
+      },
+      {
+        "segment_id": 3,
+        "1": 0.386,
+        "5": 0.054,
+        "46": 0.03,
+        "52": 0.03,
+        "54": 0.088,
+        "64": 0.068,
+        "68": 0.058,
+        "70": 0.112,
+        "72": 0.066,
+        "74": 0.106
+      },
+      {
+        "segment_id": 4,
+        "1": 0.5,
+        "5": 0.0,
+        "46": 0.0,
+        "52": 0.083,
+        "54": 0.083,
+        "64": 0.083,
+        "68": 0.0,
+        "70": 0.083,
+        "72": 0.0,
+        "74": 0.167
+      },
+      {
+        "segment_id": 5,
+        "1": 0.0,
+        "5": 0.0,
+        "46": 0.0,
+        "52": 0.0,
+        "54": 0.0,
+        "64": 0.0,
+        "68": 0.0,
+        "70": 0.0,
+        "72": 0.0,
+        "74": 1.0
+      }
+    ]
+  },
+  "risk_register": [
+    {
+      "risk": "Using segments for credit eligibility or pricing",
+      "why": "Unsupervised clusters are not probability-of-default models",
+      "mitigation": "Forbid eligibility/pricing use; require supervised risk models + policy",
+      "severity": "critical"
+    },
+    {
+      "risk": "Over-contacting dormant or stressed customers with sales",
+      "why": "Wrong play drives complaints and harm",
+      "mitigation": "Decision map guardrails + hard suppress lists by segment",
+      "severity": "high"
+    },
+    {
+      "risk": "Treating stressed segment as undeserving of inclusion products",
+      "why": "Negative balance is a care signal, not a moral label",
+      "mitigation": "Hardship / budgeting pathways; ban investment pitches",
+      "severity": "high"
+    },
+    {
+      "risk": "Geographic proxy discrimination via district concentration",
+      "why": "District may correlate with socioeconomic status",
+      "mitigation": "Monitor district concentration; do not target by region from segment ID alone",
+      "severity": "medium"
+    },
+    {
+      "risk": "Owner vs disponent confusion on joint accounts",
+      "why": "Berka is account-grain; disp can attach multiple people",
+      "mitigation": "Account-level CRM only until explicit owner policy exists",
+      "severity": "medium"
+    },
+    {
+      "risk": "Tiny segments (stressed / dormant) driving unstable ops policy",
+      "why": "Small n \u2192 noisy centroids and overfit plays",
+      "mitigation": "Human review queue; do not automate high-stakes actions on tiny cells",
+      "severity": "medium"
+    },
+    {
+      "risk": "Historical Czech 1990s context generalized as modern policy",
+      "why": "Currency levels and era do not transfer",
+      "mitigation": "Treat segments as behavioral types; revalidate on current book",
+      "severity": "medium"
+    }
+  ],
+  "usage_constraints": [
+    "Allowed: CRM content targeting, journey design, service prioritization with guardrails",
+    "Forbidden: credit eligibility, pricing, collections aggression from segment ID alone",
+    "Required: human review for stressed + low-confidence members"
+  ],
+  "limitations": [
+    "No completed demographic fairness audit on age/gender (not in champion matrix)",
+    "Berka 1993\u20131998 Czech context; revalidate on current book before policy use",
+    "Tiny segments (stressed/dormant) need caution \u2014 small-n instability"
+  ]
+}

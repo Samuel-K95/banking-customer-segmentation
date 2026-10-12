@@ -1,0 +1,25 @@
+{
+  "model_version": "production_candidate_v1",
+  "as_of_date": "1997-12-31",
+  "minimum_tenure_days": 365,
+  "artifact_sha256": {
+    "scaler.joblib": "1ad6dc96713b0316028fb51d34be2a5d37667c157070bfe92ac6a78f5d6222ff",
+    "kmeans.joblib": "504583a9cb44d18612ac4a1a63c005a9ab2812b6038761c8a669797bf4d3f14c",
+    "encoder.pt": "ea2cf8a7978cafcbfae397483957118cd2df74dab0e3100353d55b44f61b8005",
+    "account_split.csv": "dba00059ee3157208912099c0b232dd5b566f6f93cc6861c29d955c06761a602",
+    "assignments.csv": "b3f8f1dc650fa14985eb4de2ccb6f1850ea00597026beb11b5543e616098f196"
+  },
+  "baseline_segment_mix": {
+    "0": 0.32648528595224874,
+    "1": 0.36896168795113826,
+    "2": 0.13575791227096057,
+    "3": 0.16213214880621876,
+    "4": 0.004997223764575236,
+    "5": 0.001665741254858412
+  },
+  "exception_segment_ids": [
+    4,
+    5
+  ],
+  "updated_at": "2026-10-12T10:39:16.253897+00:00"
+}

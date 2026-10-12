@@ -69,7 +69,7 @@ def run_berka_segmentation(
     """Full Track C pipeline: features → sweeps → AE → register champion."""
     artifact_root = Path(artifact_root)
     exp_dir = artifact_root / "experiments"
-    champ_dir = artifact_root / "segmentation" / "champion_v1"
+    champ_dir = artifact_root / "segmentation" / "archive" / "fullbook_demo"
     fig_dir = champ_dir / "figures"
     exp_dir.mkdir(parents=True, exist_ok=True)
     fig_dir.mkdir(parents=True, exist_ok=True)
@@ -232,7 +232,8 @@ def run_berka_segmentation(
                 row["recommended"] = False  # selection is policy, not notebook prior
 
     board = pd.DataFrame(rows).sort_values("silhouette", ascending=False).reset_index(drop=True)
-    board_path = exp_dir / "comparison_board_track_c.csv"
+    board_path = exp_dir / "bakeoffs" / "comparison_board_track_c.csv"
+    board_path.parent.mkdir(parents=True, exist_ok=True)
     board.to_csv(board_path, index=False)
     print(f"Saved comparison board -> {board_path}")
 

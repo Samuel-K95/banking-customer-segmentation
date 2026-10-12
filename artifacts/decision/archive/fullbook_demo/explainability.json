@@ -1,0 +1,145 @@
+{
+  "disclaimer": "Surrogate tree / importances explain segment labels for stakeholders; they are not the clustering objective.",
+  "feature_columns": [
+    "Transaction_Count",
+    "Account_Balance",
+    "Total_Credit",
+    "Total_Withdrawal",
+    "Recency_Days",
+    "Account_Age_Days",
+    "has_loan",
+    "has_card"
+  ],
+  "surrogate_rules": "|--- has_loan <= 0.50\n|   |--- has_card <= 0.50\n|   |   |--- Transaction_Count <= 205.50\n|   |   |   |--- Total_Withdrawal <= 491959.59\n|   |   |   |   |--- class: 1\n|   |   |   |--- Total_Withdrawal >  491959.59\n|   |   |   |   |--- class: 3\n|   |   |--- Transaction_Count >  205.50\n|   |   |   |--- Total_Withdrawal <= 150501.50\n|   |   |   |   |--- class: 1\n|   |   |   |--- Total_Withdrawal >  150501.50\n|   |   |   |   |--- class: 3\n|   |--- has_card >  0.50\n|   |   |--- Account_Balance <= 24966.10\n|   |   |   |--- class: 0\n|   |   |--- Account_Balance >  24966.10\n|   |   |   |--- class: 0\n|--- has_loan >  0.50\n|   |--- Account_Balance <= 14933.15\n|   |   |--- class: 2\n|   |--- Account_Balance >  14933.15\n|   |   |--- class: 2\n",
+  "surrogate_importance": [
+    {
+      "feature": "Transaction_Count",
+      "importance": 0.34668350413694005
+    },
+    {
+      "feature": "has_card",
+      "importance": 0.2984997422313511
+    },
+    {
+      "feature": "has_loan",
+      "importance": 0.26308039122073446
+    },
+    {
+      "feature": "Total_Withdrawal",
+      "importance": 0.08976582623635017
+    },
+    {
+      "feature": "Account_Balance",
+      "importance": 0.0019705361746242644
+    },
+    {
+      "feature": "Total_Credit",
+      "importance": 0.0
+    },
+    {
+      "feature": "Account_Age_Days",
+      "importance": 0.0
+    },
+    {
+      "feature": "Recency_Days",
+      "importance": 0.0
+    }
+  ],
+  "train_accuracy": 0.9568888888888889,
+  "latent_feature_corr": [
+    {
+      "feature": "Transaction_Count",
+      "z0": -0.533,
+      "z1": -0.188,
+      "z2": -0.664,
+      "z3": -0.207
+    },
+    {
+      "feature": "Account_Balance",
+      "z0": -0.261,
+      "z1": -0.308,
+      "z2": 0.01,
+      "z3": -0.606
+    },
+    {
+      "feature": "Total_Credit",
+      "z0": -0.56,
+      "z1": -0.517,
+      "z2": -0.293,
+      "z3": -0.339
+    },
+    {
+      "feature": "Total_Withdrawal",
+      "z0": -0.56,
+      "z1": -0.514,
+      "z2": -0.298,
+      "z3": -0.321
+    },
+    {
+      "feature": "Recency_Days",
+      "z0": 0.587,
+      "z1": -0.039,
+      "z2": -0.346,
+      "z3": 0.203
+    },
+    {
+      "feature": "Account_Age_Days",
+      "z0": -0.313,
+      "z1": -0.022,
+      "z2": -0.808,
+      "z3": -0.177
+    },
+    {
+      "feature": "has_loan",
+      "z0": -0.687,
+      "z1": -0.828,
+      "z2": 0.384,
+      "z3": 0.309
+    },
+    {
+      "feature": "has_card",
+      "z0": -0.018,
+      "z1": -0.53,
+      "z2": 0.106,
+      "z3": -0.673
+    }
+  ],
+  "reconstruction_by_segment": [
+    {
+      "segment_id": 0,
+      "mean": 0.014954278395837744,
+      "median": 0.005964398651609337,
+      "p90": 0.03279693875962392
+    },
+    {
+      "segment_id": 1,
+      "mean": 0.006487674319060309,
+      "median": 0.0018935320259681034,
+      "p90": 0.012220132550161326
+    },
+    {
+      "segment_id": 2,
+      "mean": 0.01981536725062306,
+      "median": 0.010515118765533694,
+      "p90": 0.04112172081409682
+    },
+    {
+      "segment_id": 3,
+      "mean": 0.005267761049776345,
+      "median": 0.002406817447494885,
+      "p90": 0.011581013018083309
+    },
+    {
+      "segment_id": 4,
+      "mean": 0.08836960515329265,
+      "median": 0.03723549845518827,
+      "p90": 0.12179825113836801
+    },
+    {
+      "segment_id": 5,
+      "mean": 0.05338012162617809,
+      "median": 0.04670712547358591,
+      "p90": 0.10171043449713271
+    }
+  ]
+}

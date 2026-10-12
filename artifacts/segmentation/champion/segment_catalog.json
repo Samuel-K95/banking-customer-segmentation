@@ -1,0 +1,155 @@
+{
+  "naming_policy": "behavior_rules_from_centroid",
+  "segments": {
+    "0": {
+      "segment_id": 0,
+      "name": "New basic accounts",
+      "n": 1176,
+      "pct": 32.65,
+      "one_liner": "Newer accounts with light product depth; still active \u2014 onboarding window is open.",
+      "default_play": "First card / digital activation; watch early dormancy.",
+      "decision": {
+        "play": "Onboarding + first card",
+        "evidence": "Short tenure, low loan/card penetration, still recent activity",
+        "owner": "CRM / Digital",
+        "kpi": "Card attach rate; 90-day activation",
+        "guardrail": "Suitability checks; no aggressive credit"
+      },
+      "centroid": {
+        "Transaction_Count": 95.38,
+        "Account_Balance": 29352.32,
+        "Total_Credit": 201497.23,
+        "Total_Withdrawal": 172265.06,
+        "Recency_Days": 1.05,
+        "Account_Age_Days": 616.69,
+        "has_loan": 0.0,
+        "has_card": 0.01
+      }
+    },
+    "1": {
+      "segment_id": 1,
+      "name": "Long-tenure high-activity basic",
+      "n": 1329,
+      "pct": 36.9,
+      "one_liner": "Loyal, high-activity, almost no loan/card. Trust exists; monetization does not.",
+      "default_play": "Highest-value cross-sell: pre-approved card / personal loan from txn history.",
+      "decision": {
+        "play": "Priority cross-sell (card -> personal loan)",
+        "evidence": "Highest activity + long tenure + ~0 credit products",
+        "owner": "Product / CRM",
+        "kpi": "Product/household lift; offer acceptance",
+        "guardrail": "Use txn history for pre-approve; consent + eligibility"
+      },
+      "centroid": {
+        "Transaction_Count": 268.91,
+        "Account_Balance": 38298.0,
+        "Total_Credit": 687043.11,
+        "Total_Withdrawal": 648948.59,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1417.13,
+        "has_loan": 0.0,
+        "has_card": 0.0
+      }
+    },
+    "2": {
+      "segment_id": 2,
+      "name": "Loan-centric high-volume",
+      "n": 489,
+      "pct": 13.58,
+      "one_liner": "Credit relationship already established; high flows around loan servicing.",
+      "default_play": "Card attach, PPI/protection, refinance / top-up retention.",
+      "decision": {
+        "play": "Card attach + loan protection / refinance",
+        "evidence": "~100% loan holding, high credit/withdrawal flows",
+        "owner": "Lending + Cards",
+        "kpi": "Card penetration among borrowers; retention at refinance",
+        "guardrail": "Avoid over-leverage; PPI disclosure rules"
+      },
+      "centroid": {
+        "Transaction_Count": 243.47,
+        "Account_Balance": 44811.49,
+        "Total_Credit": 1029835.08,
+        "Total_Withdrawal": 985282.89,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1060.48,
+        "has_loan": 1.0,
+        "has_card": 0.26
+      }
+    },
+    "3": {
+      "segment_id": 3,
+      "name": "Card-centric active savers",
+      "n": 584,
+      "pct": 16.21,
+      "one_liner": "High card penetration, healthy balances, no loan \u2014 solvent, engaged spenders.",
+      "default_play": "Premium card upgrade + careful first-loan offer; savings/invest.",
+      "decision": {
+        "play": "Premium card + first loan to solvent customers",
+        "evidence": "High card penetration + highest balances + no loan",
+        "owner": "Cards / Wealth",
+        "kpi": "Interchange / premium upgrade; responsible first-loan take-up",
+        "guardrail": "Credit assessment still required"
+      },
+      "centroid": {
+        "Transaction_Count": 203.94,
+        "Account_Balance": 56427.18,
+        "Total_Credit": 867624.96,
+        "Total_Withdrawal": 811511.34,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1061.08,
+        "has_loan": 0.0,
+        "has_card": 1.0
+      }
+    },
+    "4": {
+      "segment_id": 4,
+      "name": "Financially stressed / overdraft risk",
+      "n": 18,
+      "pct": 0.5,
+      "one_liner": "Negative mean balance; withdrawals dominate credits.",
+      "default_play": "Service + risk review, budgeting tools \u2014 not investment pitches.",
+      "decision": {
+        "play": "Service & risk review; budgeting tools",
+        "evidence": "Negative mean balance; withdrawals >= credits",
+        "owner": "Risk / Customer Care",
+        "kpi": "Overdraft cure rate; complaint reduction",
+        "guardrail": "Do NOT pitch investments; limit new unsecured credit"
+      },
+      "centroid": {
+        "Transaction_Count": 222.78,
+        "Account_Balance": -4919.28,
+        "Total_Credit": 630999.46,
+        "Total_Withdrawal": 635930.72,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1140.89,
+        "has_loan": 0.44,
+        "has_card": 0.06
+      }
+    },
+    "5": {
+      "segment_id": 5,
+      "name": "Dormant long-term accounts",
+      "n": 6,
+      "pct": 0.17,
+      "one_liner": "Long recency gap \u2014 relationship effectively elsewhere.",
+      "default_play": "Win-back then close; do not push sales hard.",
+      "decision": {
+        "play": "Win-back then closure path",
+        "evidence": "Recency >> other segments (months-years inactive)",
+        "owner": "Retention / Ops",
+        "kpi": "Reactivation rate; dormant balance recovered / closed",
+        "guardrail": "Not a churn model \u2014 strategy from dormancy proxy only"
+      },
+      "centroid": {
+        "Transaction_Count": 32.83,
+        "Account_Balance": 9974.72,
+        "Total_Credit": 36291.45,
+        "Total_Withdrawal": 26316.67,
+        "Recency_Days": 390.83,
+        "Account_Age_Days": 1390.83,
+        "has_loan": 0.0,
+        "has_card": 0.0
+      }
+    }
+  }
+}

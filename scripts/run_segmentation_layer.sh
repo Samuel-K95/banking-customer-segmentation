@@ -25,6 +25,6 @@ echo "2. Running bake-off + registering champion_v1..."
 uv run python -m customer_segmentation.pipelines.run_berka_segmentation
 
 echo "Segmentation Layer completed."
-echo "  Comparison board : artifacts/experiments/comparison_board_track_c.csv"
-echo "  Champion bundle  : artifacts/segmentation/champion_v1/"
-echo "  Figures          : artifacts/segmentation/champion_v1/figures/"
+echo "  Comparison board : artifacts/experiments/bakeoffs/comparison_board_track_c.csv"
+echo "  Champion bundle  : artifacts/segmentation/archive/fullbook_demo/"
+echo "  Figures          : artifacts/segmentation/archive/fullbook_demo/figures/"

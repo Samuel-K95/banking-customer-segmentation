@@ -119,6 +119,19 @@ def train_autoencoder(
     return AETrainResult(latent_dim=latent_dim, z=z, losses=losses, model=model.cpu())
 
 
+def encode_latent(model: Any, X: np.ndarray, *, device: str | None = None) -> np.ndarray:
+    """Encode rows with a frozen TabularAE (no gradient / no refit)."""
+    if not TORCH_OK:
+        raise ImportError("PyTorch is required to encode with TabularAE.")
+    dev = torch.device(device or "cpu")
+    model = model.to(dev)
+    model.eval()
+    with torch.no_grad():
+        xt = torch.tensor(X, dtype=torch.float32, device=dev)
+        _, z = model(xt)
+    return z.detach().cpu().numpy()
+
+
 def cluster_latent(
     z: np.ndarray,
     *,

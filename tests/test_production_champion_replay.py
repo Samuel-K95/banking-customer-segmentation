@@ -1,0 +1,63 @@
+"""CI replay: frozen production encoder+KMeans reproduce held-out labels."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+
+from customer_segmentation.features.build_berka_segmentation_features import (
+    transform_with_train_scaler,
+)
+from customer_segmentation.models.champion import ChampionModel
+
+PROD = Path("artifacts/segmentation/champion")
+
+
+@pytest.mark.skipif(not PROD.exists(), reason="production champion artifacts missing")
+def test_production_holdout_replay_matches_stored_labels():
+    champ = ChampionModel.load(PROD)
+    split = pd.read_csv(PROD / "account_split.csv")
+    assign = pd.read_csv(PROD / "assignments.csv")
+    hold_ids = set(split.loc[split["split"] == "holdout", "account_id"])
+    hold = assign[assign["account_id"].isin(hold_ids)].sort_values("account_id")
+
+    # Rebuild as-of features for holdout IDs only
+    from customer_segmentation.data.berka_dataset_loader import (
+        load_berka_product_tables,
+        load_berka_raw_data,
+        resolve_berka_dir,
+    )
+    from customer_segmentation.features.build_berka_segmentation_features import (
+        build_berka_segmentation_features_asof,
+    )
+
+    as_of = str((champ.metrics or {}).get("as_of_date") or "1997-12-31")
+    min_tenure = int((champ.metrics or {}).get("minimum_tenure_days") or 365)
+    path = resolve_berka_dir(None)
+    trans, account, _ = load_berka_raw_data(path)
+    loan, card, disp = load_berka_product_tables(path)
+    feats = build_berka_segmentation_features_asof(
+        trans, account, loan, card, disp, as_of_date=as_of, minimum_tenure_days=min_tenure
+    )
+    feats = feats[feats["account_id"].isin(hold_ids)].sort_values("account_id")
+    hold = hold[hold["account_id"].isin(feats["account_id"])].sort_values("account_id")
+    feats = feats.set_index("account_id").loc[hold["account_id"]].reset_index()
+
+    assert champ.scaler is not None
+    X = transform_with_train_scaler(feats, champ.scaler)
+    pred = champ.predict(X)
+    stored = hold["segment_id"].astype(int).to_numpy()
+    assert np.array_equal(pred, stored)
+
+
+@pytest.mark.skipif(not (PROD / "serving_contract.json").exists(), reason="serving contract missing")
+def test_serving_contract_has_version_and_asof():
+    import json
+
+    contract = json.loads((PROD / "serving_contract.json").read_text(encoding="utf-8"))
+    assert contract.get("model_version") == "production_candidate_v1"
+    assert contract.get("as_of_date") == "1997-12-31"
+    assert contract.get("artifact_sha256")

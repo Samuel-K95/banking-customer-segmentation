@@ -978,7 +978,7 @@ def _load_task05_kmeans_labels(
     seeds: list[int],
     k_values: list[int],
 ) -> dict[tuple[int, int], np.ndarray]:
-    board_path = root / "artifacts/experiments/comparison_board.csv"
+    board_path = root / "artifacts/experiments/bakeoffs/comparison_board.csv"
     if not board_path.is_file():
         raise FileNotFoundError("Task 05 comparison ledger is required for baseline comparison.")
     board = pd.read_csv(board_path, dtype={"run_id": "string"})
@@ -1389,7 +1389,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
-        default="configs/models/track_a_autoencoder.yaml",
+        default="configs/models/track_a/track_a_autoencoder.yaml",
         help="Track A PyTorch autoencoder experiment YAML.",
     )
     parser.add_argument(

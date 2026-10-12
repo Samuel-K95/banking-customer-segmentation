@@ -744,7 +744,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
-        default="configs/models/track_a_baselines.yaml",
+        default="configs/models/track_a/track_a_baselines.yaml",
         help="Track A baseline experiment YAML.",
     )
     parser.add_argument(
