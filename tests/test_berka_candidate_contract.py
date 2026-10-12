@@ -1,15 +1,23 @@
 from collections import OrderedDict
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from customer_segmentation.models.berka_behavioral_baselines import EXPECTED_FEATURES
+from customer_segmentation.models.berka_behavioral_baselines import (
+    EXPECTED_FEATURES,
+    select_behavioral_features,
+)
 from customer_segmentation.models.berka_candidate_contract import (
     AS_OF_DATE,
     MODEL_VERSION,
     SNAPSHOT_VERSION,
     predict_batch,
+)
+from customer_segmentation.models.berka_candidate_inference import (
+    DEFAULT_INTEGRITY_MANIFEST,
+    load_berka_kmeans_candidate,
 )
 
 
@@ -87,6 +95,7 @@ def test_valid_batch_preserves_request_order_and_returns_only_model_cluster_ids(
     )
 
     response = predict_batch(candidate, request)
+    repeated_response = predict_batch(candidate, request)
 
     assert [item["account_id"] for item in response["predictions"]] == ["account-z", "account-a"]
     assert [item["cluster_id"] for item in response["predictions"]] == [0, 1]
@@ -98,9 +107,10 @@ def test_valid_batch_preserves_request_order_and_returns_only_model_cluster_ids(
         assert set(item) == {
             "account_id", "model_version", "snapshot_version", "as_of_date", "eligibility_status", "cluster_id"
         }
-    assert candidate.calls == 1
+    assert candidate.calls == 2
     assert candidate.estimator.matrices[0].shape == (2, 13)
     assert request["accounts"][0]["features"] == input_features
+    assert repeated_response == response
 
 
 @pytest.mark.parametrize(
@@ -219,7 +229,58 @@ def test_request_rejects_unexpected_top_level_and_account_fields():
     request["debug"] = True
     with pytest.raises(ValueError, match="request schema mismatch"):
         predict_batch(candidate, request)
+    request = _request([{"account_id": "a", "features": _features()}])
+    request["transaction_date_provenance"] = "verified"
+    with pytest.raises(ValueError, match="request schema mismatch"):
+        predict_batch(candidate, request)
     request = _request([{"account_id": "a", "features": _features(), "cluster_id": 1}])
     with pytest.raises(ValueError, match=r"accounts\[0\] schema mismatch"):
         predict_batch(candidate, request)
     assert candidate.calls == 0
+
+
+def test_frozen_historical_contract_to_model_replay_when_artifacts_exist():
+    root = Path.cwd()
+    baseline = root / "artifacts/berka_behavioral_baselines/v1.1/asof_1997-12-31"
+    snapshot_path = root / "data/processed/berka_snapshot/v1/asof_1997-12-31/berka_account_snapshot_features.csv"
+    assignments_path = baseline / "held_out_assignments.csv"
+    required = [
+        root / DEFAULT_INTEGRITY_MANIFEST,
+        baseline / "models/kmeans_k2_seed42.joblib",
+        baseline / "preprocessor_train_fitted.joblib",
+        snapshot_path,
+        baseline / "account_split.csv",
+        assignments_path,
+    ]
+    if not all(path.is_file() for path in required):
+        pytest.skip("Optional Berka historical research artifacts are not available locally")
+
+    candidate = load_berka_kmeans_candidate(root / DEFAULT_INTEGRITY_MANIFEST, project_root=root)
+    split = pd.read_csv(baseline / "account_split.csv")
+    held_ids = split.loc[split["split"].eq("held_out"), "account_id"].to_numpy()
+    snapshot = pd.read_csv(snapshot_path).set_index("account_id").loc[held_ids].reset_index()
+    features = select_behavioral_features(snapshot, list(EXPECTED_FEATURES))
+    request = _request(
+        [
+            {"account_id": str(account_id), "features": row.to_dict()}
+            for account_id, (_, row) in zip(held_ids, features.iterrows(), strict=True)
+        ]
+    )
+
+    response = predict_batch(candidate, request)
+
+    saved = pd.read_csv(assignments_path)
+    frozen = saved.loc[
+        saved["algorithm"].eq("kmeans") & saved["k"].eq(2) & saved["seed"].eq(42)
+    ].set_index("account_id").loc[held_ids, "cluster"].to_numpy()
+    predictions = response["predictions"]
+    assert len(predictions) == 901
+    assert [item["account_id"] for item in predictions] == [str(value) for value in held_ids]
+    assert [item["cluster_id"] for item in predictions] == frozen.tolist()
+    assert all(item["eligibility_status"] == "assigned" for item in predictions)
+    assert response["as_of_date"] == "1997-12-31"
+    assert response["model_version"] == candidate.model_version
+    assert response["snapshot_version"] == SNAPSHOT_VERSION
+    assert "provenance_verified" not in response
+    assert "transaction_date_provenance" not in response
+    assert all("transaction_date_provenance" not in item for item in predictions)
