@@ -9,7 +9,9 @@ import tempfile
 import time
 import uuid
 from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+
+UTC = timezone.utc
 from pathlib import Path
 from typing import Any
 
@@ -1195,7 +1197,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
-        default="configs/models/track_a_task09_final_autoencoder.yaml",
+        default="configs/models/track_a/track_a_task09_final_autoencoder.yaml",
         help="Matched Task 09 autoencoder configuration.",
     )
     args = parser.parse_args(argv)

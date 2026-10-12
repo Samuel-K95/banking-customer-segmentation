@@ -1,0 +1,7 @@
+segment_id,name,n,pct,one_liner,default_play,recency,balance,txn,loan,card
+0,Card-centric active savers,721,16.02,"100%-ish card, healthy balances, no loan — solvent, engaged spenders.",Premium card upgrade + careful first-loan offer; savings/invest.,0.8,63893.0,242.3,0.0,1.0
+1,New basic accounts,1431,31.8,Newer accounts with light product depth. Still active — onboarding window is open.,First card / digital activation; watch early dormancy.,2.4,31096.0,121.9,0.0,0.0
+2,Loan-centric high-volume,671,14.91,Credit relationship already established; high flows around loan servicing.,"Card attach, PPI/protection, refinance / top-up retention.",0.3,51304.0,281.3,1.0,0.25
+3,Long-tenure high-activity basic,1623,36.07,"Loyal, high-activity, almost no loan/card. Trust exists; monetization does not.",Highest-value cross-sell: pre-approved card / personal loan from txn history.,0.4,44543.0,313.4,0.0,0.0
+4,Financially stressed / overdraft risk,42,0.93,Negative mean balance; withdrawals dominate credits.,"Service + risk review, budgeting tools — not investment pitches.",10.4,-6305.0,224.1,0.26,0.02
+5,Dormant long-term accounts,12,0.27,Long recency gap — relationship effectively elsewhere.,Win-back then close; do not push sales hard.,539.2,10099.0,27.3,0.0,0.0

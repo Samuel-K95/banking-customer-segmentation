@@ -7,7 +7,9 @@ import hashlib
 import itertools
 import json
 from collections import Counter, defaultdict
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+
+UTC = timezone.utc
 from pathlib import Path
 from typing import Any
 
@@ -750,7 +752,7 @@ def _oot_feasibility(
 
 def run_audit(root: Path, output_dir: Path) -> dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=False)
-    config_path = root / "configs/models/track_a_p2_leakage_safe.yaml"
+    config_path = root / "configs/models/track_a/track_a_p2_leakage_safe.yaml"
     with config_path.open(encoding="utf-8") as stream:
         p2_config = yaml.safe_load(stream)
     feature_order = list(p2_config["data"]["feature_order"])

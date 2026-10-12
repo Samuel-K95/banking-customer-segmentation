@@ -31,7 +31,7 @@ from customer_segmentation.models.berka_behavioral_baselines import (
     select_behavioral_features,
 )
 
-DEFAULT_CONFIG = Path("configs/models/berka_feature_sensitivity_v1.yaml")
+DEFAULT_CONFIG = Path("configs/models/berka/berka_feature_sensitivity_v1.yaml")
 PROFILE_FEATURES = [
     "account_tenure_days",
     "balance_median",

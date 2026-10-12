@@ -1,0 +1,35 @@
+{
+  "run_id": "c_ae_lat4_k6",
+  "method": "ae_kmeans",
+  "k": 6,
+  "latent_dim": 4,
+  "silhouette": 0.4661717116832733,
+  "db_index": 0.6594414555241873,
+  "ch_index": 3774.9161164746256,
+  "stability_ari_kmeans_multiseed": 0.9640814155558866,
+  "stability_ari_kmeans_subsample": 0.9801788527172368,
+  "stability_ari_ae_latent_kmeans": 0.9958619928581163,
+  "size": {
+    "counts": [
+      721,
+      1431,
+      671,
+      1623,
+      42,
+      12
+    ],
+    "fractions": [
+      0.1602222222222222,
+      0.318,
+      0.1491111111111111,
+      0.3606666666666667,
+      0.009333333333333334,
+      0.0026666666666666666
+    ],
+    "ok": false,
+    "min_frac": 0.0026666666666666666,
+    "max_frac": 0.3606666666666667
+  },
+  "low_confidence_frac": 0.050888888888888886,
+  "selection_policy": "Berka AE lat=4 selected for behavioral+product coverage; not max silhouette across tracks (see champion_recommendation.md)"
+}

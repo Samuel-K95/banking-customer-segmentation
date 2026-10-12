@@ -1,0 +1,5 @@
+family,count,max,mean
+classical,13,0.6559,0.3171
+autoencoder,32,0.5753,0.4119
+linear_rep,3,0.371,0.3621
+density,3,0.3038,0.2699

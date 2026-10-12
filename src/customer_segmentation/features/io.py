@@ -10,10 +10,14 @@ from customer_segmentation.config import data_path, load_data_config
 
 
 def track_outputs(track: str, out_dir: Path | None = None) -> tuple[Path, Path]:
-    """(interpretable_csv, model_csv) paths for a track from configs/data.yaml."""
-    out_dir = out_dir or data_path("processed_dir")
+    """(interpretable_csv, model_csv) paths for a track from configs/data.yaml.
+
+    Matrices land under ``processed_dir/<track>/`` so tracks stay separated.
+    """
+    root = out_dir or data_path("processed_dir")
+    track_dir = Path(root) / track
     prefix = load_data_config()["tracks"][track]["output_prefix"]
-    return out_dir / f"{prefix}_interpretable.csv", out_dir / f"{prefix}_model.csv"
+    return track_dir / f"{prefix}_interpretable.csv", track_dir / f"{prefix}_model.csv"
 
 
 def save_matrices(

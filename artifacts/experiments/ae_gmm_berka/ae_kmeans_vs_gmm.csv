@@ -1,0 +1,3 @@
+run_id,method,latent_dim,k,silhouette,db_index,ch_index,stability_ari,low_confidence_frac,size_min_frac,size_max_frac,size_ok,bic,aic
+c_ae_lat4_kmeans_k6,ae_kmeans,4,6,0.4662,0.6594,3774.9163,0.9959,0.0509,0.0027,0.3607,False,,
+c_ae_lat4_gmm_k6,ae_gmm,4,6,0.2972,1.9487,1573.1281,0.9249,0.0098,0.0138,0.3244,False,28465.4,27894.7

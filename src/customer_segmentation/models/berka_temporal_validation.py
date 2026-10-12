@@ -21,7 +21,7 @@ from customer_segmentation.models.berka_behavioral_baselines import (
     select_behavioral_features,
 )
 
-DEFAULT_CONFIG = Path("configs/models/berka_temporal_validation_v1.yaml")
+DEFAULT_CONFIG = Path("configs/models/berka/berka_temporal_validation_v1.yaml")
 WINDOWS = {
     "prior_365d": (pd.Timestamp("1997-01-01"), pd.Timestamp("1997-12-31")),
     "outcome_1998": (pd.Timestamp("1998-01-01"), pd.Timestamp("1998-12-31")),

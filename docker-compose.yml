@@ -1,0 +1,29 @@
+# One image, two entrypoints. Only data-layer owns the build to avoid
+# "image already exists" races when Compose builds both services in parallel.
+
+services:
+  data-layer:
+    build: .
+    image: bcs-platform:latest
+    container_name: bcs-data-layer
+    volumes:
+      - ./data:/app/data
+      # Works on Linux/macOS (HOME) and Windows Docker Desktop (USERPROFILE)
+      - ${KAGGLE_CONFIG_DIR:-${HOME:-${USERPROFILE}}/.kaggle}:/root/.kaggle:ro
+    command: ["./scripts/run_data_layer.sh"]
+
+  segmentation-layer:
+    image: bcs-platform:latest
+    container_name: bcs-segmentation-layer
+    pull_policy: never
+    volumes:
+      - ./data:/app/data
+      - ./artifacts:/app/artifacts
+      - ./configs:/app/configs
+      - ./reports:/app/reports
+    environment:
+      - MPLBACKEND=Agg
+      - PYTHONUNBUFFERED=1
+    command: ["./scripts/run_segmentation_layer.sh"]
+    # Run data-layer first when Berka CSVs are missing:
+    #   docker compose run --rm data-layer
