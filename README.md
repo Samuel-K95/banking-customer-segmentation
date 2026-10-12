@@ -1,6 +1,12 @@
 # Banking Customer Segmentation and Behavioral Intelligence
 
-Week 8 project scaffold for banking **customer segmentation** and **behavioral intelligence**.
+Repository for banking **customer segmentation** and **behavioral intelligence** experiments, data processing, and evaluation.
+
+## Documentation
+
+- [Reports index](reports/README.md)
+- [Engineering documentation index](docs/README.md)
+- [Track A feature dictionary](docs/feature_dictionary.md)
 
 ## Branches
 
