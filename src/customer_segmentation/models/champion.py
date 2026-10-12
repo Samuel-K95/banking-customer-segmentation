@@ -17,11 +17,11 @@ import joblib
 import numpy as np
 import pandas as pd
 
-from customer_segmentation.features.build_berka_features import (
+from customer_segmentation.features.build_berka_segmentation_features import (
     MODEL_COLUMNS,
     transform_berka_model_matrix,
 )
-from customer_segmentation.models.autoencoder import TORCH_OK, distance_confidence
+from customer_segmentation.models.tabular_ae import TORCH_OK, distance_confidence
 from customer_segmentation.models.segment_intel import (
     build_segment_catalog,
     decision_map_frame,
@@ -77,7 +77,7 @@ class ChampionModel:
         if TORCH_OK and (path / "encoder.pt").exists():
             import torch
 
-            from customer_segmentation.models.autoencoder import TabularAE
+            from customer_segmentation.models.tabular_ae import TabularAE
 
             payload = torch.load(path / "encoder.pt", map_location="cpu", weights_only=False)
             state = payload["state_dict"] if isinstance(payload, dict) and "state_dict" in payload else payload

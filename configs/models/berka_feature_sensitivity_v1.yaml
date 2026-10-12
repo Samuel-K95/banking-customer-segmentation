@@ -1,0 +1,56 @@
+version: 1
+experiment: berka_feature_sensitivity_v1
+description: >-
+  Train-fitted sensitivity analysis of the Berka two-cluster baseline, comparing
+  removal of gross money movement and balance volatility on the identical
+  1997-12-31 account split.
+
+baseline:
+  config: configs/models/berka_behavioral_baselines_v1_1.yaml
+  artifacts: artifacts/berka_behavioral_baselines/v1.1/asof_1997-12-31
+
+data:
+  snapshot_directory: data/processed/berka_snapshot/v1/asof_1997-12-31
+  as_of_date: "1997-12-31"
+  minimum_tenure_days: 365
+  expected_eligible_accounts: 3602
+  expected_training_accounts: 2701
+  expected_held_out_accounts: 901
+  output_directory: artifacts/berka_feature_sensitivity/v1/asof_1997-12-31
+
+features:
+  original: original_13
+  exclusions:
+    original_13: []
+    without_gross_money_movement: [gross_money_movement]
+    without_balance_volatility: [balance_std]
+    without_gross_and_balance_volatility: [gross_money_movement, balance_std]
+
+models:
+  algorithms: [kmeans, gaussian_mixture]
+  k: 2
+  seeds: [42, 2024, 123]
+  kmeans:
+    n_init: 10
+    max_iter: 500
+    algorithm: lloyd
+  gaussian_mixture:
+    covariance_type: diag
+    n_init: 3
+    max_iter: 500
+    tolerance: 0.001
+    regularization: 0.00001
+
+evaluation:
+  held_out_metrics: [silhouette, davies_bouldin, calinski_harabasz, cluster_proportions]
+  cross_seed_stability: pairwise_adjusted_rand_index
+  cross_configuration_comparison: paired_seed_and_all_seed_pairs_adjusted_rand_index
+  tiny_cluster_threshold_percent: 5.0
+
+artifacts:
+  separate_from_baseline_directory: true
+  persist_train_fitted_preprocessors: true
+  persist_candidate_models: true
+  persist_held_out_assignments: true
+  persist_feature_configurations: true
+  persist_metrics_and_profiles: true

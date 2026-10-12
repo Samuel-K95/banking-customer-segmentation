@@ -78,7 +78,7 @@ from customer_segmentation.features.build_berka_features import (
     build_and_save_berka_features,
 )
 from customer_segmentation.data.berka_dataset_loader import resolve_berka_dir
-from customer_segmentation.models.autoencoder import TORCH_OK, distance_confidence
+from customer_segmentation.models.tabular_ae import TORCH_OK, distance_confidence
 from customer_segmentation.models.champion import ChampionModel
 from customer_segmentation.models.metrics import evaluate_clustering, size_sanity
 from customer_segmentation.models.segment_intel import PERSONAS, build_segment_catalog

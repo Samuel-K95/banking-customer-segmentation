@@ -56,7 +56,7 @@ ROOT = Path("..").resolve()
 sys.path.insert(0, str(ROOT / "src"))
 
 from customer_segmentation.features.build_berka_features import build_and_save_berka_features
-from customer_segmentation.models.autoencoder import TORCH_OK, train_autoencoder
+from customer_segmentation.models.tabular_ae import TORCH_OK, train_autoencoder
 from customer_segmentation.models.metrics import evaluate_clustering, size_sanity
 
 warnings.filterwarnings("ignore")

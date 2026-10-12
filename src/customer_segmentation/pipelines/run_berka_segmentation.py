@@ -11,7 +11,7 @@ import pandas as pd
 from sklearn.cluster import KMeans
 
 from customer_segmentation.features.build_berka_features import build_and_save_berka_features
-from customer_segmentation.models.autoencoder import (
+from customer_segmentation.models.tabular_ae import (
     TORCH_OK,
     distance_confidence,
     train_ae_cluster,
