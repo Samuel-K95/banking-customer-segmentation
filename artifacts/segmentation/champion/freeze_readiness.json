@@ -3,7 +3,7 @@
   "champion_run_id": "c_ae_lat4_k6_leakage_safe",
   "model_version": "production_candidate_v1",
   "as_of_date": "1997-12-31",
-  "evaluated_at": "2026-10-12T17:21:30.700152+00:00",
+  "evaluated_at": "2026-10-12T17:53:34.215244+00:00",
   "gates": {
     "artifact_integrity": {
       "verdict": "PASS",
@@ -19,7 +19,7 @@
     },
     "segment_meaning": {
       "verdict": "PASS",
-      "detail": "CRM personas + exception-queue policy for tiny stressed/dormant cells"
+      "detail": "CRM personas + plays for k=6; exception-queue segments=[4, 5]"
     },
     "fairness_owner_disponent": {
       "verdict": "PASS_WITH_LIMITATIONS",

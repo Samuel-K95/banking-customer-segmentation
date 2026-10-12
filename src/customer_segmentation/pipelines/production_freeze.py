@@ -57,6 +57,7 @@ def assemble_freeze_readiness(*, production_dir: str | Path | None = None) -> di
     }
 
     replay = _holdout_replay_gate(dst)
+    meaning = _segment_meaning_gate(dst, contract=contract, metrics=metrics)
     fairness_signoff = str(fairness.get("compliance_signoff") or "PENDING").upper()
     fairness_gate = {
         "verdict": "PASS" if fairness_signoff == "APPROVED" else "PASS_WITH_LIMITATIONS",
@@ -94,10 +95,7 @@ def assemble_freeze_readiness(*, production_dir: str | Path | None = None) -> di
         "artifact_integrity": integrity_gate,
         "snapshot_split_train_only_fit": split_gate,
         "exact_holdout_prediction_replay": replay,
-        "segment_meaning": {
-            "verdict": "PASS",
-            "detail": "CRM personas + exception-queue policy for tiny stressed/dormant cells",
-        },
+        "segment_meaning": meaning,
         "fairness_owner_disponent": fairness_gate,
         "independent_temporal_validation": temporal_gate,
         "serving_package": serving_gate,
@@ -156,6 +154,93 @@ def assemble_freeze_readiness(*, production_dir: str | Path | None = None) -> di
     (dst / "metrics.json").write_text(json.dumps(metrics, indent=2, default=str), encoding="utf-8")
     (dst / "manifest.json").write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     return payload
+
+
+def _segment_meaning_gate(
+    dst: Path,
+    *,
+    contract: dict[str, Any] | None = None,
+    metrics: dict[str, Any] | None = None,
+) -> dict[str, str]:
+    """PASS when catalog personas + exception-queue policy are present for all clusters."""
+    contract = contract or {}
+    metrics = metrics or {}
+    catalog_path = dst / "segment_catalog.json"
+    if not catalog_path.exists():
+        return {"verdict": "FAIL", "detail": "Missing segment_catalog.json"}
+
+    catalog = _load(catalog_path)
+    segments = catalog.get("segments") or {}
+    if not isinstance(segments, dict) or not segments:
+        return {"verdict": "FAIL", "detail": "segment_catalog.segments empty"}
+
+    n_clusters = int(metrics.get("n_clusters") or metrics.get("k") or len(segments))
+    expected_ids = set(range(n_clusters))
+    try:
+        present_ids = {int(k) for k in segments}
+    except (TypeError, ValueError):
+        return {"verdict": "FAIL", "detail": "segment_catalog segment keys are not integers"}
+
+    missing_ids = sorted(expected_ids - present_ids)
+    if missing_ids:
+        return {
+            "verdict": "FAIL",
+            "detail": f"Catalog missing segment_ids {missing_ids} (expected 0..{n_clusters - 1})",
+        }
+
+    incomplete: list[str] = []
+    for sid in sorted(expected_ids):
+        meta = segments.get(str(sid))
+        if not isinstance(meta, dict):
+            incomplete.append(f"{sid}:not_object")
+            continue
+        name = str(meta.get("name") or "").strip()
+        one_liner = str(meta.get("one_liner") or "").strip()
+        default_play = str(meta.get("default_play") or "").strip()
+        decision = meta.get("decision") if isinstance(meta.get("decision"), dict) else {}
+        play = str(decision.get("play") or default_play or "").strip()
+        guardrail = str(decision.get("guardrail") or "").strip()
+        if not name:
+            incomplete.append(f"{sid}:name")
+        if not one_liner:
+            incomplete.append(f"{sid}:one_liner")
+        if not play:
+            incomplete.append(f"{sid}:play")
+        if not guardrail:
+            incomplete.append(f"{sid}:guardrail")
+
+    if incomplete:
+        return {
+            "verdict": "FAIL",
+            "detail": "Incomplete personas/plays: " + ", ".join(incomplete[:12]),
+        }
+
+    exceptions = contract.get("exception_segment_ids")
+    if not isinstance(exceptions, list) or not exceptions:
+        return {
+            "verdict": "FAIL",
+            "detail": "serving_contract.exception_segment_ids missing/empty (exception-queue policy)",
+        }
+
+    try:
+        exception_ids = sorted({int(x) for x in exceptions})
+    except (TypeError, ValueError):
+        return {"verdict": "FAIL", "detail": "exception_segment_ids must be integers"}
+
+    unknown = [i for i in exception_ids if i not in present_ids]
+    if unknown:
+        return {
+            "verdict": "FAIL",
+            "detail": f"exception_segment_ids not in catalog: {unknown}",
+        }
+
+    return {
+        "verdict": "PASS",
+        "detail": (
+            f"CRM personas + plays for k={n_clusters}; "
+            f"exception-queue segments={exception_ids}"
+        ),
+    }
 
 
 def _holdout_replay_gate(dst: Path) -> dict[str, str]:
