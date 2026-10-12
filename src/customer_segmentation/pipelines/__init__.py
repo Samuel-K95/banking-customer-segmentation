@@ -5,6 +5,7 @@ Public entrypoints (also available via ``bcs`` CLI):
 - ``run_berka_segmentation`` — Track C bake-off → archive full-book demo
 - ``run_berka_segmentation_leakage_safe`` — leakage-safe research twin
 - ``promote_production`` — research twin → ``artifacts/segmentation/champion``
+- ``restore_champion`` / ``verify_champion`` — clean-checkout restore + integrity gate
 - ``run_decision_layer`` — prefer ``customer_segmentation.decision``
 """
 
@@ -14,6 +15,8 @@ __all__ = [
     "run_berka_segmentation",
     "run_berka_segmentation_leakage_safe",
     "promote_production",
+    "restore_champion",
+    "verify_champion",
     "assemble_freeze_readiness",
     "run_production_fairness",
     "run_production_temporal",
@@ -35,6 +38,14 @@ def __getattr__(name: str):
         from customer_segmentation.pipelines.promote_production import promote_production
 
         return promote_production
+    if name == "restore_champion":
+        from customer_segmentation.pipelines.restore_champion import restore_champion
+
+        return restore_champion
+    if name == "verify_champion":
+        from customer_segmentation.pipelines.verify_champion import verify_champion
+
+        return verify_champion
     if name == "assemble_freeze_readiness":
         from customer_segmentation.pipelines.production_freeze import assemble_freeze_readiness
 

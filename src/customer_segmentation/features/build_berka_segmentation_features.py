@@ -58,7 +58,7 @@ class BerkaFeatureBundle:
 
 
 def _parse_berka_date(series: pd.Series) -> pd.Series:
-    if np.issubdtype(series.dtype, np.datetime64):
+    if pd.api.types.is_datetime64_any_dtype(series):
         return series
     return pd.to_datetime(series.astype(str).str.zfill(6), format="%y%m%d", errors="coerce")
 

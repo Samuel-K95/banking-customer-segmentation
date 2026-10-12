@@ -21,5 +21,15 @@
     4,
     5
   ],
+  "feature_columns": [
+    "Transaction_Count",
+    "Account_Balance",
+    "Total_Credit",
+    "Total_Withdrawal",
+    "Recency_Days",
+    "Account_Age_Days",
+    "has_loan",
+    "has_card"
+  ],
   "updated_at": "2026-10-12T10:39:16.253897+00:00"
 }

@@ -4,7 +4,8 @@
 
 Go to **[`champion/`](champion/)** — every report for the current model lives there.
 
-Summary: [`../CURRENT_CHAMPION.md`](../CURRENT_CHAMPION.md)
+- One-pager: [`../CURRENT_CHAMPION.md`](../CURRENT_CHAMPION.md)
+- **Full master:** [`champion/MASTER_CHAMPION_SEGMENTATION_AND_DECISIONS.md`](champion/MASTER_CHAMPION_SEGMENTATION_AND_DECISIONS.md)
 
 ## Other folders (supporting research, not the served model)
 

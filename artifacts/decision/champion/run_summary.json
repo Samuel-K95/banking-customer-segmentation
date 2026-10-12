@@ -44,14 +44,14 @@
       "n_segments": 1
     }
   ],
-  "artifact_dir": "artifacts\\decision\\production\\champion_v1",
+  "artifact_dir": "artifacts/decision/champion",
   "files": {
-    "profile_packs": "artifacts\\decision\\production\\champion_v1\\profile_packs.json",
-    "explainability": "artifacts\\decision\\production\\champion_v1\\explainability.json",
-    "fairness": "artifacts\\decision\\production\\champion_v1\\fairness.json",
-    "decision_map": "artifacts\\decision\\production\\champion_v1\\decision_map_full.csv",
-    "domain_coverage": "artifacts\\decision\\production\\champion_v1\\domain_coverage.csv",
-    "exemplars": "artifacts\\decision\\production\\champion_v1\\exemplars.csv"
+    "profile_packs": "artifacts/decision/champion/profile_packs.json",
+    "explainability": "artifacts/decision/champion/explainability.json",
+    "fairness": "artifacts/decision/champion/fairness.json",
+    "decision_map": "artifacts/decision/champion/decision_map_full.csv",
+    "domain_coverage": "artifacts/decision/champion/domain_coverage.csv",
+    "exemplars": "artifacts/decision/champion/exemplars.csv"
   },
   "acceptance": {
     "profile_packs": true,

@@ -18,7 +18,7 @@ def main() -> None:
 
     p_seg = sub.add_parser(
         "segment-berka",
-        help="Run Track C bake-off, export figures, register champion_v1",
+        help="Legacy Track C bake-off → archive/fullbook_demo (not the served champion)",
     )
     p_seg.add_argument("--berka-dir", default=None, help="Path to Berka raw tables")
     p_seg.add_argument("--epochs", type=int, default=50, help="AE training epochs")
@@ -30,7 +30,7 @@ def main() -> None:
 
     p_seg_ls = sub.add_parser(
         "segment-berka-leakage-safe",
-        help="Leakage-safe AE+k=6 twin + parallel k=2 (does not overwrite champion_v1)",
+        help="Leakage-safe AE+k=6 twin + parallel k=2 → research/ (then promote)",
     )
     p_seg_ls.add_argument("--berka-dir", default=None, help="Path to Berka raw tables")
     p_seg_ls.add_argument("--epochs", type=int, default=None, help="AE epochs (default from config)")
@@ -78,7 +78,7 @@ def main() -> None:
 
     p_dec = sub.add_parser(
         "decision-berka",
-        help="Run analysis & decision layer on champion_v1 (profiles, fairness, plays)",
+        help="Run analysis & decision layer on production champion (profiles, fairness, plays)",
     )
     p_dec.add_argument(
         "--champion-dir",
@@ -116,6 +116,11 @@ def main() -> None:
         action="store_true",
         help="Only copy/stamp; skip fairness/temporal/freeze assemble",
     )
+    p_promo.add_argument(
+        "--no-backup",
+        action="store_true",
+        help="Do not backup previous champion before replace (tests only)",
+    )
 
     p_freeze = sub.add_parser(
         "freeze-status",
@@ -125,6 +130,20 @@ def main() -> None:
         "--production-dir",
         default="artifacts/segmentation/champion",
     )
+
+    p_restore = sub.add_parser(
+        "restore-champion",
+        help="Restore complete champion binaries (noop / promote / retrain)",
+    )
+    p_restore.add_argument("--skip-decision", action="store_true")
+
+    p_verify = sub.add_parser(
+        "verify-champion",
+        help="Verify champion integrity, SHA-256, load, API smoke, stale paths",
+    )
+    p_verify.add_argument("--skip-api", action="store_true")
+    p_verify.add_argument("--skip-replay", action="store_true")
+    p_verify.add_argument("--skip-path-scan", action="store_true")
 
     p_serve = sub.add_parser(
         "serve",
@@ -215,10 +234,21 @@ def main() -> None:
         return
 
     if args.command == "promote-production":
-        from customer_segmentation.pipelines.promote_production import promote_production
+        from customer_segmentation.pipelines.promote_production import (
+            PromotionError,
+            promote_production,
+        )
         from customer_segmentation.pipelines.production_freeze import assemble_freeze_readiness
 
-        summary = promote_production(source_dir=args.source, dest_dir=args.dest)
+        try:
+            summary = promote_production(
+                source_dir=args.source,
+                dest_dir=args.dest,
+                backup=not args.no_backup,
+            )
+        except PromotionError as exc:
+            print(json.dumps({"status": "error", "detail": str(exc)}, indent=2))
+            raise SystemExit(1) from exc
         if not args.skip_checks:
             from customer_segmentation.pipelines.production_fairness import run_production_fairness
             from customer_segmentation.pipelines.production_temporal import run_production_temporal
@@ -242,6 +272,24 @@ def main() -> None:
 
         print(json.dumps(load_freeze_status(args.production_dir), indent=2, default=str))
         return
+
+    if args.command == "restore-champion":
+        from customer_segmentation.pipelines.restore_champion import restore_champion
+
+        result = restore_champion(run_decision=not args.skip_decision)
+        print(json.dumps(result, indent=2, default=str))
+        raise SystemExit(0 if result.get("status") == "ok" else 1)
+
+    if args.command == "verify-champion":
+        from customer_segmentation.pipelines.verify_champion import verify_champion
+
+        report = verify_champion(
+            include_api=not args.skip_api,
+            include_replay=not args.skip_replay,
+            include_path_scan=not args.skip_path_scan,
+        )
+        print(json.dumps(report, indent=2, default=str))
+        raise SystemExit(0 if report.get("ok") else 1)
 
     if args.command == "serve":
         import uvicorn

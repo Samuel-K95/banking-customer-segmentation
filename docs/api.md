@@ -2,17 +2,28 @@
 
 Exposes the production-candidate champion: model bundle, decision layer, reports, and inference (single + batch).
 
+## Clean checkout
+
+Champion **binaries** (`encoder.pt`, `scaler.joblib`, `kmeans.joblib`) are tracked under `artifacts/segmentation/champion/`. After clone:
+
+```bash
+bcs verify-champion          # must pass (SHA-256 + load + API smoke)
+bcs restore-champion         # if verify fails: promote research twin or retrain
+bcs serve --port 8000
+```
+
 ## Start
 
 ```bash
 # from repo root (artifacts/ must be present)
-PYTHONPATH=src bcs serve --port 8000
+bcs serve --port 8000
 # or
 uvicorn customer_segmentation.serve.app:app --port 8000
 ```
 
 Interactive docs: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)  
-Machine catalog: `GET /v1/catalog`
+Machine catalog: `GET /v1/catalog`  
+Health fails (503) if champion integrity / SHA-256 / encoder is broken.
 
 ## Contract
 
@@ -27,6 +38,8 @@ Confirm live values with `GET /v1/inference/contract`.
 
 Features are **interpretable-scale** (`Transaction_Count`, `Account_Balance`, `Total_Credit`, `Total_Withdrawal`, `Recency_Days`, `Account_Age_Days`, `has_loan`, `has_card`). The API applies frozen log1p + StandardScaler.
 
+**Eligibility:** `Account_Age_Days >= minimum_tenure_days` (365). Unknown feature keys, negative recency, or non-{0,1} product flags → HTTP 400.
+
 ## Endpoint groups
 
 ### Meta
@@ -39,10 +52,10 @@ Features are **interpretable-scale** (`Transaction_Count`, `Account_Balance`, `T
 - `GET /v1/segments` / `GET /v1/segments/{id}`
 
 ### Decisions
-- `GET /v1/decisions/summary` — run summary (aliases: `/v1/decision/summary`)
-- `GET /v1/decisions/map` — live expand from catalog (`?domain=`)
+- `GET /v1/decisions/summary` — run summary (alias: `/v1/decision/summary`)
+- `GET /v1/decisions/map` — live expand from catalog (`?domain=`; alias: `/v1/decision-map`)
 - `GET /v1/decisions/map/full` — materialized CSV
-- `GET /v1/decisions/domains|profiles|fairness|explainability`
+- `GET /v1/decisions/domains|profiles|fairness|explainability|domain-coverage`
 - `GET /v1/segments/{id}/applications` — plays for one segment
 
 ### Reports

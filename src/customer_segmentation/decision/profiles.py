@@ -124,7 +124,7 @@ def build_profile_packs(
             {
                 "segment_id": sid,
                 "name": meta.get("name"),
-                "model_version": "champion_v1",
+                "model_version": str(meta.get("model_version") or "production_candidate_v1"),
                 "n": meta.get("n") or int((df[segment_col] == sid).sum()),
                 "pct": meta.get("pct"),
                 "one_liner": meta.get("one_liner"),

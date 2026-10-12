@@ -8,7 +8,8 @@ import pandas as pd
 
 from customer_segmentation.decision.applications import APPLICATION_PORTFOLIO
 from customer_segmentation.serve.deps import serving_contract, validate_contract
-from customer_segmentation.serve.schemas import FeatureRow
+from customer_segmentation.serve.schemas import FEATURE_FIELDS, FeatureRow
+from customer_segmentation.serve.validation import validate_feature_rows
 
 
 def score_feature_rows(
@@ -21,12 +22,20 @@ def score_feature_rows(
 ) -> dict[str, Any]:
     contract = validate_contract(model_version, as_of_date)
     exception_ids = {int(x) for x in (contract.get("exception_segment_ids") or [])}
+    min_tenure = int(contract.get("minimum_tenure_days") or 365)
+    required = list(contract.get("feature_columns") or FEATURE_FIELDS)
 
-    rows = [c.model_dump() for c in customers]
-    df = pd.DataFrame(rows)
+    raw_rows = [c.model_dump() for c in customers]
+    cleaned = validate_feature_rows(
+        raw_rows,
+        required_features=required,
+        minimum_tenure_days=min_tenure,
+    )
+    df = pd.DataFrame(cleaned)
     scored = champ.score_interpretable(df, id_col="account_id")
     scored["model_version"] = champ.model_version
     scored["as_of_date"] = as_of_date
+    scored["eligible"] = True
     scored["guardrail"] = scored["segment_id"].astype(int).isin(exception_ids)
     scored["guardrail_reason"] = scored["guardrail"].map(
         lambda g: "exception_queue_human_review" if g else ""
@@ -63,5 +72,6 @@ def score_feature_rows(
         "serving_contract": {
             "model_version": serving_contract().get("model_version"),
             "as_of_date": serving_contract().get("as_of_date"),
+            "minimum_tenure_days": min_tenure,
         },
     }

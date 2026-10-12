@@ -16,12 +16,11 @@ Aligned to `03-segmentation-layer.md` and current project decision (champion = B
 |-----|-------------|
 | Logic trapped in notebooks | Modular `src/customer_segmentation/models/*` + pipeline |
 | No segment-count memo | `reports/selection/segment_count_justification.md` |
-| Champion not registered | `configs/project/champion.yaml` + `artifacts/segmentation/archive/fullbook_demo/manifest.json` |
-| No assignment export | `customer_id → segment_id (+ confidence)` CSV |
-| Figures not persisted | `artifacts/segmentation/archive/fullbook_demo/figures/*.png` |
+| Champion not registered | `configs/project/champion.yaml` + `artifacts/segmentation/champion/` |
+| No assignment export | `account_id → segment_id (+ confidence)` CSV |
 | Soft membership unused | Distance-to-centroid confidence on champion |
-| Feature config empty | `configs/features.yaml` for Berka model/profile columns |
-| CLI stub | `bcs segment-berka` |
+| Feature config | `configs/project/features.yaml` + leakage-safe model config |
+| Production CLI | `bcs segment-berka-leakage-safe` → `promote-production` → `verify-champion` |
 
 ## Package layout
 
@@ -37,11 +36,13 @@ src/customer_segmentation/
     viz.py              # save PNG figures
     registry.py         # write champion artifacts + manifest + catalog
   pipelines/
-    run_berka_segmentation.py
-  features/build_berka_features.py   # + has_loan / has_card + transform_
-  data/berka_dataset_loader.py       # berka-dataset path + loan/card
-  serve/app.py                       # FastAPI → ChampionModel
-  cli.py                             # bcs segment-berka | champion-info | score-berka
+    run_berka_segmentation_leakage_safe.py
+    promote_production.py
+    verify_champion.py / restore_champion.py
+  features/build_berka_segmentation_features.py
+  data/berka_dataset_loader.py
+  serve/app.py + routers/            # FastAPI → ChampionModel
+  cli.py                             # bcs restore/verify/serve/promote/...
 ```
 
 ## Artifact layout
@@ -51,7 +52,7 @@ artifacts/
   experiments/
     comparison_board_track_c.csv          # full bake-off table
   segmentation/
-    champion_v1/
+    champion/
       manifest.json
       metrics.json
       assignments.csv                     # account_id, segment_id, confidence
@@ -82,7 +83,7 @@ artifacts/
 ```bash
 docker compose build
 docker compose run --rm data-layer            # if Berka CSVs missing
-docker compose run --rm segmentation-layer    # bake-off + champion_v1
+docker compose run --rm segmentation-layer    # leakage-safe train → promote → decision → verify
 ```
 
 Image installs CPU PyTorch for the AE track. Volumes mount `data/`, `artifacts/`, `configs/`, `reports/`.

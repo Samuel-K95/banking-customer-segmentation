@@ -19,6 +19,7 @@
 | **Model bundle** | [`artifacts/segmentation/champion/`](artifacts/segmentation/champion/) |
 | **Decision plays** | [`artifacts/decision/champion/`](artifacts/decision/champion/) |
 | **Reports** | [`reports/champion/`](reports/champion/) |
+| **Master description** | [`reports/champion/MASTER_CHAMPION_SEGMENTATION_AND_DECISIONS.md`](reports/champion/MASTER_CHAMPION_SEGMENTATION_AND_DECISIONS.md) |
 | **Notebook** | [`notebooks/champion/`](notebooks/champion/) |
 | **Config** | [`configs/project/champion.yaml`](configs/project/champion.yaml) |
 
@@ -35,6 +36,8 @@
 ```bash
 PYTHONPATH=src bcs champion-info
 PYTHONPATH=src bcs freeze-status
+PYTHONPATH=src bcs verify-champion
+PYTHONPATH=src bcs restore-champion
 PYTHONPATH=src bcs decision-berka
 ```
 

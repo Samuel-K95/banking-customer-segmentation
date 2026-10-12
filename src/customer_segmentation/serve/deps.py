@@ -39,15 +39,22 @@ def get_champion():
             return ChampionModel.load(cand)
     raise FileNotFoundError(
         "Champion artifacts not found at artifacts/segmentation/champion/. "
-        "Run `bcs promote-production` first."
+        "Run `bcs restore-champion` or `bcs promote-production` first."
     )
 
 
 def require_champion():
     try:
         return get_champion()
-    except FileNotFoundError as e:
+    except (FileNotFoundError, ValueError, RuntimeError) as e:
         raise HTTPException(status_code=503, detail=str(e)) from e
+
+
+def champion_integrity() -> dict[str, Any]:
+    from customer_segmentation.models.artifact_integrity import integrity_report
+
+    path = resolve_path(CHAMPION_REL)
+    return integrity_report(path)
 
 
 def serving_contract() -> dict[str, Any]:
@@ -60,9 +67,11 @@ def serving_contract() -> dict[str, Any]:
         "as_of_date": (champ.manifest or {}).get("as_of_date")
         or (champ.metrics or {}).get("as_of_date")
         or "1997-12-31",
+        "minimum_tenure_days": 365,
         "artifact_sha256": {},
         "baseline_segment_mix": {},
         "exception_segment_ids": [],
+        "feature_columns": list(champ.feature_columns),
     }
 
 

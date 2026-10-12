@@ -6,9 +6,21 @@
 - Method: Autoencoder (latent=4) → K-Means (k=6)
 - Leakage-safe: fixed as-of `1997-12-31`, tenure ≥365, train-only scaler/AE/K-Means
 - Freeze: **PROVISIONAL** (`freeze_readiness.json`)
+- Model version: `production_candidate_v1`
 
-Key files: `encoder.pt`, `kmeans.joblib`, `scaler.joblib`, `assignments.csv`,
-`segment_catalog.json`, `serving_contract.json`, `manifest.json`.
+## Required executables (must be present on clean checkout)
+
+| File | Role |
+|------|------|
+| `encoder.pt` | Frozen AE encoder |
+| `scaler.joblib` | Frozen StandardScaler |
+| `kmeans.joblib` | Frozen K-Means on latent space |
+| `serving_contract.json` | `model_version`, `as_of_date`, SHA-256 fingerprints |
+
+```bash
+bcs verify-champion     # integrity + SHA + load + API smoke
+bcs restore-champion    # repair via promote / retrain if incomplete
+```
 
 Sibling decision packs: `artifacts/decision/champion/`  
 Human reports: `reports/champion/`

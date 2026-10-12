@@ -154,12 +154,40 @@ def test_inference_rejects_bad_contract(client):
     assert bad.status_code == 400
 
 
+def test_inference_rejects_under_tenure(client, contract):
+    bad = client.post(
+        "/v1/inference",
+        json={
+            "model_version": contract["model_version"],
+            "as_of_date": contract["as_of_date"],
+            "Transaction_Count": 10,
+            "Account_Balance": 1000,
+            "Total_Credit": 2000,
+            "Total_Withdrawal": 500,
+            "Recency_Days": 1,
+            "Account_Age_Days": 30,
+            "has_loan": 0,
+            "has_card": 0,
+        },
+    )
+    assert bad.status_code == 400
+    assert "ineligible" in bad.text.lower() or "tenure" in bad.text.lower() or "Account_Age" in bad.text
+
+
+def test_health_requires_encoder(client):
+    h = client.get("/v1/health")
+    assert h.status_code == 200
+    assert h.json().get("has_encoder") is True
+    assert h.json().get("integrity") == "ok"
+
+
 def test_monitoring(client):
     r = client.get("/v1/monitoring/segment-mix")
     assert r.status_code == 200
     snap = client.get("/v1/monitoring/snapshot")
     assert snap.status_code == 200
     assert snap.json()["status"] in {"ok", "degraded"}
+    assert snap.json().get("has_encoder") is True
 
 
 def test_legacy_customers_segment(client, contract):

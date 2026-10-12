@@ -17,6 +17,7 @@ from customer_segmentation.serve.schemas import (
     SingleInferenceRequest,
 )
 from customer_segmentation.serve.scoring import score_feature_rows
+from customer_segmentation.serve.validation import validate_feature_payload
 
 router = APIRouter(tags=["inference"])
 
@@ -27,12 +28,21 @@ def inference_contract() -> dict[str, Any]:
     return {
         "model_version": contract.get("model_version"),
         "as_of_date": contract.get("as_of_date"),
-        "required_features": list(FEATURE_FIELDS),
+        "minimum_tenure_days": int(contract.get("minimum_tenure_days") or 365),
+        "required_features": list(contract.get("feature_columns") or FEATURE_FIELDS),
         "exception_segment_ids": contract.get("exception_segment_ids") or [],
         "baseline_segment_mix": contract.get("baseline_segment_mix") or {},
+        "eligibility": {
+            "Account_Age_Days_min": int(contract.get("minimum_tenure_days") or 365),
+            "Recency_Days_min": 0,
+            "has_loan": [0, 1],
+            "has_card": [0, 1],
+            "reject_unknown_feature_keys": True,
+        },
         "notes": (
             "Every inference call must send model_version + as_of_date matching this contract. "
-            "Features are interpretable-scale; the API applies frozen log1p + StandardScaler."
+            "Features are interpretable-scale; the API applies frozen log1p + StandardScaler. "
+            "Rows with Account_Age_Days below minimum_tenure_days are rejected (400)."
         ),
     }
 
@@ -85,19 +95,21 @@ async def inference_batch_csv(
     if not reader.fieldnames:
         raise HTTPException(status_code=400, detail="CSV has no header row")
 
+    contract = serving_contract()
+    min_tenure = int(contract.get("minimum_tenure_days") or 365)
+    required = list(contract.get("feature_columns") or FEATURE_FIELDS)
     customers: list[FeatureRow] = []
     for i, row in enumerate(reader):
         if i >= 500:
             raise HTTPException(status_code=400, detail="CSV batch limited to 500 rows")
-        payload: dict[str, Any] = {}
-        if row.get("account_id") not in (None, ""):
-            payload["account_id"] = row["account_id"]
-        for col in FEATURE_FIELDS:
-            if col not in row or row[col] in (None, ""):
-                raise HTTPException(status_code=400, detail=f"Row {i}: missing column {col}")
-            payload[col] = float(row[col])
+        cleaned = validate_feature_payload(
+            dict(row),
+            required_features=required,
+            minimum_tenure_days=min_tenure,
+            row_index=i,
+        )
         try:
-            customers.append(FeatureRow(**payload))
+            customers.append(FeatureRow(**cleaned))
         except Exception as exc:
             raise HTTPException(status_code=400, detail=f"Row {i}: {exc}") from exc
 
@@ -162,12 +174,16 @@ def monitoring_snapshot() -> dict[str, Any]:
 
     champ = require_champion()
     contract = serving_contract()
+    from customer_segmentation.serve.deps import champion_integrity
+
+    integrity = champion_integrity()
     checks = {
         "catalog": resolve_path(CHAMPION_REL / "segment_catalog.json").exists(),
         "scaler": resolve_path(CHAMPION_REL / "scaler.joblib").exists(),
         "kmeans": resolve_path(CHAMPION_REL / "kmeans.joblib").exists(),
         "encoder": resolve_path(CHAMPION_REL / "encoder.pt").exists(),
         "serving_contract": resolve_path(CHAMPION_REL / "serving_contract.json").exists(),
+        "integrity_ok": bool(integrity.get("ok")),
         "decision_summary": resolve_path(DECISION_REL / "run_summary.json").exists(),
         "decision_map": resolve_path(DECISION_REL / "decision_map_full.csv").exists(),
         "reports_dir": resolve_path(REPORTS_REL).is_dir(),
@@ -177,5 +193,7 @@ def monitoring_snapshot() -> dict[str, Any]:
         "model_version": champ.model_version,
         "as_of_date": contract.get("as_of_date"),
         "n_clusters": champ.n_clusters,
+        "has_encoder": champ.encoder is not None,
         "checks": checks,
+        "integrity_errors": integrity.get("errors") or [],
     }

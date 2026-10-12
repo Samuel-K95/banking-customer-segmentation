@@ -29,5 +29,5 @@ stability:
 
 artifacts:
   experiments_dir: artifacts/experiments
-  champion_dir: artifacts/segmentation/champion_v1
+  champion_dir: artifacts/segmentation/champion
   figures_subdir: figures

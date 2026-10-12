@@ -33,10 +33,13 @@ artifacts/**
 !artifacts/segmentation/**/*.json
 !artifacts/segmentation/**/*.csv
 !artifacts/segmentation/**/*.png
-# Keep model binaries local unless explicitly force-added
+# Keep research/archive model binaries local unless explicitly force-added
 artifacts/segmentation/**/*.pt
 artifacts/segmentation/**/*.joblib
 artifacts/segmentation/**/*.pkl
+# Production-candidate champion binaries MUST be in git for clean checkout
+!artifacts/segmentation/champion/*.pt
+!artifacts/segmentation/champion/*.joblib
 !artifacts/decision/
 !artifacts/decision/**
 !artifacts/decision/**/*.md
@@ -60,6 +63,9 @@ notebooks/**
 *.parquet
 *.pkl
 *.joblib
+# Re-include production champion binaries after global *.joblib / segmentation ignores
+!artifacts/segmentation/champion/*.joblib
+!artifacts/segmentation/champion/*.pt
 mlruns/
 
 # Keep the compact experiment ledger and reviewed reports visible to Git.

@@ -30,7 +30,7 @@ from customer_segmentation.models.segment_intel import (
 
 @dataclass
 class ChampionModel:
-    """Production-facing wrapper around registered champion_v1 artifacts."""
+    """Production-facing wrapper around registered champion artifacts."""
 
     artifact_dir: Path
     run_id: str
@@ -55,31 +55,75 @@ class ChampionModel:
         return Path(root) / "artifacts" / "segmentation" / "champion"
 
     @classmethod
-    def load(cls, artifact_dir: str | Path | None = None) -> ChampionModel:
-        """Load frozen champion bundle from disk."""
+    def load(
+        cls,
+        artifact_dir: str | Path | None = None,
+        *,
+        require_ae: bool | None = None,
+        verify_hashes: bool = True,
+    ) -> ChampionModel:
+        """Load frozen champion bundle from disk.
+
+        For AE / production-candidate bundles, scaler + kmeans + encoder are
+        required. When ``serving_contract.json`` is present, SHA-256 hashes are
+        verified unless ``verify_hashes=False``.
+        """
+        from customer_segmentation.models.artifact_integrity import (
+            preflight_bundle,
+            verify_serving_contract,
+        )
+
         path = Path(artifact_dir) if artifact_dir else cls.default_dir()
         if not path.exists():
             raise FileNotFoundError(f"Champion artifacts not found at {path}")
 
-        manifest = _read_json(path / "manifest.json")
+        manifest = _read_json(path / "manifest.json") if (path / "manifest.json").exists() else {}
         metrics = _read_json(path / "metrics.json") if (path / "metrics.json").exists() else {}
+        method = str(manifest.get("method") or metrics.get("method") or "ae_kmeans")
+        model_version = str(manifest.get("model_version") or metrics.get("model_version") or "v1")
+        ae_required = require_ae if require_ae is not None else (
+            "ae" in method.lower() or model_version.startswith("production_candidate")
+        )
+
+        if ae_required:
+            preflight_errors = preflight_bundle(path, load_binaries=True)
+            if preflight_errors:
+                raise FileNotFoundError(
+                    "Champion bundle incomplete or unloadable:\n- " + "\n- ".join(preflight_errors)
+                )
+            if verify_hashes and (path / "serving_contract.json").exists():
+                sha_errors = verify_serving_contract(path)
+                if sha_errors:
+                    raise ValueError(
+                        "Champion serving_contract integrity failed:\n- " + "\n- ".join(sha_errors)
+                    )
+
+        if not (path / "feature_columns.json").exists():
+            raise FileNotFoundError(f"Missing feature_columns.json under {path}")
         feat_meta = _read_json(path / "feature_columns.json")
         feature_columns = list(feat_meta.get("columns") or MODEL_COLUMNS)
 
-        scaler = joblib.load(path / "scaler.joblib") if (path / "scaler.joblib").exists() else None
-        kmeans = joblib.load(path / "kmeans.joblib") if (path / "kmeans.joblib").exists() else None
-        if kmeans is None:
+        if not (path / "scaler.joblib").exists():
+            raise FileNotFoundError(f"Missing scaler.joblib under {path}")
+        if not (path / "kmeans.joblib").exists():
             raise FileNotFoundError(f"Missing kmeans.joblib under {path}")
+        scaler = joblib.load(path / "scaler.joblib")
+        kmeans = joblib.load(path / "kmeans.joblib")
 
         encoder = None
         latent_dim = metrics.get("latent_dim") or manifest.get("latent_dim")
         hidden = None
-        if TORCH_OK and (path / "encoder.pt").exists():
+        encoder_path = path / "encoder.pt"
+        if ae_required or encoder_path.exists():
+            if not TORCH_OK:
+                raise RuntimeError("PyTorch required to load champion AE encoder")
+            if not encoder_path.exists():
+                raise FileNotFoundError(f"Missing encoder.pt under {path}")
             import torch
 
             from customer_segmentation.models.tabular_ae import TabularAE
 
-            payload = torch.load(path / "encoder.pt", map_location="cpu", weights_only=False)
+            payload = torch.load(encoder_path, map_location="cpu", weights_only=False)
             state = payload["state_dict"] if isinstance(payload, dict) and "state_dict" in payload else payload
             latent_dim = int(payload.get("latent_dim", latent_dim or 4)) if isinstance(payload, dict) else int(latent_dim or 4)
             hidden = int(payload.get("hidden", 32)) if isinstance(payload, dict) else 32
@@ -92,14 +136,12 @@ class ChampionModel:
         if catalog_path.exists():
             catalog = _read_json(catalog_path)
         else:
-            # Rebuild from profiles if older bundle
             catalog = {}
             profiles_path = path / "segment_profiles.csv"
             if profiles_path.exists():
                 profiles = pd.read_csv(profiles_path)
                 if "segment_id" in profiles.columns:
                     profiles = profiles.set_index("segment_id")
-                # drop non-feature cols if present
                 cols = [c for c in feature_columns if c in profiles.columns]
                 catalog = build_segment_catalog(profiles[cols])
 
@@ -108,10 +150,10 @@ class ChampionModel:
         return cls(
             artifact_dir=path,
             run_id=str(manifest.get("run_id") or metrics.get("run_id") or "unknown"),
-            method=str(manifest.get("method") or metrics.get("method") or "ae_kmeans"),
+            method=method,
             feature_columns=feature_columns,
             feature_version=str(manifest.get("feature_version") or feat_meta.get("feature_version") or ""),
-            model_version=str(manifest.get("model_version") or "v1"),
+            model_version=model_version,
             latent_dim=int(latent_dim) if latent_dim is not None else None,
             n_clusters=n_clusters,
             scaler=scaler,
@@ -126,9 +168,13 @@ class ChampionModel:
     # ── inference ────────────────────────────────────────────────
 
     def encode(self, X: np.ndarray) -> np.ndarray:
-        """Map scaled model matrix → latent z (or identity if no encoder)."""
+        """Map scaled model matrix → latent z. AE champions must have an encoder."""
         X = np.asarray(X, dtype=np.float64)
         if self.encoder is None:
+            if "ae" in self.method.lower() or self.model_version.startswith("production_candidate"):
+                raise RuntimeError(
+                    f"AE champion {self.run_id!r} has no encoder loaded; refusing identity fallback"
+                )
             return X
         import torch
 

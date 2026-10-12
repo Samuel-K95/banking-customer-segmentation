@@ -178,6 +178,12 @@ def run_decision_layer(
     coverage.to_csv(paths["domain_coverage"], index=False)
     pd.DataFrame(profiles["exemplars"]).to_csv(paths["exemplars"], index=False)
 
+    def _rel(path: Path) -> str:
+        try:
+            return path.resolve().relative_to(Path.cwd().resolve()).as_posix()
+        except ValueError:
+            return path.as_posix()
+
     summary = {
         "champion_run_id": champ.run_id,
         "model_version": champ.model_version,
@@ -186,8 +192,8 @@ def run_decision_layer(
         "domains": list(DOMAINS),
         "n_plays": int(len(decision_map)),
         "domain_coverage": coverage.to_dict(orient="records"),
-        "artifact_dir": str(out),
-        "files": {k: str(v) for k, v in paths.items()},
+        "artifact_dir": _rel(out),
+        "files": {k: _rel(Path(v)) for k, v in paths.items()},
         "acceptance": {
             "profile_packs": True,
             "human_names": True,

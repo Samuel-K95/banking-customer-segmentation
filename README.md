@@ -18,6 +18,8 @@ Repository for banking **customer segmentation** and **behavioral intelligence**
 ```bash
 PYTHONPATH=src bcs champion-info
 PYTHONPATH=src bcs freeze-status
+PYTHONPATH=src bcs verify-champion
+PYTHONPATH=src bcs restore-champion   # if verify fails on a clean clone
 PYTHONPATH=src bcs serve --port 8000
 ```
 
@@ -28,6 +30,7 @@ Anything under `archive/` or `research/` is **not** the served champion.
 ## Documentation
 
 - [CURRENT_CHAMPION.md](CURRENT_CHAMPION.md) — unambiguous winner pointer
+- [Master segmentation & decisions](reports/champion/MASTER_CHAMPION_SEGMENTATION_AND_DECISIONS.md) — full champion narrative
 - [Champion API](docs/api.md) — model, decisions, reports, single/batch inference
 - [Reports index](reports/README.md) — champion reports first
 - [Engineering documentation index](docs/README.md)

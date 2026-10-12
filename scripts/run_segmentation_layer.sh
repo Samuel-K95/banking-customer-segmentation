@@ -1,10 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "Starting Segmentation Layer Pipeline (Track C / Berka champion)..."
+echo "Starting Segmentation Layer (leakage-safe production candidate)..."
 
 # Ensure output dirs exist (host mounts may be empty on first run)
-mkdir -p data/raw data/processed artifacts/experiments artifacts/segmentation
+mkdir -p data/raw data/processed artifacts/experiments artifacts/segmentation reports/champion
 
 if [ ! -f data/raw/berka-dataset/trans.csv ] && [ ! -f data/raw/berka/trans.csv ]; then
   echo "ERROR: Berka raw data not found under data/raw/berka-dataset/ (or data/raw/berka/)."
@@ -14,17 +14,19 @@ if [ ! -f data/raw/berka-dataset/trans.csv ] && [ ! -f data/raw/berka/trans.csv 
   exit 1
 fi
 
-echo "1. Building Berka features (interpretable + model matrices)..."
-uv run python -c "
-from customer_segmentation.features.build_berka_features import build_and_save_berka_features
-bundle = build_and_save_berka_features()
-print(f'  saved {len(bundle.interpretable)} accounts, cols={bundle.feature_columns}')
-"
+echo "1. Train leakage-safe AE+k=6 twin (+ k=2 research twin)..."
+uv run bcs segment-berka-leakage-safe
 
-echo "2. Running bake-off + registering champion_v1..."
-uv run python -m customer_segmentation.pipelines.run_berka_segmentation
+echo "2. Promote research twin → artifacts/segmentation/champion (gated)..."
+uv run bcs promote-production
+
+echo "3. Regenerate decision layer on production champion..."
+uv run bcs decision-berka
+
+echo "4. Verify champion integrity (binaries, SHA-256, load, stale paths)..."
+uv run bcs verify-champion
 
 echo "Segmentation Layer completed."
-echo "  Comparison board : artifacts/experiments/bakeoffs/comparison_board_track_c.csv"
-echo "  Champion bundle  : artifacts/segmentation/archive/fullbook_demo/"
-echo "  Figures          : artifacts/segmentation/archive/fullbook_demo/figures/"
+echo "  Champion bundle  : artifacts/segmentation/champion/"
+echo "  Decision artifacts: artifacts/decision/champion/"
+echo "  (Legacy full-book bake-off remains available via: bcs segment-berka)"

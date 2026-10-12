@@ -1,13 +1,19 @@
-"""Promote leakage-safe research twin → production champion slot."""
+"""Promote leakage-safe research twin → production champion slot (atomic + gated)."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+from customer_segmentation.models.artifact_integrity import (
+    REQUIRED_ARTIFACTS,
+    compute_sha256,
+    integrity_report,
+    preflight_bundle,
+)
 
 PRODUCTION_DIR = Path("artifacts/segmentation/champion")
 RESEARCH_DIR = Path("artifacts/segmentation/research/leakage_safe_source")
@@ -17,14 +23,8 @@ AS_OF_DATE = "1997-12-31"
 CONTRACT_AS_OF = AS_OF_DATE
 
 
-def _sha256(path: Path) -> str | None:
-    if not path.exists():
-        return None
-    h = hashlib.sha256()
-    with path.open("rb") as fh:
-        for chunk in iter(lambda: fh.read(1024 * 1024), b""):
-            h.update(chunk)
-    return h.hexdigest()
+class PromotionError(RuntimeError):
+    """Raised when promotion is refused (incomplete source or integrity failure)."""
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -36,23 +36,17 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
 
 
-def promote_production(
-    *,
-    source_dir: str | Path | None = None,
-    dest_dir: str | Path | None = None,
-) -> dict[str, Any]:
-    """Copy research leakage-safe bundle into the production slot and stamp metadata."""
-    src = Path(source_dir) if source_dir else RESEARCH_DIR
-    dst = Path(dest_dir) if dest_dir else PRODUCTION_DIR
-    if not src.exists():
-        raise FileNotFoundError(f"Research twin not found at {src}")
-
-    if dst.exists():
-        shutil.rmtree(dst)
-    shutil.copytree(src, dst)
-
+def _stamp_bundle(dst: Path, *, source_dir: Path) -> dict[str, Any]:
+    """Write production metadata + serving contract; refuse if binary hashes are null."""
     manifest = _read_json(dst / "manifest.json") if (dst / "manifest.json").exists() else {}
     metrics = _read_json(dst / "metrics.json") if (dst / "metrics.json").exists() else {}
+    feat_meta = _read_json(dst / "feature_columns.json") if (dst / "feature_columns.json").exists() else {}
+
+    feature_columns = (
+        metrics.get("feature_columns")
+        or feat_meta.get("columns")
+        or []
+    )
 
     manifest.update(
         {
@@ -63,7 +57,7 @@ def promote_production(
             "freeze_status": "PROVISIONAL",
             "tag": f"prod_segmentation_{MODEL_VERSION}",
             "promoted_at": datetime.now(timezone.utc).isoformat(),
-            "source_research_dir": str(src),
+            "source_research_dir": str(source_dir),
             "archive_demo_dir": str(ARCHIVE_DIR),
             "notes": (
                 "Production candidate promoted from leakage-safe twin. "
@@ -73,8 +67,7 @@ def promote_production(
                 "as_of_date": CONTRACT_AS_OF,
                 "model_version": MODEL_VERSION,
                 "minimum_tenure_days": 365,
-                "feature_columns": metrics.get("feature_columns")
-                or _read_json(dst / "feature_columns.json").get("columns"),
+                "feature_columns": feature_columns,
             },
             "rollback": {
                 "previous_demo_archive": str(ARCHIVE_DIR),
@@ -88,10 +81,20 @@ def promote_production(
     _write_json(dst / "manifest.json", manifest)
     _write_json(dst / "metrics.json", metrics)
 
-    hashes = {
-        name: _sha256(dst / name)
-        for name in ("scaler.joblib", "kmeans.joblib", "encoder.pt", "account_split.csv", "assignments.csv")
-    }
+    hashes: dict[str, str] = {}
+    missing_hashes: list[str] = []
+    for name in ("scaler.joblib", "kmeans.joblib", "encoder.pt", "account_split.csv", "assignments.csv"):
+        digest = compute_sha256(dst / name)
+        if digest is None:
+            missing_hashes.append(name)
+        else:
+            hashes[name] = digest
+    if missing_hashes:
+        raise PromotionError(
+            "Cannot stamp serving_contract: required artifacts missing after copy: "
+            + ", ".join(missing_hashes)
+        )
+
     contract = {
         "model_version": MODEL_VERSION,
         "as_of_date": CONTRACT_AS_OF,
@@ -99,9 +102,82 @@ def promote_production(
         "artifact_sha256": hashes,
         "baseline_segment_mix": _baseline_mix(dst / "assignments.csv"),
         "exception_segment_ids": _exception_segments(dst),
+        "feature_columns": list(feature_columns),
         "updated_at": datetime.now(timezone.utc).isoformat(),
     }
     _write_json(dst / "serving_contract.json", contract)
+    return contract
+
+
+def promote_production(
+    *,
+    source_dir: str | Path | None = None,
+    dest_dir: str | Path | None = None,
+    backup: bool = True,
+) -> dict[str, Any]:
+    """Copy research leakage-safe bundle into the production slot (atomic + gated).
+
+    Never deletes ``dest`` until the source passes preflight and the staged
+    copy validates. Incomplete sources raise ``PromotionError`` and leave dest
+    untouched.
+    """
+    src = Path(source_dir) if source_dir else RESEARCH_DIR
+    dst = Path(dest_dir) if dest_dir else PRODUCTION_DIR
+
+    if not src.exists():
+        raise FileNotFoundError(f"Research twin not found at {src}")
+
+    preflight_errors = preflight_bundle(src, load_binaries=True)
+    if preflight_errors:
+        raise PromotionError(
+            "Source bundle failed preflight; destination not modified:\n- "
+            + "\n- ".join(preflight_errors)
+        )
+
+    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    staging = dst.parent / f".champion_promote_tmp_{stamp}"
+    if staging.exists():
+        shutil.rmtree(staging)
+
+    try:
+        shutil.copytree(src, staging)
+        # Re-check staged copy before touching live dest
+        staged_errors = preflight_bundle(staging, load_binaries=True)
+        if staged_errors:
+            raise PromotionError(
+                "Staged copy failed preflight; destination not modified:\n- "
+                + "\n- ".join(staged_errors)
+            )
+
+        contract = _stamp_bundle(staging, source_dir=src)
+        # Stamp can rewrite JSON; re-validate integrity including hashes
+        report = integrity_report(staging)
+        if not report["ok"]:
+            raise PromotionError(
+                "Staged bundle failed integrity after stamp; destination not modified:\n- "
+                + "\n- ".join(report["errors"])
+            )
+
+        if dst.exists():
+            if backup:
+                backup_root = ARCHIVE_DIR.parent / f"pre_promote_{stamp}"
+                backup_root.parent.mkdir(parents=True, exist_ok=True)
+                if backup_root.exists():
+                    shutil.rmtree(backup_root)
+                shutil.move(str(dst), str(backup_root))
+            else:
+                shutil.rmtree(dst)
+
+        shutil.move(str(staging), str(dst))
+    finally:
+        if staging.exists():
+            shutil.rmtree(staging, ignore_errors=True)
+
+    final = integrity_report(dst)
+    if not final["ok"]:
+        raise PromotionError(
+            "Promotion completed but final integrity failed:\n- " + "\n- ".join(final["errors"])
+        )
 
     return {
         "status": "ok",
@@ -109,7 +185,9 @@ def promote_production(
         "model_version": MODEL_VERSION,
         "as_of_date": AS_OF_DATE,
         "freeze_status": "PROVISIONAL",
-        "artifact_sha256": hashes,
+        "artifact_sha256": contract.get("artifact_sha256"),
+        "required_artifacts": list(REQUIRED_ARTIFACTS),
+        "integrity": final,
     }
 
 
@@ -132,7 +210,6 @@ def _exception_segments(dst: Path) -> list[int]:
     for i, frac in enumerate(fracs):
         if float(frac) < 0.03:
             out.append(int(i))
-    # Fallback known stressed/dormant from catalog names
     catalog = _read_json(dst / "segment_catalog.json") if (dst / "segment_catalog.json").exists() else {}
     for sid, meta in (catalog.get("segments") or {}).items():
         name = str(meta.get("name", "")).lower()
