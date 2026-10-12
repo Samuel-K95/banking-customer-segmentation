@@ -7,6 +7,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import numpy as np
+import pandas as pd
+
+from customer_segmentation.models.artifact_integrity import integrity_report
+from customer_segmentation.models.champion import ChampionModel
 from customer_segmentation.pipelines.promote_production import (
     MODEL_VERSION,
     PRODUCTION_DIR,
@@ -24,51 +29,95 @@ def assemble_freeze_readiness(*, production_dir: str | Path | None = None) -> di
     metrics = _load(dst / "metrics.json")
     manifest = _load(dst / "manifest.json")
 
+    integrity = integrity_report(dst)
+    integrity_gate = {
+        "verdict": "PASS" if integrity.get("ok") else "FAIL",
+        "detail": (
+            "SHA-256 fingerprints match serving_contract.json"
+            if integrity.get("ok")
+            else "; ".join(integrity.get("errors") or ["integrity failed"])
+        ),
+    }
+
+    split_ok = bool(
+        metrics.get("as_of_date")
+        and metrics.get("minimum_tenure_days")
+        and metrics.get("n_train")
+        and metrics.get("n_holdout")
+        and (dst / "account_split.csv").exists()
+    )
+    split_gate = {
+        "verdict": "PASS" if split_ok else "FAIL",
+        "detail": (
+            f"as_of={metrics.get('as_of_date')}; tenure>={metrics.get('minimum_tenure_days')}; "
+            f"train={metrics.get('n_train')} holdout={metrics.get('n_holdout')}"
+            if split_ok
+            else "Missing as_of / tenure / split sizes or account_split.csv"
+        ),
+    }
+
+    replay = _holdout_replay_gate(dst)
+    fairness_signoff = str(fairness.get("compliance_signoff") or "PENDING").upper()
+    fairness_gate = {
+        "verdict": "PASS" if fairness_signoff == "APPROVED" else "PASS_WITH_LIMITATIONS",
+        "detail": (
+            "District fairness pack + OWNER/DISPONENT policy published; "
+            f"compliance sign-off {fairness_signoff}"
+        ),
+    }
+
+    temporal_verdict = temporal.get("verdict") or "PASS_WITH_LIMITATIONS"
+    temporal_gate = {
+        "verdict": temporal_verdict,
+        "detail": temporal.get(
+            "limitation",
+            "Retrospective 1998 check only — not a prospective vintage",
+        ),
+    }
+
+    serving_ok = bool(
+        contract.get("model_version")
+        and contract.get("as_of_date")
+        and (contract.get("artifact_sha256") or {})
+        and integrity.get("ok")
+    )
+    serving_gate = {
+        "verdict": "PASS" if serving_ok else "FAIL",
+        "detail": (
+            "FastAPI enforces model_version+as_of_date; serving_contract hashes verified"
+            if serving_ok
+            else "Serving contract incomplete or integrity failed"
+        ),
+    }
+
     gates = {
-        "artifact_integrity": {
-            "verdict": "PASS",
-            "detail": "SHA-256 fingerprints in serving_contract.json",
-        },
-        "snapshot_split_train_only_fit": {
-            "verdict": "PASS",
-            "detail": (
-                f"as_of={metrics.get('as_of_date')}; tenure>={metrics.get('minimum_tenure_days')}; "
-                f"train={metrics.get('n_train')} holdout={metrics.get('n_holdout')}"
-            ),
-        },
-        "exact_holdout_prediction_replay": {
-            "verdict": "PASS",
-            "detail": "Frozen encoder+KMeans reproduce held-out labels (see CI replay test)",
-        },
+        "artifact_integrity": integrity_gate,
+        "snapshot_split_train_only_fit": split_gate,
+        "exact_holdout_prediction_replay": replay,
         "segment_meaning": {
             "verdict": "PASS",
             "detail": "CRM personas + exception-queue policy for tiny stressed/dormant cells",
         },
-        "fairness_owner_disponent": {
-            "verdict": "PASS",
-            "detail": (
-                "District fairness pack + OWNER/DISPONENT policy published; "
-                f"compliance sign-off {fairness.get('compliance_signoff', 'PENDING')}"
-            ),
-        },
-        "independent_temporal_validation": {
-            "verdict": temporal.get("verdict", "PASS_WITH_LIMITATIONS"),
-            "detail": temporal.get(
-                "limitation",
-                "Retrospective 1998 check only — not a prospective vintage",
-            ),
-        },
-        "serving_package": {
-            "verdict": "PASS",
-            "detail": (
-                "FastAPI enforces model_version+as_of_date; health exposes hashes; "
-                "monitoring/segment-mix + rollback to product/ archive documented"
-            ),
-        },
+        "fairness_owner_disponent": fairness_gate,
+        "independent_temporal_validation": temporal_gate,
+        "serving_package": serving_gate,
     }
 
+    hard_fails = [k for k, g in gates.items() if g.get("verdict") == "FAIL"]
+    overall = "BLOCKED" if hard_fails else "PROVISIONAL"
+
+    # Keep manifest paths current (no stale product/champion_v1).
+    manifest["source_research_dir"] = "artifacts/segmentation/research/leakage_safe_source"
+    manifest["archive_demo_dir"] = "artifacts/segmentation/archive/fullbook_demo"
+    manifest.setdefault("rollback", {})
+    if isinstance(manifest["rollback"], dict):
+        manifest["rollback"]["previous_demo_archive"] = "artifacts/segmentation/archive/fullbook_demo"
+        manifest["rollback"]["instruction"] = (
+            "Point CLI/API back to archive/fullbook_demo or re-promote a prior hashed bundle"
+        )
+
     payload = {
-        "overall_verdict": "PROVISIONAL",
+        "overall_verdict": overall,
         "champion_run_id": metrics.get("run_id") or manifest.get("run_id"),
         "model_version": MODEL_VERSION,
         "as_of_date": metrics.get("as_of_date") or "1997-12-31",
@@ -95,14 +144,65 @@ def assemble_freeze_readiness(*, production_dir: str | Path | None = None) -> di
             "Must not use segment_id for credit eligibility, pricing, or collections",
         ],
     }
+    if hard_fails:
+        payload["not_fully_frozen_because"].insert(
+            0, f"Hard FAIL gates: {', '.join(hard_fails)}"
+        )
+
     write_freeze_readiness(payload, dst)
     _write_report(REPORT_PATH, payload)
-    # Mirror status onto metrics/manifest
-    metrics["freeze_status"] = "PROVISIONAL"
-    manifest["freeze_status"] = "PROVISIONAL"
+    metrics["freeze_status"] = overall
+    manifest["freeze_status"] = overall
     (dst / "metrics.json").write_text(json.dumps(metrics, indent=2, default=str), encoding="utf-8")
     (dst / "manifest.json").write_text(json.dumps(manifest, indent=2, default=str), encoding="utf-8")
     return payload
+
+
+def _holdout_replay_gate(dst: Path) -> dict[str, str]:
+    """Actually replay holdout labels with frozen AE+KMeans when possible."""
+    try:
+        from customer_segmentation.data.berka_dataset_loader import (
+            load_berka_product_tables,
+            load_berka_raw_data,
+            resolve_berka_dir,
+        )
+        from customer_segmentation.features.build_berka_segmentation_features import (
+            build_berka_segmentation_features_asof,
+            transform_with_train_scaler,
+        )
+
+        champ = ChampionModel.load(dst, verify_hashes=True)
+        metrics = champ.metrics or {}
+        as_of = str(metrics.get("as_of_date") or "1997-12-31")
+        min_tenure = int(metrics.get("minimum_tenure_days") or 365)
+        split = pd.read_csv(dst / "account_split.csv")
+        assign = pd.read_csv(dst / "assignments.csv")
+        path = resolve_berka_dir()
+        trans, account, _client = load_berka_raw_data(path)
+        loan, card, disp = load_berka_product_tables(path)
+        interpretable = build_berka_segmentation_features_asof(
+            trans, account, loan, card, disp, as_of_date=as_of, minimum_tenure_days=min_tenure
+        )
+        hold_ids = set(split.loc[split["split"] == "holdout", "account_id"].astype(int))
+        hold_feat = interpretable[interpretable["account_id"].isin(hold_ids)].copy()
+        expected = assign[assign["account_id"].isin(hold_ids)].set_index("account_id")["segment_id"]
+        hold_feat = hold_feat.set_index("account_id").loc[expected.index].reset_index()
+        X = transform_with_train_scaler(hold_feat, champ.scaler)
+        pred = champ.kmeans.predict(champ.encode(X))
+        ok = bool(np.array_equal(pred, expected.to_numpy()))
+        return {
+            "verdict": "PASS" if ok else "FAIL",
+            "detail": (
+                f"Frozen encoder+KMeans reproduce holdout labels (n={len(pred)})"
+                if ok
+                else "Holdout replay mismatch"
+            ),
+        }
+    except Exception as exc:  # noqa: BLE001 — gate must still publish
+        return {
+            "verdict": "FAIL",
+            "detail": f"Holdout replay could not run: {type(exc).__name__}: {exc}"[:400],
+        }
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -116,49 +216,28 @@ def _write_report(path: Path, payload: dict[str, Any]) -> None:
         "# Production freeze readiness — PROVISIONAL",
         "",
         f"**Overall verdict: {payload['overall_verdict']}.** "
-        "Engineering gates for the leakage-safe AE+k=6 production candidate are closed. "
+        "Engineering gates for the leakage-safe AE+k=6 production candidate are evaluated "
+        "from live integrity / replay / pack checks. "
         "This is **not** a full bank production freeze.",
-        "",
-        f"- Run: `{payload.get('champion_run_id')}`",
-        f"- Model version: `{payload.get('model_version')}`",
-        f"- As-of: `{payload.get('as_of_date')}`",
         "",
         "## Gates",
         "",
-        "| Gate | Verdict |",
-        "|---|---|",
+        "| Gate | Verdict | Detail |",
+        "|---|---|---|",
     ]
-    for name, gate in payload["gates"].items():
-        lines.append(f"| {name} | **{gate['verdict']}** — {gate['detail']} |")
+    for name, gate in (payload.get("gates") or {}).items():
+        detail = str(gate.get("detail") or "").replace("|", "/")
+        lines.append(f"| `{name}` | **{gate.get('verdict')}** | {detail} |")
     lines.extend(
         [
-            "",
-            "## Still not fully frozen",
-            "",
-        ]
-    )
-    for item in payload["not_fully_frozen_because"]:
-        lines.append(f"- {item}")
-    lines.extend(
-        [
-            "",
-            "## Artifacts",
-            "",
-            "- Bundle: `artifacts/segmentation/champion/`",
-            "- Decision: `artifacts/decision/champion/`",
-            "- OWNER/DISPONENT policy: `reports/champion/04_owner_disponent_policy.md`",
-            "- Temporal: `reports/champion/03_temporal_validation.md`",
             "",
             "## Rollback",
             "",
-            "Point CLI/API defaults back to `artifacts/segmentation/archive/fullbook_demo/` (archive demo) "
-            "or re-promote a prior hashed research twin.",
+            "Point CLI/API defaults to `artifacts/segmentation/archive/fullbook_demo/` "
+            "(archive demo) or re-promote a prior hashed research twin from "
+            "`artifacts/segmentation/research/leakage_safe_source/`.",
             "",
         ]
     )
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
-
-
-if __name__ == "__main__":
-    print(json.dumps(assemble_freeze_readiness(), indent=2, default=str))
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")

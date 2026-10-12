@@ -62,8 +62,22 @@ def validate_feature_payload(
                 detail=f"{prefix}{flag} must be 0 or 1 (got {val})",
             )
 
-    if cleaned["Recency_Days"] < 0:
-        raise HTTPException(status_code=400, detail=f"{prefix}Recency_Days must be >= 0")
+    # Transaction activity: non-negative; count must be a whole number.
+    # Account_Balance may be negative (overdraft / stress segment).
+    for col in ("Transaction_Count", "Total_Credit", "Total_Withdrawal", "Recency_Days"):
+        if cleaned[col] < 0:
+            raise HTTPException(status_code=400, detail=f"{prefix}{col} must be >= 0")
+
+    txn_count = cleaned["Transaction_Count"]
+    if abs(txn_count - round(txn_count)) > 1e-9:
+        raise HTTPException(
+            status_code=400,
+            detail=f"{prefix}Transaction_Count must be a whole number (got {txn_count})",
+        )
+    cleaned["Transaction_Count"] = float(round(txn_count))
+
+    if cleaned["Account_Age_Days"] < 0:
+        raise HTTPException(status_code=400, detail=f"{prefix}Account_Age_Days must be >= 0")
 
     if cleaned["Account_Age_Days"] < float(minimum_tenure_days):
         raise HTTPException(

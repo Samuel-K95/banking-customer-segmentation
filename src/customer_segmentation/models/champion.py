@@ -86,10 +86,11 @@ class ChampionModel:
         )
 
         if ae_required:
-            preflight_errors = preflight_bundle(path, load_binaries=True)
+            # Existence only first — never deserialize before SHA checks.
+            preflight_errors = preflight_bundle(path, load_binaries=False)
             if preflight_errors:
                 raise FileNotFoundError(
-                    "Champion bundle incomplete or unloadable:\n- " + "\n- ".join(preflight_errors)
+                    "Champion bundle incomplete:\n- " + "\n- ".join(preflight_errors)
                 )
             if verify_hashes and (path / "serving_contract.json").exists():
                 sha_errors = verify_serving_contract(path)
@@ -97,6 +98,12 @@ class ChampionModel:
                     raise ValueError(
                         "Champion serving_contract integrity failed:\n- " + "\n- ".join(sha_errors)
                     )
+            load_errors = preflight_bundle(path, load_binaries=True)
+            if load_errors:
+                raise FileNotFoundError(
+                    "Champion binaries failed to load after hash check:\n- "
+                    + "\n- ".join(load_errors)
+                )
 
         if not (path / "feature_columns.json").exists():
             raise FileNotFoundError(f"Missing feature_columns.json under {path}")

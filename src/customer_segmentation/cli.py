@@ -155,6 +155,15 @@ def main() -> None:
     )
     p_enrich.add_argument("--berka-dir", default=None)
 
+    p_sync = sub.add_parser(
+        "sync-serving-contract",
+        help="Normalize champion CSV newlines to LF and refresh serving_contract SHA-256 hashes",
+    )
+    p_sync.add_argument(
+        "--champion-dir",
+        default="artifacts/segmentation/champion",
+    )
+
     p_serve = sub.add_parser(
         "serve",
         help="Start champion FastAPI (model, decisions, reports, inference)",
@@ -312,6 +321,28 @@ def main() -> None:
         )
         print(json.dumps({"status": "ok", **summary}, indent=2, default=str))
         return
+
+    if args.command == "sync-serving-contract":
+        from customer_segmentation.models.artifact_integrity import (
+            integrity_report,
+            sync_serving_contract_hashes,
+        )
+
+        contract = sync_serving_contract_hashes(args.champion_dir, normalize_text=True)
+        report = integrity_report(args.champion_dir)
+        print(
+            json.dumps(
+                {
+                    "status": "ok" if report.get("ok") else "error",
+                    "champion_dir": args.champion_dir,
+                    "artifact_sha256": contract.get("artifact_sha256"),
+                    "integrity": report,
+                },
+                indent=2,
+                default=str,
+            )
+        )
+        raise SystemExit(0 if report.get("ok") else 1)
 
     if args.command == "serve":
         import uvicorn

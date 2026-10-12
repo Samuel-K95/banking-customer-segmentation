@@ -174,6 +174,35 @@ def test_inference_rejects_under_tenure(client, contract):
     assert "ineligible" in bad.text.lower() or "tenure" in bad.text.lower() or "Account_Age" in bad.text
 
 
+def test_inference_rejects_negative_and_fractional_txn(client, contract):
+    base = {
+        "model_version": contract["model_version"],
+        "as_of_date": contract["as_of_date"],
+        "Transaction_Count": 10,
+        "Account_Balance": -500,  # overdraft OK
+        "Total_Credit": 2000,
+        "Total_Withdrawal": 500,
+        "Recency_Days": 1,
+        "Account_Age_Days": 400,
+        "has_loan": 0,
+        "has_card": 0,
+    }
+    ok_neg_balance = client.post("/v1/inference", json=base)
+    assert ok_neg_balance.status_code == 200, ok_neg_balance.text
+
+    neg_count = dict(base)
+    neg_count["Transaction_Count"] = -1
+    assert client.post("/v1/inference", json=neg_count).status_code == 400
+
+    frac_count = dict(base)
+    frac_count["Transaction_Count"] = 1.5
+    assert client.post("/v1/inference", json=frac_count).status_code == 400
+
+    neg_credit = dict(base)
+    neg_credit["Total_Credit"] = -10
+    assert client.post("/v1/inference", json=neg_credit).status_code == 400
+
+
 def test_health_requires_encoder(client):
     h = client.get("/v1/health")
     assert h.status_code == 200

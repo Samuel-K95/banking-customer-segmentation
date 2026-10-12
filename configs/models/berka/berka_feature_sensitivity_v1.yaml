@@ -6,7 +6,7 @@ description: >-
   1997-12-31 account split.
 
 baseline:
-  config: configs/models/berka_behavioral_baselines_v1_1.yaml
+  config: configs/models/berka/berka_behavioral_baselines_v1_1.yaml
   artifacts: artifacts/berka_behavioral_baselines/v1.1/asof_1997-12-31
 
 data:

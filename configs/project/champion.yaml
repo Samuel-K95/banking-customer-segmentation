@@ -26,7 +26,7 @@ metrics:
 
 selection_rationale: >
   Production candidate is the leakage-safe AE lat=4 k=6 twin (Mahider-style
-  as-of/split/train-only fit). Old full-book product/champion_v1 is archive only.
+  as-of/split/train-only fit). Old full-book demo lives under archive/fullbook_demo only.
   Freeze remains PROVISIONAL pending compliance sign-off and true prospective vintage.
 
 segments_source: artifacts/segmentation/champion/segment_catalog.json

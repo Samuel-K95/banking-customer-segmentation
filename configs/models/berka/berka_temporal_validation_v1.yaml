@@ -5,7 +5,7 @@ snapshot:
   feature_directory: data/processed/berka_snapshot/v1/asof_1997-12-31
   as_of_date: "1997-12-31"
 baseline:
-  configuration: configs/models/berka_behavioral_baselines_v1_1.yaml
+  configuration: configs/models/berka/berka_behavioral_baselines_v1_1.yaml
   artifact_directory: artifacts/berka_behavioral_baselines/v1.1/asof_1997-12-31
   assignment_seed: 42
   k: 2

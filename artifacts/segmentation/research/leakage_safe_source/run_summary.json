@@ -1,5 +1,5 @@
 {
-  "champion_dir": "artifacts\\segmentation\\champion_v1_leakage_safe",
+  "champion_dir": "artifacts/segmentation/research/leakage_safe_source",
   "as_of_date": "1997-12-31",
   "minimum_tenure_days": 365,
   "n_eligible": 3602,
@@ -64,17 +64,17 @@
   },
   "freeze_status": "BLOCKED",
   "files": {
-    "assignments": "artifacts\\segmentation\\champion_v1_leakage_safe\\assignments.csv",
-    "profiles": "artifacts\\segmentation\\champion_v1_leakage_safe\\segment_profiles.csv",
-    "comparison_board": "artifacts\\segmentation\\champion_v1_leakage_safe\\comparison_board.csv",
-    "metrics": "artifacts\\segmentation\\champion_v1_leakage_safe\\metrics.json",
-    "feature_columns": "artifacts\\segmentation\\champion_v1_leakage_safe\\feature_columns.json",
-    "segment_catalog": "artifacts\\segmentation\\champion_v1_leakage_safe\\segment_catalog.json",
-    "decision_map": "artifacts\\segmentation\\champion_v1_leakage_safe\\decision_map.csv",
-    "scaler": "artifacts\\segmentation\\champion_v1_leakage_safe\\scaler.joblib",
-    "kmeans": "artifacts\\segmentation\\champion_v1_leakage_safe\\kmeans.joblib",
-    "encoder": "artifacts\\segmentation\\champion_v1_leakage_safe\\encoder.pt",
-    "manifest": "artifacts\\segmentation\\champion_v1_leakage_safe\\manifest.json"
+    "assignments": "artifacts/segmentation/research/leakage_safe_source\\assignments.csv",
+    "profiles": "artifacts/segmentation/research/leakage_safe_source\\segment_profiles.csv",
+    "comparison_board": "artifacts/segmentation/research/leakage_safe_source\\comparison_board.csv",
+    "metrics": "artifacts/segmentation/research/leakage_safe_source\\metrics.json",
+    "feature_columns": "artifacts/segmentation/research/leakage_safe_source\\feature_columns.json",
+    "segment_catalog": "artifacts/segmentation/research/leakage_safe_source\\segment_catalog.json",
+    "decision_map": "artifacts/segmentation/research/leakage_safe_source\\decision_map.csv",
+    "scaler": "artifacts/segmentation/research/leakage_safe_source\\scaler.joblib",
+    "kmeans": "artifacts/segmentation/research/leakage_safe_source\\kmeans.joblib",
+    "encoder": "artifacts/segmentation/research/leakage_safe_source\\encoder.pt",
+    "manifest": "artifacts/segmentation/research/leakage_safe_source\\manifest.json"
   },
   "parallel_k2": {
     "holdout_metrics": {
@@ -87,7 +87,7 @@
       "min_ari": 0.9970383033856751,
       "n_pairs": 3.0
     },
-    "assignments": "artifacts\\segmentation\\champion_v1_leakage_safe\\held_out_assignments_kmeans_k2.csv"
+    "assignments": "artifacts/segmentation/research/leakage_safe_source\\held_out_assignments_kmeans_k2.csv"
   },
   "acceptance": {
     "leakage_safe_as_of": true,

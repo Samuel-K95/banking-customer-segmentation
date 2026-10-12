@@ -41,8 +41,8 @@ Under this leakage contract, **k=2** is the honest simple partition (scale/activ
 
 ## Artifacts
 
-- Bundle: `artifacts\segmentation\champion_v1_leakage_safe`
-- Parallel k=2 holdout assignments: `artifacts\segmentation\champion_v1_leakage_safe\held_out_assignments_kmeans_k2.csv`
+- Bundle: `artifacts/segmentation/champion/` (served) / `artifacts/segmentation/research/leakage_safe_source/` (promote source)
+- Parallel k=2 holdout assignments: `artifacts/segmentation/champion/held_out_assignments_kmeans_k2.csv`
 - Fingerprints: `freeze_readiness.json` → `artifact_sha256`
 
 ## Bottom line

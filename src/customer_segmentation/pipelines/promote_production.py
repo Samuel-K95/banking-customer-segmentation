@@ -10,9 +10,9 @@ from typing import Any
 
 from customer_segmentation.models.artifact_integrity import (
     REQUIRED_ARTIFACTS,
-    compute_sha256,
     integrity_report,
     preflight_bundle,
+    sync_serving_contract_hashes,
 )
 
 PRODUCTION_DIR = Path("artifacts/segmentation/champion")
@@ -81,30 +81,22 @@ def _stamp_bundle(dst: Path, *, source_dir: Path) -> dict[str, Any]:
     _write_json(dst / "manifest.json", manifest)
     _write_json(dst / "metrics.json", metrics)
 
-    hashes: dict[str, str] = {}
-    missing_hashes: list[str] = []
-    for name in ("scaler.joblib", "kmeans.joblib", "encoder.pt", "account_split.csv", "assignments.csv"):
-        digest = compute_sha256(dst / name)
-        if digest is None:
-            missing_hashes.append(name)
-        else:
-            hashes[name] = digest
-    if missing_hashes:
-        raise PromotionError(
-            "Cannot stamp serving_contract: required artifacts missing after copy: "
-            + ", ".join(missing_hashes)
-        )
-
-    contract = {
-        "model_version": MODEL_VERSION,
-        "as_of_date": CONTRACT_AS_OF,
-        "minimum_tenure_days": 365,
-        "artifact_sha256": hashes,
-        "baseline_segment_mix": _baseline_mix(dst / "assignments.csv"),
-        "exception_segment_ids": _exception_segments(dst),
-        "feature_columns": list(feature_columns),
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-    }
+    try:
+        # Normalize CSV newlines to LF before hashing so Linux/Windows checkouts match.
+        contract = sync_serving_contract_hashes(dst, normalize_text=True)
+    except FileNotFoundError as exc:
+        raise PromotionError(str(exc)) from exc
+    contract.update(
+        {
+            "model_version": MODEL_VERSION,
+            "as_of_date": CONTRACT_AS_OF,
+            "minimum_tenure_days": 365,
+            "baseline_segment_mix": _baseline_mix(dst / "assignments.csv"),
+            "exception_segment_ids": _exception_segments(dst),
+            "feature_columns": list(feature_columns),
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+        }
+    )
     _write_json(dst / "serving_contract.json", contract)
     return contract
 

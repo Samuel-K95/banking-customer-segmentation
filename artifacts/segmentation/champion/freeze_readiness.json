@@ -3,11 +3,11 @@
   "champion_run_id": "c_ae_lat4_k6_leakage_safe",
   "model_version": "production_candidate_v1",
   "as_of_date": "1997-12-31",
-  "evaluated_at": "2026-10-12T10:54:28.886359+00:00",
+  "evaluated_at": "2026-10-12T17:21:30.700152+00:00",
   "gates": {
     "artifact_integrity": {
       "verdict": "PASS",
-      "detail": "SHA-256 fingerprints in serving_contract.json"
+      "detail": "SHA-256 fingerprints match serving_contract.json"
     },
     "snapshot_split_train_only_fit": {
       "verdict": "PASS",
@@ -15,14 +15,14 @@
     },
     "exact_holdout_prediction_replay": {
       "verdict": "PASS",
-      "detail": "Frozen encoder+KMeans reproduce held-out labels (see CI replay test)"
+      "detail": "Frozen encoder+KMeans reproduce holdout labels (n=901)"
     },
     "segment_meaning": {
       "verdict": "PASS",
       "detail": "CRM personas + exception-queue policy for tiny stressed/dormant cells"
     },
     "fairness_owner_disponent": {
-      "verdict": "PASS",
+      "verdict": "PASS_WITH_LIMITATIONS",
       "detail": "District fairness pack + OWNER/DISPONENT policy published; compliance sign-off PENDING"
     },
     "independent_temporal_validation": {
@@ -31,7 +31,7 @@
     },
     "serving_package": {
       "verdict": "PASS",
-      "detail": "FastAPI enforces model_version+as_of_date; health exposes hashes; monitoring/segment-mix + rollback to product/ archive documented"
+      "detail": "FastAPI enforces model_version+as_of_date; serving_contract hashes verified"
     }
   },
   "serving_contract": {
@@ -41,8 +41,8 @@
       "scaler.joblib": "1ad6dc96713b0316028fb51d34be2a5d37667c157070bfe92ac6a78f5d6222ff",
       "kmeans.joblib": "504583a9cb44d18612ac4a1a63c005a9ab2812b6038761c8a669797bf4d3f14c",
       "encoder.pt": "ea2cf8a7978cafcbfae397483957118cd2df74dab0e3100353d55b44f61b8005",
-      "account_split.csv": "dba00059ee3157208912099c0b232dd5b566f6f93cc6861c29d955c06761a602",
-      "assignments.csv": "b3f8f1dc650fa14985eb4de2ccb6f1850ea00597026beb11b5543e616098f196"
+      "account_split.csv": "9f67bd89076f4110b0153200acf7692eea1328dd6b44c10edd5402854c1afc3e",
+      "assignments.csv": "c4230ebb9b80af0263e4d09e5108c4c2b405c1beeb782b8543b2c2053df2b912"
     }
   },
   "temporal_summary": {

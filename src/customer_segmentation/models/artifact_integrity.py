@@ -36,6 +36,62 @@ def compute_sha256(path: Path) -> str | None:
     return h.hexdigest()
 
 
+def normalize_text_file_to_lf(path: Path) -> bool:
+    """Rewrite path with LF newlines. Return True if bytes changed."""
+    if not path.exists() or not path.is_file():
+        return False
+    raw = path.read_bytes()
+    normalized = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+    if normalized == raw:
+        return False
+    path.write_bytes(normalized)
+    return True
+
+
+TEXT_HASHED_ARTIFACTS: tuple[str, ...] = (
+    "account_split.csv",
+    "assignments.csv",
+)
+
+
+def sync_serving_contract_hashes(
+    bundle_dir: str | Path,
+    *,
+    normalize_text: bool = True,
+) -> dict[str, Any]:
+    """Recompute serving_contract.artifact_sha256 from on-disk bytes (LF-normalized CSVs)."""
+    root = Path(bundle_dir)
+    contract_path = root / "serving_contract.json"
+    contract = read_serving_contract(root) if contract_path.exists() else {}
+    if normalize_text:
+        for name in TEXT_HASHED_ARTIFACTS:
+            normalize_text_file_to_lf(root / name)
+
+    hashes: dict[str, str] = {}
+    missing: list[str] = []
+    for name in (*REQUIRED_BINARY_HASH_KEYS, *TEXT_HASHED_ARTIFACTS):
+        digest = compute_sha256(root / name)
+        if digest is None:
+            missing.append(name)
+        else:
+            hashes[name] = digest
+    if missing:
+        raise FileNotFoundError(
+            f"Cannot sync serving_contract hashes; missing: {', '.join(missing)}"
+        )
+
+    contract = dict(contract)
+    contract["artifact_sha256"] = hashes
+    contract.setdefault("model_version", "production_candidate_v1")
+    contract.setdefault("as_of_date", "1997-12-31")
+    contract.setdefault("minimum_tenure_days", 365)
+    from datetime import datetime, timezone
+
+    contract["updated_at"] = datetime.now(timezone.utc).isoformat()
+    contract_path.write_text(json.dumps(contract, indent=2, default=str) + "\n", encoding="utf-8")
+    return contract
+
+
 def missing_required_artifacts(bundle_dir: str | Path) -> list[str]:
     root = Path(bundle_dir)
     missing: list[str] = []
@@ -130,10 +186,14 @@ def verify_serving_contract(
 
 
 def integrity_report(bundle_dir: str | Path) -> dict[str, Any]:
+    """Existence → SHA-256 vs contract → only then deserialize binaries."""
     root = Path(bundle_dir)
-    preflight = preflight_bundle(root)
-    sha_errors = verify_serving_contract(root) if not preflight else []
-    errors = preflight + sha_errors
+    existence = preflight_bundle(root, load_binaries=False)
+    sha_errors = verify_serving_contract(root) if not existence else []
+    load_errors: list[str] = []
+    if not existence and not sha_errors:
+        load_errors = preflight_bundle(root, load_binaries=True)
+    errors = existence + sha_errors + load_errors
     return {
         "bundle_dir": str(root),
         "ok": len(errors) == 0,
