@@ -58,21 +58,17 @@ def champion_integrity() -> dict[str, Any]:
 
 
 def serving_contract() -> dict[str, Any]:
+    """Return the on-disk serving contract. Fail closed — no manifest fallback."""
     path = resolve_path(CHAMPION_REL / "serving_contract.json")
-    if path.exists():
-        return json.loads(path.read_text(encoding="utf-8"))
-    champ = require_champion()
-    return {
-        "model_version": champ.model_version,
-        "as_of_date": (champ.manifest or {}).get("as_of_date")
-        or (champ.metrics or {}).get("as_of_date")
-        or "1997-12-31",
-        "minimum_tenure_days": 365,
-        "artifact_sha256": {},
-        "baseline_segment_mix": {},
-        "exception_segment_ids": [],
-        "feature_columns": list(champ.feature_columns),
-    }
+    if not path.exists():
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "serving_contract.json missing — refuse to serve without an "
+                "integrity contract (fail closed)"
+            ),
+        )
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def validate_contract(model_version: str, as_of_date: str) -> dict[str, Any]:

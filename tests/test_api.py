@@ -240,3 +240,18 @@ def test_legacy_customers_segment(client, contract):
         },
     )
     assert r.status_code == 200
+
+
+def test_serving_contract_fails_closed_without_file(tmp_path, monkeypatch):
+    """API must not invent a contract from manifest metadata."""
+    from fastapi import HTTPException
+
+    from customer_segmentation.serve import deps
+
+    missing = tmp_path / "serving_contract.json"
+    monkeypatch.setattr(deps, "resolve_path", lambda *args, **kwargs: missing)
+
+    with pytest.raises(HTTPException) as excinfo:
+        deps.serving_contract()
+    assert excinfo.value.status_code == 503
+    assert "serving_contract.json missing" in str(excinfo.value.detail)

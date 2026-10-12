@@ -111,7 +111,9 @@ def promote_production(
 
     Never deletes ``dest`` until the source passes preflight and the staged
     copy validates. Incomplete sources raise ``PromotionError`` and leave dest
-    untouched.
+    untouched. If the live champion was moved to backup and the staging→live
+    cutover fails (or post-cutover integrity fails), the previous champion is
+    restored automatically so the serving path is never left empty.
     """
     src = Path(source_dir) if source_dir else RESEARCH_DIR
     dst = Path(dest_dir) if dest_dir else PRODUCTION_DIR
@@ -130,6 +132,10 @@ def promote_production(
     staging = dst.parent / f".champion_promote_tmp_{stamp}"
     if staging.exists():
         shutil.rmtree(staging)
+
+    backup_root: Path | None = None
+    live_swapped = False
+    contract: dict[str, Any] = {}
 
     try:
         shutil.copytree(src, staging)
@@ -153,20 +159,44 @@ def promote_production(
         if dst.exists():
             if backup:
                 backup_root = ARCHIVE_DIR.parent / f"pre_promote_{stamp}"
+                # Tests / alternate dests: keep backup next to dest when not using default tree.
+                if dst.parent != PRODUCTION_DIR.parent:
+                    backup_root = dst.parent / f"pre_promote_{stamp}"
                 backup_root.parent.mkdir(parents=True, exist_ok=True)
                 if backup_root.exists():
                     shutil.rmtree(backup_root)
                 shutil.move(str(dst), str(backup_root))
+                live_swapped = True
             else:
                 shutil.rmtree(dst)
 
-        shutil.move(str(staging), str(dst))
+        try:
+            shutil.move(str(staging), str(dst))
+        except Exception as move_exc:  # noqa: BLE001 — must restore serving path
+            _restore_promoted_backup(dst, backup_root if live_swapped else None)
+            raise PromotionError(
+                "Failed to move staged champion into serving path; "
+                f"previous champion restored from backup when available: {move_exc}"
+            ) from move_exc
+    except Exception:
+        # If we already swapped live out and dst is still empty/missing, restore.
+        if live_swapped and backup_root is not None and not _bundle_present(dst):
+            _restore_promoted_backup(dst, backup_root)
+        raise
     finally:
         if staging.exists():
             shutil.rmtree(staging, ignore_errors=True)
 
     final = integrity_report(dst)
     if not final["ok"]:
+        if live_swapped and backup_root is not None and backup_root.exists():
+            if dst.exists():
+                shutil.rmtree(dst, ignore_errors=True)
+            _restore_promoted_backup(dst, backup_root)
+            raise PromotionError(
+                "Promotion integrity failed after cutover; previous champion restored:\n- "
+                + "\n- ".join(final["errors"])
+            )
         raise PromotionError(
             "Promotion completed but final integrity failed:\n- " + "\n- ".join(final["errors"])
         )
@@ -180,7 +210,22 @@ def promote_production(
         "artifact_sha256": contract.get("artifact_sha256"),
         "required_artifacts": list(REQUIRED_ARTIFACTS),
         "integrity": final,
+        "backup_dir": str(backup_root) if backup_root else None,
     }
+
+
+def _bundle_present(path: Path) -> bool:
+    return path.exists() and path.is_dir() and any(path.iterdir())
+
+
+def _restore_promoted_backup(dst: Path, backup_root: Path | None) -> None:
+    """Best-effort restore of the previous champion into the serving path."""
+    if backup_root is None or not backup_root.exists():
+        return
+    if dst.exists():
+        # Incomplete / failed cutover — clear before restoring.
+        shutil.rmtree(dst, ignore_errors=True)
+    shutil.move(str(backup_root), str(dst))
 
 
 def _baseline_mix(assignments_path: Path) -> dict[str, float]:

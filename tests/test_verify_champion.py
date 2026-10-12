@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 from pathlib import Path
 
 import pytest
@@ -40,6 +41,25 @@ def test_champion_load_requires_encoder_and_hashes():
     assert champ.kmeans is not None
     summary = champ.summary()
     assert summary["has_encoder"] is True
+
+
+@pytest.mark.skipif(
+    not (CHAMPION / "encoder.pt").exists(),
+    reason="encoder.pt not present",
+)
+def test_production_candidate_fails_closed_without_serving_contract(tmp_path: Path):
+    dest = tmp_path / "champion"
+    shutil.copytree(CHAMPION, dest)
+    contract = dest / "serving_contract.json"
+    assert contract.exists()
+    contract.unlink()
+
+    with pytest.raises(FileNotFoundError, match="serving_contract.json missing"):
+        ChampionModel.load(dest, verify_hashes=True)
+
+    # Explicit opt-out still loads (research / offline tooling only).
+    champ = ChampionModel.load(dest, verify_hashes=False)
+    assert champ.encoder is not None
 
 
 @pytest.mark.skipif(

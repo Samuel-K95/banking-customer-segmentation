@@ -65,8 +65,9 @@ class ChampionModel:
         """Load frozen champion bundle from disk.
 
         For AE / production-candidate bundles, scaler + kmeans + encoder are
-        required. When ``serving_contract.json`` is present, SHA-256 hashes are
-        verified unless ``verify_hashes=False``.
+        required. When ``verify_hashes=True`` (default), ``serving_contract.json``
+        is mandatory and SHA-256 hashes are checked before any binary deserialize
+        — production candidates fail closed if the contract is missing.
         """
         from customer_segmentation.models.artifact_integrity import (
             preflight_bundle,
@@ -81,8 +82,9 @@ class ChampionModel:
         metrics = _read_json(path / "metrics.json") if (path / "metrics.json").exists() else {}
         method = str(manifest.get("method") or metrics.get("method") or "ae_kmeans")
         model_version = str(manifest.get("model_version") or metrics.get("model_version") or "v1")
+        is_production_candidate = model_version.startswith("production_candidate")
         ae_required = require_ae if require_ae is not None else (
-            "ae" in method.lower() or model_version.startswith("production_candidate")
+            "ae" in method.lower() or is_production_candidate
         )
 
         if ae_required:
@@ -92,7 +94,14 @@ class ChampionModel:
                 raise FileNotFoundError(
                     "Champion bundle incomplete:\n- " + "\n- ".join(preflight_errors)
                 )
-            if verify_hashes and (path / "serving_contract.json").exists():
+            if verify_hashes:
+                contract_path = path / "serving_contract.json"
+                # Fail closed for production / AE serving bundles: no contract ⇒ no load.
+                if not contract_path.exists():
+                    raise FileNotFoundError(
+                        "serving_contract.json missing — refuse to load production/"
+                        "AE champion without an integrity contract (fail closed)"
+                    )
                 sha_errors = verify_serving_contract(path)
                 if sha_errors:
                     raise ValueError(
