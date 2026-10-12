@@ -84,25 +84,41 @@ mirror of the same `train_ver2.csv`.
 
 ## Airflow (data-layer DAG)
 
-`pipelines/airflow/` runs the same steps as an Airflow 3 DAG, `bcip_data_layer`:
+`pipelines/airflow/` runs `scripts/run_data_layer.sh` step for step as an Airflow 3 DAG,
+`bcip_data_layer`, then segments Berka:
 
 ```text
-download_<source> → check_raw_<source> → build_track_<x>   (one chain per dataset, in parallel)
-                                                    └──► dq_report
+download_<source> → check_raw_<source> → build_<track>     (one chain per selected track, in parallel)
+    → dq_report → feature_contract
+    → berka_snapshot → berka_baselines → berka_feature_sensitivity
+                                       → berka_temporal_validation
 ```
 
-- Each task calls the project's own functions, and the repo is mounted into the
-  containers, so code changes need no rebuild.
+- Each task calls the project's own code from the repo root (mounted into the containers),
+  so code changes need no rebuild and repo-relative paths resolve as in the shell script.
 - `check_raw_*` fails on missing files or columns and records a SHA-256 for each raw file.
 - `dq_report` writes `artifacts/quality/dq_report_<run_id>.json` (plus `dq_report_latest.json`)
   and fails the run if any track breaks a gate in `configs/data.yaml` (`quality:`).
+  Columns listed under a track's `nullable_columns` are reported but do not fail the gate.
+- `feature_contract` is shell step 4 (`models.preflight` against `configs/models/feature_contracts.yaml`).
+- The Berka segmentation stage runs only when `track_c` is selected.
+
+Run parameters (Trigger → "Trigger DAG w/ config" in the UI) mirror the shell flags:
+
+| Parameter | Shell flag | Default |
+|---|---|---|
+| `tracks` | `--tracks` | `["track_a", "track_b", "track_c"]` |
+| `skip_downloads` | `--skip-downloads` | `false` |
+| `reuse_preprocessors` | `--reuse-preprocessors` | `false` |
 
 ```bash
 cd pipelines/airflow
-cp .env.example .env               # set AIRFLOW_UID to `id -u`
+cp .env.example .env               # set AIRFLOW_UID to `id -u`; change AIRFLOW_PORT if 8080 is taken
 docker compose up -d --build       # UI: http://localhost:8080 (airflow / airflow)
 docker compose exec airflow-scheduler airflow dags unpause bcip_data_layer
 docker compose exec airflow-scheduler airflow dags trigger bcip_data_layer
+docker compose exec airflow-scheduler airflow dags trigger bcip_data_layer \
+  --conf '{"tracks": ["track_c"], "skip_downloads": true}'
 docker compose down                # stop; add -v to also drop Airflow's database
 ```
 
