@@ -145,6 +145,16 @@ def main() -> None:
     p_verify.add_argument("--skip-replay", action="store_true")
     p_verify.add_argument("--skip-path-scan", action="store_true")
 
+    p_enrich = sub.add_parser(
+        "enrich-champion-eval",
+        help="Enrich frozen champion metrics/board (shared metrics + subsample + baselines; no AE retrain)",
+    )
+    p_enrich.add_argument(
+        "--champion-dir",
+        default="artifacts/segmentation/champion",
+    )
+    p_enrich.add_argument("--berka-dir", default=None)
+
     p_serve = sub.add_parser(
         "serve",
         help="Start champion FastAPI (model, decisions, reports, inference)",
@@ -290,6 +300,18 @@ def main() -> None:
         )
         print(json.dumps(report, indent=2, default=str))
         raise SystemExit(0 if report.get("ok") else 1)
+
+    if args.command == "enrich-champion-eval":
+        from customer_segmentation.pipelines.enrich_champion_evaluation import (
+            enrich_champion_evaluation,
+        )
+
+        summary = enrich_champion_evaluation(
+            champion_dir=args.champion_dir,
+            berka_dir=args.berka_dir,
+        )
+        print(json.dumps({"status": "ok", **summary}, indent=2, default=str))
+        return
 
     if args.command == "serve":
         import uvicorn

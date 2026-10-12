@@ -1,0 +1,295 @@
+{
+  "champion_run_id": "c_ae_lat4_k6_leakage_safe",
+  "model_version": "production_candidate_v1",
+  "as_of_date": "1997-12-31",
+  "holdout_metrics_shared": {
+    "silhouette": 0.4591466188430786,
+    "db_index": 0.6229882458851519,
+    "ch_index": 852.214968945884
+  },
+  "train_metrics_shared": {
+    "silhouette": 0.4604634940624237,
+    "db_index": 0.6379019867644478,
+    "ch_index": 1759.550814274946
+  },
+  "stability_seed_ari": {
+    "mean_ari": 0.9994961507756948,
+    "std_ari": 0.001007698448610661,
+    "min_ari": 0.9974807538784733,
+    "n_seeds": 5.0
+  },
+  "stability_subsample_ari": {
+    "mean_ari": 0.9775014397646611,
+    "std_ari": 0.02093395344338098,
+    "min_ari": 0.9496376091906176,
+    "n_rounds": 5.0,
+    "frac": 0.75
+  },
+  "comparison_board": [
+    {
+      "run_id": "c_ae_lat4_k6_leakage_safe",
+      "family": "ae_kmeans",
+      "k": 6,
+      "latent_dim": 4,
+      "split": "holdout",
+      "silhouette": 0.4591,
+      "db_index": 0.623,
+      "ch_index": 852.0,
+      "seed_ari_mean": 0.9995,
+      "subsample_ari_mean": 0.9775,
+      "role": "product_champion_leakage_safe"
+    },
+    {
+      "run_id": "c_kmeans_k6_scaled_leakage_safe",
+      "family": "kmeans",
+      "k": 6,
+      "latent_dim": "-",
+      "split": "holdout",
+      "silhouette": 0.3743,
+      "db_index": 0.7657,
+      "ch_index": 590.0,
+      "seed_ari_mean": NaN,
+      "subsample_ari_mean": NaN,
+      "role": "traditional_baseline_same_matrix"
+    },
+    {
+      "run_id": "c_gmm_k6_scaled_leakage_safe",
+      "family": "gmm",
+      "k": 6,
+      "latent_dim": "-",
+      "split": "holdout",
+      "silhouette": 0.3223,
+      "db_index": 1.225,
+      "ch_index": 114.0,
+      "seed_ari_mean": NaN,
+      "subsample_ari_mean": NaN,
+      "role": "traditional_baseline_same_matrix"
+    },
+    {
+      "run_id": "c_hier_k6_scaled_leakage_safe",
+      "family": "hierarchical",
+      "k": 6,
+      "latent_dim": "-",
+      "split": "train",
+      "silhouette": 0.3625,
+      "db_index": 0.8228,
+      "ch_index": 976.0,
+      "seed_ari_mean": NaN,
+      "subsample_ari_mean": NaN,
+      "role": "traditional_baseline_train_only"
+    },
+    {
+      "run_id": "c_kmeans_k2_leakage_safe",
+      "family": "kmeans",
+      "k": 2,
+      "latent_dim": "-",
+      "split": "holdout",
+      "silhouette": 0.2968,
+      "db_index": 1.4088,
+      "ch_index": 208.0,
+      "seed_ari_mean": NaN,
+      "subsample_ari_mean": NaN,
+      "role": "research_twin_same_matrix"
+    }
+  ],
+  "demographic_ablation": {
+    "n_train": 2701,
+    "k": 6,
+    "behavior_features": [
+      "Transaction_Count",
+      "Account_Balance",
+      "Total_Credit",
+      "Total_Withdrawal",
+      "Recency_Days",
+      "Account_Age_Days",
+      "has_loan",
+      "has_card"
+    ],
+    "added_demographics": [
+      "age",
+      "is_female",
+      "district_top15_onehot"
+    ],
+    "ari_behavior_vs_behavior_plus_demo": 0.1980609474502298,
+    "ari_champion_vs_behavior_kmeans": 0.6676728893286152,
+    "ari_champion_vs_behavior_plus_demo_kmeans": 0.10056806305422666,
+    "interpretation": "High ARI(behavior, behavior+demo) means demographics do not rewrite segments; champion remains behavior-only."
+  },
+  "profile_enrichment_preview": {
+    "packs_preview": [
+      {
+        "segment_id": 0,
+        "segment_name": "New basic accounts",
+        "n": 1176,
+        "pct": 32.65,
+        "product_penetration": {
+          "has_loan_rate": 0.0009,
+          "has_card_rate": 0.006,
+          "both_products_rate": 0.0,
+          "neither_product_rate": 0.9932
+        },
+        "lifecycle_mix": {
+          "median_account_age_days": 564.5,
+          "median_recency_days": 0.0,
+          "share_recency_gt_30": 0.0077,
+          "share_tenure_lt_730": 0.7832,
+          "share_negative_balance": 0.0
+        },
+        "fairness_notes": {
+          "usage": "CRM/journey only \u2014 not credit eligibility or pricing",
+          "size_policy": "mass_campaign_eligible_with_guardrails"
+        }
+      },
+      {
+        "segment_id": 1,
+        "segment_name": "Long-tenure high-activity basic",
+        "n": 1329,
+        "pct": 36.9,
+        "product_penetration": {
+          "has_loan_rate": 0.0,
+          "has_card_rate": 0.0,
+          "both_products_rate": 0.0,
+          "neither_product_rate": 1.0
+        },
+        "lifecycle_mix": {
+          "median_account_age_days": 1514.0,
+          "median_recency_days": 0.0,
+          "share_recency_gt_30": 0.0,
+          "share_tenure_lt_730": 0.0414,
+          "share_negative_balance": 0.0
+        },
+        "fairness_notes": {
+          "usage": "CRM/journey only \u2014 not credit eligibility or pricing",
+          "size_policy": "mass_campaign_eligible_with_guardrails"
+        }
+      },
+      {
+        "segment_id": 2,
+        "segment_name": "Loan-centric high-volume",
+        "n": 489,
+        "pct": 13.58,
+        "product_penetration": {
+          "has_loan_rate": 1.0,
+          "has_card_rate": 0.2577,
+          "both_products_rate": 0.2577,
+          "neither_product_rate": 0.0
+        },
+        "lifecycle_mix": {
+          "median_account_age_days": 997.0,
+          "median_recency_days": 0.0,
+          "share_recency_gt_30": 0.0,
+          "share_tenure_lt_730": 0.3415,
+          "share_negative_balance": 0.0
+        },
+        "fairness_notes": {
+          "usage": "CRM/journey only \u2014 not credit eligibility or pricing",
+          "size_policy": "mass_campaign_eligible_with_guardrails"
+        }
+      },
+      {
+        "segment_id": 3,
+        "segment_name": "Card-centric active savers",
+        "n": 584,
+        "pct": 16.21,
+        "product_penetration": {
+          "has_loan_rate": 0.0,
+          "has_card_rate": 1.0,
+          "both_products_rate": 0.0,
+          "neither_product_rate": 0.0
+        },
+        "lifecycle_mix": {
+          "median_account_age_days": 988.5,
+          "median_recency_days": 0.0,
+          "share_recency_gt_30": 0.0,
+          "share_tenure_lt_730": 0.3545,
+          "share_negative_balance": 0.0
+        },
+        "fairness_notes": {
+          "usage": "CRM/journey only \u2014 not credit eligibility or pricing",
+          "size_policy": "mass_campaign_eligible_with_guardrails"
+        }
+      },
+      {
+        "segment_id": 4,
+        "segment_name": "Financially stressed / overdraft risk",
+        "n": 18,
+        "pct": 0.5,
+        "product_penetration": {
+          "has_loan_rate": 0.4444,
+          "has_card_rate": 0.0556,
+          "both_products_rate": 0.0,
+          "neither_product_rate": 0.5
+        },
+        "lifecycle_mix": {
+          "median_account_age_days": 1151.0,
+          "median_recency_days": 0.0,
+          "share_recency_gt_30": 0.0,
+          "share_tenure_lt_730": 0.2222,
+          "share_negative_balance": 1.0
+        },
+        "fairness_notes": {
+          "usage": "CRM/journey only \u2014 not credit eligibility or pricing",
+          "size_policy": "exception_queue_not_mass_campaign"
+        }
+      },
+      {
+        "segment_id": 5,
+        "segment_name": "Dormant long-term accounts",
+        "n": 6,
+        "pct": 0.17,
+        "product_penetration": {
+          "has_loan_rate": 0.0,
+          "has_card_rate": 0.0,
+          "both_products_rate": 0.0,
+          "neither_product_rate": 1.0
+        },
+        "lifecycle_mix": {
+          "median_account_age_days": 1534.5,
+          "median_recency_days": 385.5,
+          "share_recency_gt_30": 1.0,
+          "share_tenure_lt_730": 0.0,
+          "share_negative_balance": 0.0
+        },
+        "fairness_notes": {
+          "usage": "CRM/journey only \u2014 not credit eligibility or pricing",
+          "size_policy": "exception_queue_not_mass_campaign"
+        }
+      }
+    ]
+  },
+  "k_justification_numbers": {
+    "holdout_silhouette": 0.4591466188430786,
+    "holdout_db_index": 0.6229882458851519,
+    "holdout_ch_index": 852.214968945884,
+    "seed_ari_mean": 0.9994961507756948,
+    "subsample_ari_mean": 0.9775014397646611,
+    "raw_kmeans_k6_holdout_silhouette": 0.3743005572139579,
+    "gmm_k6_holdout_silhouette": 0.3223096291250415,
+    "hier_k6_train_silhouette": 0.36245293578057663,
+    "kmeans_k2_holdout_silhouette": 0.2967728910901734,
+    "n_eligible": 3602,
+    "n_train": 2701,
+    "n_holdout": 901,
+    "size": {
+      "counts": [
+        1176,
+        1329,
+        489,
+        584,
+        18,
+        6
+      ],
+      "fractions": [
+        0.32648528595224874,
+        0.36896168795113826,
+        0.13575791227096057,
+        0.16213214880621876,
+        0.004997223764575236,
+        0.001665741254858412
+      ],
+      "ok": false,
+      "min_frac": 0.001665741254858412,
+      "max_frac": 0.36896168795113826
+    }
+  }
+}

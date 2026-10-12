@@ -1,6 +1,8 @@
 {
   "behavior_vs_demographic": {
-    "model_features": [
+    "n": 3602,
+    "k": 6,
+    "behavior_features": [
       "Transaction_Count",
       "Account_Balance",
       "Total_Credit",
@@ -10,9 +12,18 @@
       "has_loan",
       "has_card"
     ],
-    "explicit_demographics_in_model": false,
-    "ablation_status": "Seg_behavior \u2248 Seg_full for the champion matrix because age/gender/district were never clustering inputs. Sensitivity to geography is monitored post-hoc via district concentration, not via re-clustering.",
-    "driver_audit": "Primary drivers are recency, balance sign/level, activity, and product flags (loan/card). District is not a model feature; any concentration is a usage risk."
+    "added_demographics": [
+      "age",
+      "is_female",
+      "district_top15_onehot"
+    ],
+    "explicit_demographics_in_champion_model": false,
+    "ari_behavior_vs_behavior_plus_demo": 0.17806862614184488,
+    "ablation_status": "executed_recluster",
+    "interpretation": "Low ARI(behavior, behavior+demo) means age/gender/district would rewrite segments if included \u2014 supporting the champion's behavior-only feature set. High ARI would mean demographics are mostly redundant with behavior.",
+    "driver_audit": "Champion clustering inputs remain the 8 CRM behavioral/product features. Demographics are post-hoc ablation / fairness monitors only.",
+    "ari_champion_vs_behavior_kmeans": 0.6587249086484104,
+    "ari_champion_vs_behavior_plus_demo_kmeans": 0.08367018528735183
   },
   "district_concentration": [
     {
@@ -75,8 +86,8 @@
       "72",
       "68",
       "5",
-      "8",
-      "52"
+      "52",
+      "8"
     ],
     "p_segment_given_district": [
       {
@@ -278,7 +289,7 @@
     "Required: human review for stressed + low-confidence members"
   ],
   "limitations": [
-    "No completed demographic fairness audit on age/gender (not in champion matrix)",
+    "Age/gender are ablation features only \u2014 not in the champion clustering matrix",
     "Berka 1993\u20131998 Czech context; revalidate on current book before policy use",
     "Tiny segments (stressed/dormant) need caution \u2014 small-n instability"
   ]

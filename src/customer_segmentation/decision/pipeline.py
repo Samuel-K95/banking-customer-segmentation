@@ -115,12 +115,35 @@ def run_decision_layer(
     except Exception as exc:  # pragma: no cover - explainability soft-fail
         print(f"AE explainability skipped: {exc}")
 
-    profiles = build_profile_packs(df, catalog, feature_cols=feat_cols)
     explain = build_explainability_bundle(df, feature_cols=feat_cols, z=z, recon_mse=recon_mse)
+    as_of_year = 1997
+    if as_of:
+        try:
+            as_of_year = int(str(as_of)[:4])
+        except ValueError:
+            as_of_year = 1997
     fairness = build_fairness_pack(
         assign.merge(df[[id_col, "segment_name"]], on=id_col, how="left"),
         berka_dir=berka_dir,
         catalog=catalog,
+        feature_df=df,
+        n_clusters=int(df["segment_id"].nunique()),
+        as_of_year=as_of_year,
+    )
+    fair_by_seg: dict[int, dict[str, Any]] = {}
+    for row in fairness.get("district_concentration") or []:
+        sid = int(row["segment_id"])
+        fair_by_seg[sid] = {
+            "max_district_share": row.get("max_district_share"),
+            "top_district_id": row.get("top_district_id"),
+            "risk_note": (
+                "Elevated district concentration — do not target by geography from segment_id"
+                if float(row.get("max_district_share") or 0) >= 0.15
+                else "Monitor district mix; no demographic targeting from segment_id"
+            ),
+        }
+    profiles = build_profile_packs(
+        df, catalog, feature_cols=feat_cols, fairness_by_segment=fair_by_seg
     )
     decision_map = expand_decision_map(catalog)
     coverage = domain_coverage_summary(decision_map)
@@ -196,10 +219,15 @@ def run_decision_layer(
         "files": {k: _rel(Path(v)) for k, v in paths.items()},
         "acceptance": {
             "profile_packs": True,
+            "profile_packs_include_penetration_lifecycle_fairness": True,
             "human_names": True,
             "explainability": True,
             "fairness_pack": True,
             "behavior_vs_demographic_documented": True,
+            "behavior_vs_demographic_ablation_executed": bool(
+                (fairness.get("behavior_vs_demographic") or {}).get("ablation_status")
+                == "executed_recluster"
+            ),
             "applications_ge_3": bool(coverage["n_plays"].sum() >= 3),
             "domains_covered": int((coverage["n_plays"] > 0).sum()),
             "decision_map_published": True,

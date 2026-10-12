@@ -1,0 +1,26 @@
+{
+  "champion_dir": "artifacts\\segmentation\\champion",
+  "holdout_metrics": {
+    "silhouette": 0.4591466188430786,
+    "db_index": 0.6229882458851519,
+    "ch_index": 852.214968945884
+  },
+  "stability_seed_ari": {
+    "mean_ari": 0.9994961507756948,
+    "std_ari": 0.001007698448610661,
+    "min_ari": 0.9974807538784733,
+    "n_seeds": 5.0
+  },
+  "stability_subsample_ari": {
+    "mean_ari": 0.9775014397646611,
+    "std_ari": 0.02093395344338098,
+    "min_ari": 0.9496376091906176,
+    "n_rounds": 5.0,
+    "frac": 0.75
+  },
+  "comparison_board_rows": 5,
+  "files": {
+    "metrics": "artifacts\\segmentation\\champion\\metrics.json",
+    "comparison_board": "artifacts\\segmentation\\champion\\comparison_board.csv"
+  }
+}

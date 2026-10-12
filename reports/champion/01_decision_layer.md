@@ -51,11 +51,11 @@ Exemplars: `artifacts/decision/champion/exemplars.csv`
 
 | Criterion | Status |
 |---|---|
-| Full profile pack per segment | Yes — `profile_packs.json` |
+| Full profile pack per segment | Yes — packs include lift, exemplars, **product penetration**, **lifecycle mix**, **in-pack fairness notes** |
 | Human-usable names | Yes |
 | Membership explanations | Yes — surrogate + lift + exemplars |
 | Fairness analysis + risks | Yes — `fairness.json` |
-| Behavior vs demographic considered | Yes |
+| Behavior vs demographic considered | Yes — **executed recluster ablation** (behavior vs behavior+age/gender/district); low ARI → demos would rewrite segments, so champion stays behavior-only |
 | ≥3 banking applications | Yes — **6 domains / 20 plays** |
 | Decision map published | Yes — `decision_map_full.csv` |
 | Boundary vs predictive modeling | Yes |

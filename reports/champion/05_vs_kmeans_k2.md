@@ -22,7 +22,9 @@ Silhouette / DB / CH live in **different spaces and evaluation contracts**, so t
 | Silhouette ↑ | **0.466** (full book, latent space) | **0.297** (holdout, scaled feature space) |
 | Davies–Bouldin ↓ | **0.659** | **1.409** |
 | Calinski–Harabasz ↑ | **3,775** | **208** |
-| Seed stability ARI ↑ | **0.996** (latent K-Means) | **0.998** (raw K-Means) |
+| Seed stability ARI ↑ | **~0.999** (latent K-Means) | **~0.998** (raw K-Means) |
+| Subsample ARI ↑ (75%) | **~0.978** (latent K-Means) | — |
+| Same-matrix KMeans/GMM/Hier k=6 holdout sil | AE **0.459** vs KMeans 0.374 / GMM 0.322 / Hier(train) 0.363 | — |
 | Segment count | 6 | 2 |
 | Smallest segment | 12 (0.3%) | ~42% of holdout (balanced) |
 

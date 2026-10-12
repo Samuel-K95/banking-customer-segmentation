@@ -17,9 +17,9 @@ import joblib
 import numpy as np
 import pandas as pd
 import yaml
-from sklearn.cluster import KMeans
-from sklearn.metrics import adjusted_rand_score, silhouette_score
-from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score
+from sklearn.cluster import AgglomerativeClustering, KMeans
+from sklearn.metrics import adjusted_rand_score
+from sklearn.mixture import GaussianMixture
 
 from customer_segmentation.data.berka_dataset_loader import (
     load_berka_product_tables,
@@ -35,9 +35,10 @@ from customer_segmentation.features.build_berka_segmentation_features import (
     transform_with_train_scaler,
 )
 from customer_segmentation.models.berka_behavioral_baselines import make_shared_split
-from customer_segmentation.models.metrics import size_sanity
+from customer_segmentation.models.metrics import evaluate_clustering, size_sanity
 from customer_segmentation.models.registry import register_champion, write_json
 from customer_segmentation.models.segment_intel import build_segment_catalog
+from customer_segmentation.models.stability import multi_seed_ari, subsample_ari
 from customer_segmentation.models.tabular_ae import (
     TORCH_OK,
     distance_confidence,
@@ -56,34 +57,29 @@ def _sha256(path: Path) -> str:
     return h.hexdigest()
 
 
-def _cluster_metrics(X: np.ndarray, labels: np.ndarray) -> dict[str, float]:
-    n_labels = len(set(int(x) for x in labels))
-    if n_labels < 2 or len(labels) < 3:
-        return {"silhouette": float("nan"), "db_index": float("nan"), "ch_index": float("nan")}
-    return {
-        "silhouette": float(silhouette_score(X, labels)),
-        "db_index": float(davies_bouldin_score(X, labels)),
-        "ch_index": float(calinski_harabasz_score(X, labels)),
-    }
-
-
 def _seed_ari(
     X_train: np.ndarray,
     *,
     n_clusters: int,
     seeds: list[int],
 ) -> dict[str, float]:
-    label_sets = [
-        KMeans(n_clusters=n_clusters, n_init=20, random_state=s).fit_predict(X_train) for s in seeds
-    ]
+    """Pairwise multi-seed ARI (legacy helper) + shared multi_seed_ari protocol."""
+
+    def _fit(X: np.ndarray, seed: int) -> np.ndarray:
+        return KMeans(n_clusters=n_clusters, n_init=20, random_state=seed).fit_predict(X)
+
+    shared = multi_seed_ari(_fit, X_train, n_seeds=max(len(seeds) - 1, 1), base_seed=seeds[0])
+    label_sets = [_fit(X_train, s) for s in seeds]
     pairs: list[float] = []
     for i in range(len(label_sets)):
         for j in range(i + 1, len(label_sets)):
             pairs.append(float(adjusted_rand_score(label_sets[i], label_sets[j])))
     return {
-        "mean_ari": float(np.mean(pairs)) if pairs else float("nan"),
-        "min_ari": float(np.min(pairs)) if pairs else float("nan"),
+        "mean_ari": float(np.mean(pairs)) if pairs else float(shared["mean_ari"]),
+        "min_ari": float(np.min(pairs)) if pairs else float(shared["min_ari"]),
+        "std_ari": float(np.std(pairs)) if pairs else float(shared.get("std_ari", float("nan"))),
         "n_pairs": float(len(pairs)),
+        **{f"shared_{k}": v for k, v in shared.items()},
     }
 
 
@@ -187,7 +183,7 @@ def run_berka_segmentation_leakage_safe(
     km2 = KMeans(n_clusters=parallel_k, n_init=20, random_state=random_state)
     km2_train_labels = km2.fit_predict(X_train)
     km2_hold_labels = km2.predict(X_hold)
-    km2_hold_metrics = _cluster_metrics(X_hold, km2_hold_labels)
+    km2_hold_metrics = evaluate_clustering(X_hold, km2_hold_labels)
     km2_seed = _seed_ari(X_train, n_clusters=parallel_k, seeds=seeds)
     joblib.dump(km2, out_dir / "models" / f"kmeans_k{parallel_k}_seed{random_state}.joblib")
     pd.DataFrame(
@@ -213,10 +209,28 @@ def run_berka_segmentation_leakage_safe(
     km6 = KMeans(n_clusters=n_clusters, n_init=20, random_state=random_state)
     train_labels = km6.fit_predict(z_train)
     hold_labels = km6.predict(z_hold)
-    hold_metrics = _cluster_metrics(z_hold, hold_labels)
-    train_metrics = _cluster_metrics(z_train, train_labels)
+    hold_metrics = evaluate_clustering(z_hold, hold_labels)
+    train_metrics = evaluate_clustering(z_train, train_labels)
     ae_seed = _seed_ari(z_train, n_clusters=n_clusters, seeds=seeds)
     raw_k6_seed = _seed_ari(X_train, n_clusters=n_clusters, seeds=seeds)
+    ae_sub = subsample_ari(
+        lambda X, s: KMeans(n_clusters=n_clusters, n_init=20, random_state=s).fit_predict(X),
+        z_train,
+        frac=0.75,
+        n_rounds=5,
+        random_state=random_state,
+    )
+
+    # Traditional baselines on the same train-scaled matrix (fair board)
+    print("=== Same-matrix traditional baselines (KMeans/GMM/Hierarchical k=6) ===")
+    km6_raw = KMeans(n_clusters=n_clusters, n_init=20, random_state=random_state).fit(X_train)
+    km6_raw_hold = evaluate_clustering(X_hold, km6_raw.predict(X_hold))
+    gmm6 = GaussianMixture(
+        n_components=n_clusters, covariance_type="full", random_state=random_state, n_init=3
+    ).fit(X_train)
+    gmm6_hold = evaluate_clustering(X_hold, gmm6.predict(X_hold))
+    hier6_labels = AgglomerativeClustering(n_clusters=n_clusters, linkage="ward").fit_predict(X_train)
+    hier6_train = evaluate_clustering(X_train, hier6_labels)
 
     # Score full eligible book with frozen artifacts (serving-style)
     X_all = transform_with_train_scaler(interpretable, scaler)
@@ -254,7 +268,47 @@ def run_berka_segmentation_leakage_safe(
                 "db_index": round(hold_metrics["db_index"], 4),
                 "ch_index": round(hold_metrics["ch_index"], 0),
                 "seed_ari_mean": round(ae_seed["mean_ari"], 4),
+                "subsample_ari_mean": round(ae_sub["mean_ari"], 4),
                 "role": "product_champion_leakage_safe",
+            },
+            {
+                "run_id": f"c_kmeans_k{n_clusters}_scaled_leakage_safe",
+                "family": "kmeans",
+                "k": n_clusters,
+                "latent_dim": "-",
+                "split": "holdout",
+                "silhouette": round(km6_raw_hold["silhouette"], 4),
+                "db_index": round(km6_raw_hold["db_index"], 4),
+                "ch_index": round(km6_raw_hold["ch_index"], 0),
+                "seed_ari_mean": round(raw_k6_seed["mean_ari"], 4),
+                "subsample_ari_mean": None,
+                "role": "traditional_baseline_same_matrix",
+            },
+            {
+                "run_id": "c_gmm_k6_scaled_leakage_safe",
+                "family": "gmm",
+                "k": n_clusters,
+                "latent_dim": "-",
+                "split": "holdout",
+                "silhouette": round(gmm6_hold["silhouette"], 4),
+                "db_index": round(gmm6_hold["db_index"], 4),
+                "ch_index": round(gmm6_hold["ch_index"], 0),
+                "seed_ari_mean": None,
+                "subsample_ari_mean": None,
+                "role": "traditional_baseline_same_matrix",
+            },
+            {
+                "run_id": "c_hier_k6_scaled_leakage_safe",
+                "family": "hierarchical",
+                "k": n_clusters,
+                "latent_dim": "-",
+                "split": "train",
+                "silhouette": round(hier6_train["silhouette"], 4),
+                "db_index": round(hier6_train["db_index"], 4),
+                "ch_index": round(hier6_train["ch_index"], 0),
+                "seed_ari_mean": None,
+                "subsample_ari_mean": None,
+                "role": "traditional_baseline_train_only",
             },
             {
                 "run_id": f"c_kmeans_k{parallel_k}_leakage_safe",
@@ -266,19 +320,8 @@ def run_berka_segmentation_leakage_safe(
                 "db_index": round(km2_hold_metrics["db_index"], 4),
                 "ch_index": round(km2_hold_metrics["ch_index"], 0),
                 "seed_ari_mean": round(km2_seed["mean_ari"], 4),
+                "subsample_ari_mean": None,
                 "role": "research_twin_same_matrix",
-            },
-            {
-                "run_id": f"c_kmeans_k{n_clusters}_scaled_leakage_safe",
-                "family": "kmeans",
-                "k": n_clusters,
-                "latent_dim": "-",
-                "split": "train_seed_ari_only",
-                "silhouette": None,
-                "db_index": None,
-                "ch_index": None,
-                "seed_ari_mean": round(raw_k6_seed["mean_ari"], 4),
-                "role": "raw_k6_stability_reference",
             },
         ]
     )
@@ -310,15 +353,25 @@ def run_berka_segmentation_leakage_safe(
         "ch_index": hold_metrics["ch_index"],
         "stability_ari_ae_latent_kmeans": ae_seed["mean_ari"],
         "stability_ari_ae_latent_kmeans_min": ae_seed["min_ari"],
+        "stability_subsample_ari_ae_latent_kmeans": ae_sub["mean_ari"],
+        "stability_subsample_ari_ae_latent_kmeans_min": ae_sub["min_ari"],
+        "stability_protocols": ["multi_seed_ari", "subsample_ari"],
+        "metrics_module": "customer_segmentation.models.metrics.evaluate_clustering",
         "stability_ari_raw_kmeans_k6": raw_k6_seed["mean_ari"],
         "parallel_kmeans_k2_holdout": km2_hold_metrics,
         "parallel_kmeans_k2_seed_ari": km2_seed,
+        "baselines_same_matrix_holdout": {
+            "kmeans_k6": km6_raw_hold,
+            "gmm_k6": gmm6_hold,
+            "hierarchical_k6_train": hier6_train,
+        },
         "size": size,
         "low_confidence_frac": float((conf_all < 0.55).mean()),
         "tiny_segments_policy": "exception_queue_not_mass_campaign",
         "selection_policy": (
-            "Leakage-safe AE lat=4 k=6 remains the product path; "
-            "k=2 on the same matrix is the research twin (not a CRM replacement)."
+            "Leakage-safe AE lat=4 k=6 remains the product path: best holdout silhouette "
+            f"({hold_metrics['silhouette']:.3f}) vs raw KMeans k=6 ({km6_raw_hold['silhouette']:.3f}), "
+            f"GMM k=6 ({gmm6_hold['silhouette']:.3f}); k=2 twin is research-only."
         ),
         "freeze_status": "BLOCKED",
     }

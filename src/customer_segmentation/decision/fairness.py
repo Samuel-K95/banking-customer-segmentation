@@ -124,7 +124,7 @@ def representation_tables(df: pd.DataFrame, *, segment_col: str = "segment_id") 
 
 
 def behavior_vs_demographic_note() -> dict[str, Any]:
-    """Champion matrix has no explicit demographics — document the ablation posture."""
+    """Fallback narrative when ablation cannot run (no Berka / features)."""
     return {
         "model_features": [
             "Transaction_Count",
@@ -137,11 +137,7 @@ def behavior_vs_demographic_note() -> dict[str, Any]:
             "has_card",
         ],
         "explicit_demographics_in_model": False,
-        "ablation_status": (
-            "Seg_behavior ≈ Seg_full for the champion matrix because age/gender/district "
-            "were never clustering inputs. Sensitivity to geography is monitored post-hoc "
-            "via district concentration, not via re-clustering."
-        ),
+        "ablation_status": "narrative_only_fallback",
         "driver_audit": (
             "Primary drivers are recency, balance sign/level, activity, and product flags "
             "(loan/card). District is not a model feature; any concentration is a usage risk."
@@ -156,6 +152,9 @@ def build_fairness_pack(
     id_col: str = "account_id",
     berka_dir: str | Path | None = None,
     catalog: dict[str, Any] | None = None,
+    feature_df: pd.DataFrame | None = None,
+    n_clusters: int | None = None,
+    as_of_year: int = 1997,
 ) -> dict[str, Any]:
     joined = try_join_district(assignments, id_col=id_col, berka_dir=berka_dir)
     conc = pd.DataFrame()
@@ -169,8 +168,33 @@ def build_fairness_pack(
         name_map = {int(k): v.get("name") for k, v in catalog.get("segments", {}).items()}
         conc.insert(1, "segment_name", conc["segment_id"].map(name_map))
 
+    behavior_vs_demo: dict[str, Any] = behavior_vs_demographic_note()
+    if feature_df is not None and id_col in feature_df.columns:
+        try:
+            from customer_segmentation.decision.demographics import (
+                run_behavior_vs_demographic_ablation,
+            )
+
+            k = n_clusters
+            if k is None and segment_col in feature_df.columns:
+                k = int(feature_df[segment_col].nunique())
+            behavior_vs_demo = run_behavior_vs_demographic_ablation(
+                feature_df,
+                segment_col=segment_col,
+                id_col=id_col,
+                n_clusters=int(k or 6),
+                berka_dir=berka_dir,
+                as_of_year=as_of_year,
+            )
+        except Exception as exc:  # pragma: no cover - soft fail keeps pack publishable
+            behavior_vs_demo = {
+                **behavior_vs_demographic_note(),
+                "ablation_status": f"failed:{type(exc).__name__}",
+                "ablation_error": str(exc)[:300],
+            }
+
     return {
-        "behavior_vs_demographic": behavior_vs_demographic_note(),
+        "behavior_vs_demographic": behavior_vs_demo,
         "district_concentration": conc.to_dict(orient="records"),
         "representation": rep,
         "risk_register": RISK_REGISTER,
@@ -180,7 +204,7 @@ def build_fairness_pack(
             "Required: human review for stressed + low-confidence members",
         ],
         "limitations": [
-            "No completed demographic fairness audit on age/gender (not in champion matrix)",
+            "Age/gender are ablation features only — not in the champion clustering matrix",
             "Berka 1993–1998 Czech context; revalidate on current book before policy use",
             "Tiny segments (stressed/dormant) need caution — small-n instability",
         ],

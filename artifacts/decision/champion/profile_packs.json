@@ -461,7 +461,7 @@
     {
       "segment_id": 0,
       "name": "New basic accounts",
-      "model_version": "champion_v1",
+      "model_version": "production_candidate_v1",
       "n": 1176,
       "pct": 32.65,
       "one_liner": "Newer accounts with light product depth; still active \u2014 onboarding window is open.",
@@ -517,6 +517,26 @@
         "median_conf": 0.7274,
         "low_conf_frac": 0.07738095238095238
       },
+      "product_penetration": {
+        "has_loan_rate": 0.0009,
+        "has_card_rate": 0.006,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 0.9932
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 564.5,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0077,
+        "share_tenure_lt_730": 0.7832,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1012,
+        "top_district_id": 1,
+        "risk_note": "Monitor district mix; no demographic targeting from segment_id"
+      },
       "default_play": "First card / digital activation; watch early dormancy.",
       "decision": {
         "play": "Onboarding + first card",
@@ -529,7 +549,7 @@
     {
       "segment_id": 1,
       "name": "Long-tenure high-activity basic",
-      "model_version": "champion_v1",
+      "model_version": "production_candidate_v1",
       "n": 1329,
       "pct": 36.9,
       "one_liner": "Loyal, high-activity, almost no loan/card. Trust exists; monetization does not.",
@@ -585,6 +605,26 @@
         "median_conf": 0.7312,
         "low_conf_frac": 0.06847253574115876
       },
+      "product_penetration": {
+        "has_loan_rate": 0.0,
+        "has_card_rate": 0.0,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 1.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 1514.0,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.0414,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1242,
+        "top_district_id": 1,
+        "risk_note": "Monitor district mix; no demographic targeting from segment_id"
+      },
       "default_play": "Highest-value cross-sell: pre-approved card / personal loan from txn history.",
       "decision": {
         "play": "Priority cross-sell (card -> personal loan)",
@@ -597,7 +637,7 @@
     {
       "segment_id": 2,
       "name": "Loan-centric high-volume",
-      "model_version": "champion_v1",
+      "model_version": "production_candidate_v1",
       "n": 489,
       "pct": 13.58,
       "one_liner": "Credit relationship already established; high flows around loan servicing.",
@@ -653,6 +693,26 @@
         "median_conf": 0.7335,
         "low_conf_frac": 0.00408997955010225
       },
+      "product_penetration": {
+        "has_loan_rate": 1.0,
+        "has_card_rate": 0.2577,
+        "both_products_rate": 0.2577,
+        "neither_product_rate": 0.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 997.0,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.3415,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1207,
+        "top_district_id": 1,
+        "risk_note": "Monitor district mix; no demographic targeting from segment_id"
+      },
       "default_play": "Card attach, PPI/protection, refinance / top-up retention.",
       "decision": {
         "play": "Card attach + loan protection / refinance",
@@ -665,7 +725,7 @@
     {
       "segment_id": 3,
       "name": "Card-centric active savers",
-      "model_version": "champion_v1",
+      "model_version": "production_candidate_v1",
       "n": 584,
       "pct": 16.21,
       "one_liner": "High card penetration, healthy balances, no loan \u2014 solvent, engaged spenders.",
@@ -721,6 +781,26 @@
         "median_conf": 0.694,
         "low_conf_frac": 0.011986301369863013
       },
+      "product_penetration": {
+        "has_loan_rate": 0.0,
+        "has_card_rate": 1.0,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 0.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 988.5,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.3545,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1558,
+        "top_district_id": 1,
+        "risk_note": "Elevated district concentration \u2014 do not target by geography from segment_id"
+      },
       "default_play": "Premium card upgrade + careful first-loan offer; savings/invest.",
       "decision": {
         "play": "Premium card + first loan to solvent customers",
@@ -733,7 +813,7 @@
     {
       "segment_id": 4,
       "name": "Financially stressed / overdraft risk",
-      "model_version": "champion_v1",
+      "model_version": "production_candidate_v1",
       "n": 18,
       "pct": 0.5,
       "one_liner": "Negative mean balance; withdrawals dominate credits.",
@@ -789,6 +869,26 @@
         "median_conf": 0.8308,
         "low_conf_frac": 0.0
       },
+      "product_penetration": {
+        "has_loan_rate": 0.4444,
+        "has_card_rate": 0.0556,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 0.5
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 1151.0,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.2222,
+        "share_negative_balance": 1.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "exception_queue_not_mass_campaign",
+        "district_max_share": 0.2222,
+        "top_district_id": 1,
+        "risk_note": "Elevated district concentration \u2014 do not target by geography from segment_id"
+      },
       "default_play": "Service + risk review, budgeting tools \u2014 not investment pitches.",
       "decision": {
         "play": "Service & risk review; budgeting tools",
@@ -801,7 +901,7 @@
     {
       "segment_id": 5,
       "name": "Dormant long-term accounts",
-      "model_version": "champion_v1",
+      "model_version": "production_candidate_v1",
       "n": 6,
       "pct": 0.17,
       "one_liner": "Long recency gap \u2014 relationship effectively elsewhere.",
@@ -856,6 +956,26 @@
         "mean_conf": 0.8504833333333334,
         "median_conf": 0.8327500000000001,
         "low_conf_frac": 0.0
+      },
+      "product_penetration": {
+        "has_loan_rate": 0.0,
+        "has_card_rate": 0.0,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 1.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 1534.5,
+        "median_recency_days": 385.5,
+        "share_recency_gt_30": 1.0,
+        "share_tenure_lt_730": 0.0,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "exception_queue_not_mass_campaign",
+        "district_max_share": 0.1667,
+        "top_district_id": 22,
+        "risk_note": "Elevated district concentration \u2014 do not target by geography from segment_id"
       },
       "default_play": "Win-back then close; do not push sales hard.",
       "decision": {

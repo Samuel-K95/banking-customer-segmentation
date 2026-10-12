@@ -55,10 +55,12 @@
   },
   "acceptance": {
     "profile_packs": true,
+    "profile_packs_include_penetration_lifecycle_fairness": true,
     "human_names": true,
     "explainability": true,
     "fairness_pack": true,
     "behavior_vs_demographic_documented": true,
+    "behavior_vs_demographic_ablation_executed": true,
     "applications_ge_3": true,
     "domains_covered": 6,
     "decision_map_published": true,

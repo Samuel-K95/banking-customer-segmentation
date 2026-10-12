@@ -1,4 +1,6 @@
-run_id,family,k,latent_dim,split,silhouette,db_index,ch_index,seed_ari_mean,role
-c_ae_lat4_k6_leakage_safe,ae_kmeans,6,4,holdout,0.4591,0.623,852.0,0.9975,product_champion_leakage_safe
-c_kmeans_k2_leakage_safe,kmeans,2,-,holdout,0.2968,1.4088,208.0,0.998,research_twin_same_matrix
-c_kmeans_k6_scaled_leakage_safe,kmeans,6,-,train_seed_ari_only,,,,1.0,raw_k6_stability_reference
+run_id,family,k,latent_dim,split,silhouette,db_index,ch_index,seed_ari_mean,subsample_ari_mean,role
+c_ae_lat4_k6_leakage_safe,ae_kmeans,6,4,holdout,0.4591,0.623,852.0,0.9995,0.9775,product_champion_leakage_safe
+c_kmeans_k6_scaled_leakage_safe,kmeans,6,-,holdout,0.3743,0.7657,590.0,,,traditional_baseline_same_matrix
+c_gmm_k6_scaled_leakage_safe,gmm,6,-,holdout,0.3223,1.225,114.0,,,traditional_baseline_same_matrix
+c_hier_k6_scaled_leakage_safe,hierarchical,6,-,train,0.3625,0.8228,976.0,,,traditional_baseline_train_only
+c_kmeans_k2_leakage_safe,kmeans,2,-,holdout,0.2968,1.4088,208.0,,,research_twin_same_matrix
