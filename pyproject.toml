@@ -22,6 +22,16 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "ruff>=0.3"]
 data = ["kaggle>=1.6"]
+torch-cpu = [
+    "torch>=2.14.1",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+
 
 [project.scripts]
 bcs = "customer_segmentation.cli:main"
@@ -32,3 +42,6 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
