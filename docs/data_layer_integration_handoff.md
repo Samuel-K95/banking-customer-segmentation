@@ -12,11 +12,15 @@ This handoff records the integration implementation. Its initial validation occu
 
 Transactions are aggregated to customer grain. `CustomerID` remains an explicit column in the interpretable and model matrices, and is excluded from scaling and clustering inputs. The current builder drops raw transactions containing any null before aggregation; the real-data analysis records the resulting retention and age-validity effects.
 
+DOB strings use the 2016 two-digit-year convention: parsed years after 2005 are shifted back a century. Derived ages outside 18–100 become missing; customer aggregates with missing fields are excluded by the builder's complete-case aggregation policy.
+
 ### Track B — Santander Product Portfolio
 
 The builder uses the 2016-05-28 customer snapshot and maps the 24 contracted product indicators. Product values must be 0, 1, or missing; missing values become 0, and other values fail with field/value details.
 
 The source `sexo` interpretation is H=female and V=male. `is_female` maps H→1 and V→0. Unknown or missing values remain null; the normalized source category is retained for profile review.
+
+The builder treats negative `seniority_months` (including the source sentinel `-999999`) and ages above 100 as missing before median imputation. `gross_income` uses a province median where available, then the snapshot-wide median. The raw source's missing-income percentage was not re-measured as part of this integration handoff.
 
 ### Track C — Berka Financial Dataset
 
@@ -32,6 +36,8 @@ Versioned joblib artifacts record track, ordered features, identifier columns, s
 
 The downloader raises on Kaggle failures, corrupt or incomplete archives, and missing expected files. Existing non-empty files are reused. The runner stops on the first failed input or builder and only reports completion after all requested builders and the feature-contract preflight succeed.
 
+`configs/data.yaml` is the source of truth for raw, processed, and quality paths; source files and separators; required raw header columns; the Santander snapshot date; and track output prefixes and ID columns. The data-layer sequence is download (or reuse) → raw presence/header/checksum validation → feature build → DQ report → feature-contract preflight. Raw checks fail before feature generation when required files or headers are missing.
+
 When downloads are authorized:
 
 ```bash
@@ -46,6 +52,18 @@ bash scripts/run_data_layer.sh --skip-downloads
 ```
 
 The runner uses `uv run --project . --extra data` when available, or the project-local environment otherwise. Kaggle credentials are required for download operations; credential values must not be stored in the repository.
+
+## Airflow orchestration
+
+The optional Airflow 3.3.2 LocalExecutor setup is under `pipelines/airflow/`. From that directory, prepare the optional local environment file and start the Compose services:
+
+```bash
+cd pipelines/airflow
+cp .env.example .env
+docker compose up -d --build
+```
+
+The project is mounted into the Airflow containers and `BCIP_PROJECT_DIR` points at that mount, so `configs/data.yaml` continues to control data paths. The `bcip_data_layer` DAG is manually triggered (`schedule=None`); it runs source-specific download, raw-check, and feature tasks, then publishes the shared DQ report. Compose exposes the UI on port 8080; its documented local default login is `airflow` / `airflow`. Kaggle credentials are mounted read-only from the configured host Kaggle directory. The obsolete root-level `docker build -t data-layer .` command is not applicable to this Compose-based Airflow setup.
 
 ## Current validation status and next actions
 

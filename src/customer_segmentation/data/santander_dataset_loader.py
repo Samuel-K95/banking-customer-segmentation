@@ -1,9 +1,13 @@
 """Chunked loader and source-to-feature map for the Santander snapshot."""
 
+from __future__ import annotations
+
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from customer_segmentation.config import load_data_config, source_files
 
 SANTANDER_PRODUCT_COLUMN_MAP = {
     "ind_ahor_fin_ult1": "has_savings_account",
@@ -76,42 +80,69 @@ SANTANDER_COLUMN_RENAME = {
     "tiprel_1mes": "customer_relation_type",
     **SANTANDER_PRODUCT_COLUMN_MAP,
 }
+DEFAULT_SANTANDER_PATH = Path("data/raw/santander/train_ver2.csv")
+DEFAULT_SNAPSHOT_DATE = "2016-05-28"
+
+
+class _UseConfiguredSnapshotDate:
+    """Sentinel distinguishing an omitted target_date from an explicit value."""
+
+    __slots__ = ()
+
+
+_USE_CONFIGURED_SNAPSHOT_DATE = _UseConfiguredSnapshotDate()
 
 
 def load_santander_raw_data(
     data_path: str = "data/raw/santander/train_ver2.csv",
-    target_date: str | None = "2016-05-28",
+    target_date: str | None | _UseConfiguredSnapshotDate = _USE_CONFIGURED_SNAPSHOT_DATE,
     chunksize: int = 1_000_000,
 ) -> pd.DataFrame:
-    """Load a customer snapshot, requiring the complete 24-product source schema."""
-    path = Path(data_path)
-    if not path.is_file():
-        raise FileNotFoundError(f"Dataset not found at {path}")
+    """Load a validated Santander customer snapshot in bounded-memory chunks.
+
+    An omitted ``target_date`` uses the configured snapshot date. Explicit dates,
+    including the historical default date, are honored as given; ``None`` loads
+    all dates. Explicit paths and the established positional parameter order are
+    retained for experiments and tests.
+    """
+    config = load_data_config()["sources"]["santander"]
+    path = source_files("santander")[0] if Path(data_path) == DEFAULT_SANTANDER_PATH else Path(data_path)
+    if not path.is_file() or path.stat().st_size == 0:
+        raise FileNotFoundError(f"Dataset not found or empty at {path}")
     if chunksize <= 0:
         raise ValueError("chunksize must be positive")
+    if isinstance(target_date, _UseConfiguredSnapshotDate):
+        target_date = config.get("snapshot_date", DEFAULT_SNAPSHOT_DATE)
 
-    header = pd.read_csv(path, nrows=0).columns
-    missing_columns = sorted(set(SANTANDER_SOURCE_DTYPES) - set(header))
+    separator = config.get("sep", ",")
+    header = pd.read_csv(path, sep=separator, nrows=0).columns
+    missing_columns = sorted(set(SANTANDER_SOURCE_DTYPES).difference(header))
     if missing_columns:
-        missing_products = sorted(set(SANTANDER_PRODUCT_COLUMN_MAP) & set(missing_columns))
+        missing_products = sorted(set(SANTANDER_PRODUCT_COLUMN_MAP).intersection(missing_columns))
         detail = f" Missing product source columns: {missing_products}." if missing_products else ""
         raise ValueError(f"Santander source schema is missing required columns: {missing_columns}.{detail}")
 
     chunks: list[pd.DataFrame] = []
     for chunk in pd.read_csv(
         path,
+        sep=separator,
         dtype=SANTANDER_SOURCE_DTYPES,
         usecols=list(SANTANDER_SOURCE_DTYPES),
         chunksize=chunksize,
+        low_memory=False,
     ):
         chunk.rename(columns=SANTANDER_COLUMN_RENAME, inplace=True)
         if target_date is not None:
-            chunk = chunk.loc[chunk["snapshot_date"] == target_date]
+            chunk = chunk.loc[chunk["snapshot_date"].eq(target_date)]
         chunks.append(chunk)
 
     if not chunks:
-        raise ValueError(f"No data rows were read from Santander dataset at {path}.")
+        raise ValueError(f"No data rows were read from Santander dataset at {path}")
     result = pd.concat(chunks, ignore_index=True)
-    if target_date is not None and result.empty:
-        raise ValueError(f"No Santander rows found for target snapshot {target_date!r} in {path}.")
+    if result.empty:
+        raise ValueError(f"No Santander rows found for target snapshot {target_date!r} in {path}")
+    if target_date is not None and (
+        result["customer_id"].isna().any() or result["customer_id"].duplicated().any()
+    ):
+        raise ValueError(f"Santander snapshot {target_date!r} contains null or duplicate customer IDs")
     return result

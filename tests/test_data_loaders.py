@@ -54,6 +54,11 @@ def _santander_source_rows(row_count=2):
     return pd.DataFrame(rows)
 
 
+def test_indian_bank_loader_handles_missing_file(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        load_indian_bank_raw_data(tmp_path / "non_existent_file.csv")
+
+
 def test_indian_bank_loader_reports_missing_file(tmp_path):
     with pytest.raises(FileNotFoundError):
         load_indian_bank_raw_data(tmp_path / "missing.csv")
