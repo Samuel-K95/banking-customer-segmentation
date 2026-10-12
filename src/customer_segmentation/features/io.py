@@ -35,8 +35,11 @@ def save_matrices(
 def summarize(
     track: str, interpretable_df: pd.DataFrame, model_df: pd.DataFrame, interpretable_path: Path, model_path: Path
 ) -> dict:
-    id_column = load_data_config()["tracks"][track]["id_column"]
+    track_config = load_data_config()["tracks"][track]
+    id_column = track_config["id_column"]
+    nullable = set(track_config.get("nullable_columns", []))
     has_id = id_column in interpretable_df.columns and id_column in model_df.columns
+    nulls = interpretable_df.isna().sum().add(model_df.isna().sum(), fill_value=0)
     return {
         "track": track,
         "rows": len(interpretable_df),
@@ -44,7 +47,8 @@ def summarize(
         "id_column": id_column,
         "has_id_column": has_id,
         "duplicate_ids": int(interpretable_df[id_column].duplicated().sum()) if has_id else None,
-        "null_cells": int(interpretable_df.isna().sum().sum() + model_df.isna().sum().sum()),
+        "null_cells": int(nulls[~nulls.index.isin(nullable)].sum()),
+        "allowed_null_cells": {column: int(nulls[column]) for column in sorted(nullable) if column in nulls.index},
         "interpretable_path": str(interpretable_path),
         "model_path": str(model_path),
     }
