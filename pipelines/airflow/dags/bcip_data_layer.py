@@ -111,22 +111,22 @@ def feature_contract() -> str:
 BERKA_STAGES = {
     "berka_snapshot": (
         "features.build_berka_snapshot_features",
-        "berka_behavioral_baselines_v1_1.yaml",
+        "berka/berka_behavioral_baselines_v1_1.yaml",
         ("data", "snapshot_directory"),
     ),
     "berka_baselines": (
         "models.berka_behavioral_baselines",
-        "berka_behavioral_baselines_v1_1.yaml",
+        "berka/berka_behavioral_baselines_v1_1.yaml",
         ("data", "output_directory"),
     ),
     "berka_feature_sensitivity": (
         "models.berka_feature_sensitivity",
-        "berka_feature_sensitivity_v1.yaml",
+        "berka/berka_feature_sensitivity_v1.yaml",
         ("data", "output_directory"),
     ),
     "berka_temporal_validation": (
         "models.berka_temporal_validation",
-        "berka_temporal_validation_v1.yaml",
+        "berka/berka_temporal_validation_v1.yaml",
         ("artifacts", "output_directory"),
     ),
 }
