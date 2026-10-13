@@ -10,7 +10,9 @@ import time
 import uuid
 import warnings
 from collections import Counter
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+
+UTC = timezone.utc
 from pathlib import Path
 from typing import Any
 
@@ -1197,7 +1199,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
-        default="configs/models/track_a_p2_leakage_safe.yaml",
+        default="configs/models/track_a/track_a_p2_leakage_safe.yaml",
         help="Leakage-safe Track A P2 experiment YAML.",
     )
     args = parser.parse_args(argv)

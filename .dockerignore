@@ -34,10 +34,14 @@ share/python-wheels/
 .ipynb_checkpoints
 notebooks/
 
-# Local Data (We want the container to download fresh or mount a volume)
+# Local Data / artifacts (mount at runtime; keep image lean)
 data/
+artifacts/
 train_ver2.csv.zip
 
 # Misc
 .DS_Store
 .env
+*.pt
+*.joblib
+*.pkl

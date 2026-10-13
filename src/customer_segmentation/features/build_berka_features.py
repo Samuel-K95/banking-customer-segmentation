@@ -148,5 +148,27 @@ def main() -> None:
     )
 
 
+# Champion segmentation helpers (loan/card bundle) — kept alongside the data-layer builder.
+from customer_segmentation.features.build_berka_segmentation_features import (  # noqa: E402
+    MODEL_COLUMNS,
+    BerkaFeatureBundle,
+    build_and_save_berka_features,
+    build_berka_segmentation_features,
+    transform_berka_model_matrix,
+)
+
+__all__ = [
+    "DEFAULT_PREPROCESSOR",
+    "build_berka_features",
+    "run",
+    "main",
+    "MODEL_COLUMNS",
+    "BerkaFeatureBundle",
+    "build_and_save_berka_features",
+    "build_berka_segmentation_features",
+    "transform_berka_model_matrix",
+]
+
+
 if __name__ == "__main__":
     main()

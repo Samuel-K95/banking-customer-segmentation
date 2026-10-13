@@ -1,0 +1,86 @@
+version: 1
+track: track_a
+description: >-
+  Independent P2 leakage-safe behavioral clustering. Customer IDs are split
+  before training-fitted transformations; recency uses the fixed as-of date.
+
+data:
+  interpretable_file: data/processed/track_a_features_interpretable.csv
+  raw_transactions_file: data/raw/bank_transactions.csv
+  model_file_reference_only: data/processed/track_a_features_model.csv
+  feature_contract_file: configs/models/feature_contracts.yaml
+  preprocessor_artifact_reference_only: artifacts/preprocessors/track_a.joblib
+  identifier_column: CustomerID
+  row_count: 837951
+  chunk_rows: 50000
+  as_of_date: "2016-11-01"
+  feature_order:
+    - AccountBalance
+    - Transaction_Count
+    - Avg_Transaction_Amt
+    - Std_Transaction_Amt
+    - Total_Spend
+    - Avg_Spend_Ratio
+    - Recency_Days
+    - Weekend_Spend_Ratio
+    - Night_Spend_Ratio
+  log1p_features:
+    - AccountBalance
+    - Avg_Transaction_Amt
+    - Std_Transaction_Amt
+    - Total_Spend
+  ratio_feature: Avg_Spend_Ratio
+  max_raw_transaction_date: "2016-10-21"
+
+sampling:
+  evaluation_seed: 8675309
+  cohorts:
+    two_plus:
+      minimum_transactions: 2
+      training_rows: 50000
+      evaluation_rows: 10000
+      seeds: [42, 2024, 123]
+    three_plus:
+      minimum_transactions: 3
+      training_rows: 8000
+      evaluation_rows: 3000
+      seeds: [42, 2024, 123]
+
+preprocessing_variants:
+  nine_feature_trainfit:
+    description: P1 log1p recipe plus StandardScaler fitted on training customers only.
+    clip_quantiles: null
+  ratio_clip_trainfit:
+    description: >-
+      P1 log1p recipe; Avg_Spend_Ratio clipped at training-only 0.5th/99.5th
+      percentiles, then StandardScaler fitted on training customers only.
+    clip_feature: Avg_Spend_Ratio
+    clip_quantiles: [0.005, 0.995]
+    quantile_method: linear
+
+models:
+  kmeans:
+    n_init: 10
+    max_iter: 300
+    algorithm: lloyd
+  gaussian_mixture:
+    covariance_type: diag
+    reg_covar: 0.000001
+    n_init: 1
+    max_iter: 200
+    tol: 0.001
+
+metrics:
+  silhouette_max_rows: 3000
+  silhouette_seed: 13579
+
+execution:
+  thread_limit: 1
+  comparison_board: artifacts/experiments/bakeoffs/comparison_board.csv
+  sample_directory: artifacts/experiments/samples
+  model_directory: artifacts/models/p2_leakage_safe
+  assignment_directory: artifacts/segments/candidates
+  profile_directory: artifacts/experiments/p2_segment_profiles
+  run_metadata_directory: artifacts/experiments/run_metadata
+  diagnostic_root: artifacts/diagnostics/track_a
+  mlflow_experiment: track-a-p2-leakage-safe

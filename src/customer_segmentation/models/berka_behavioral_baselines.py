@@ -26,7 +26,7 @@ from sklearn.mixture import GaussianMixture
 from sklearn.preprocessing import StandardScaler
 from threadpoolctl import threadpool_limits
 
-DEFAULT_CONFIG = Path("configs/models/berka_behavioral_baselines_v1_1.yaml")
+DEFAULT_CONFIG = Path("configs/models/berka/berka_behavioral_baselines_v1_1.yaml")
 EXPECTED_FEATURES = [
     "account_tenure_days",
     "recency_days",

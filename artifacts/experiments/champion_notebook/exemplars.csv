@@ -1,0 +1,19 @@
+segment_id,segment_name,rank,account_id,Transaction_Count,Account_Balance,Recency_Days,has_loan,has_card
+0,Card-centric active savers,1,2731,215,68215.0,0,0,1
+0,Card-centric active savers,2,819,214,61705.0,0,0,1
+0,Card-centric active savers,3,3270,214,65718.0,0,0,1
+1,New basic accounts,1,1393,123,32149.0,0,0,0
+1,New basic accounts,2,822,125,30772.0,0,0,0
+1,New basic accounts,3,3110,114,31049.0,0,0,0
+2,Loan-centric high-volume,1,2456,265,43892.0,0,1,0
+2,Loan-centric high-volume,2,5066,333,59671.0,0,1,0
+2,Loan-centric high-volume,3,4473,283,60686.0,0,1,0
+3,Long-tenure high-activity basic,1,3805,314,41879.0,0,0,0
+3,Long-tenure high-activity basic,2,3650,322,39630.0,0,0,0
+3,Long-tenure high-activity basic,3,201,289,43995.0,0,0,0
+4,Financially stressed / overdraft risk,1,3109,236,-4259.0,0,0,0
+4,Financially stressed / overdraft risk,2,8998,208,-10546.0,27,0,0
+4,Financially stressed / overdraft risk,3,7520,175,-11020.0,0,0,0
+5,Dormant long-term accounts,1,1563,12,10000.0,509,0,0
+5,Dormant long-term accounts,2,869,16,10300.0,449,0,0
+5,Dormant long-term accounts,3,3814,23,10800.0,440,0,0

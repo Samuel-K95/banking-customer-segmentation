@@ -1,0 +1,61 @@
+{
+  "overall_verdict": "BLOCKED",
+  "champion_run_id": "c_ae_lat4_k6_leakage_safe",
+  "as_of_date": "1997-12-31",
+  "minimum_tenure_days": 365,
+  "evaluated_at": "2026-10-12T10:18:41.574931+00:00",
+  "gates": {
+    "artifact_integrity": {
+      "verdict": "PASS",
+      "detail": "SHA-256 fingerprints written"
+    },
+    "snapshot_split_train_only_fit": {
+      "verdict": "PASS",
+      "detail": "as_of=1997-12-31; tenure>=365; train=2701 holdout=901; scaler/AE/KMeans fit on train only"
+    },
+    "exact_holdout_prediction_replay": {
+      "verdict": "PASS",
+      "detail": "Frozen encoder+KMeans reproduce held-out labels"
+    },
+    "segment_meaning": {
+      "verdict": "NEEDS_APPROVAL",
+      "detail": "CRM personas retained; tiny stressed/dormant cells = exception queues"
+    },
+    "fairness_owner_disponent": {
+      "verdict": "NEEDS_APPROVAL",
+      "detail": "No demographic fairness / OWNER-DISPONENT policy completed for this twin"
+    },
+    "independent_temporal_validation": {
+      "verdict": "BLOCKED",
+      "detail": "Requires prospective/external vintage not used in development"
+    },
+    "serving_package": {
+      "verdict": "BLOCKED",
+      "detail": "Artifacts exist; production serving/monitoring/rollback not validated"
+    }
+  },
+  "product_vs_research": {
+    "product_path": "AE lat=4 + K-Means k=6",
+    "research_twin": "K-Means k=2 on same train-scaled matrix",
+    "note": "Do not collapse CRM champion to k=2; twin documents scale/activity split under same leakage contract"
+  },
+  "holdout_metrics": {
+    "ae_k6": {
+      "silhouette": 0.4591466188430786,
+      "db_index": 0.6229882125486007,
+      "ch_index": 852.2150268554688
+    },
+    "kmeans_k2": {
+      "silhouette": 0.2967728910901734,
+      "db_index": 1.4088334320535112,
+      "ch_index": 208.11946301955882
+    }
+  },
+  "artifact_sha256": {
+    "scaler.joblib": "1ad6dc96713b0316028fb51d34be2a5d37667c157070bfe92ac6a78f5d6222ff",
+    "kmeans.joblib": "504583a9cb44d18612ac4a1a63c005a9ab2812b6038761c8a669797bf4d3f14c",
+    "encoder.pt": "ea2cf8a7978cafcbfae397483957118cd2df74dab0e3100353d55b44f61b8005",
+    "account_split.csv": "dba00059ee3157208912099c0b232dd5b566f6f93cc6861c29d955c06761a602",
+    "models/kmeans_k2_seed42.joblib": "10d5f0190952ae872eb069e10e80b802734679cddd7affba652969f61806ce24"
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "champion_run_id": "c_ae_lat4_k6",
+  "model_version": "v1",
+  "n_accounts": 4500,
+  "n_segments": 6,
+  "domains": [
+    "product_recommendations",
+    "retention_strategies",
+    "financial_inclusion",
+    "targeted_engagement",
+    "service_improvement",
+    "risk_and_care"
+  ],
+  "n_plays": 20,
+  "domain_coverage": [
+    {
+      "domain": "product_recommendations",
+      "n_plays": 4,
+      "n_segments": 4
+    },
+    {
+      "domain": "retention_strategies",
+      "n_plays": 3,
+      "n_segments": 3
+    },
+    {
+      "domain": "financial_inclusion",
+      "n_plays": 2,
+      "n_segments": 2
+    },
+    {
+      "domain": "targeted_engagement",
+      "n_plays": 5,
+      "n_segments": 5
+    },
+    {
+      "domain": "service_improvement",
+      "n_plays": 5,
+      "n_segments": 5
+    },
+    {
+      "domain": "risk_and_care",
+      "n_plays": 1,
+      "n_segments": 1
+    }
+  ],
+  "artifact_dir": "artifacts\\decision\\champion_v1",
+  "files": {
+    "profile_packs": "artifacts\\decision\\champion_v1\\profile_packs.json",
+    "explainability": "artifacts\\decision\\champion_v1\\explainability.json",
+    "fairness": "artifacts\\decision\\champion_v1\\fairness.json",
+    "decision_map": "artifacts\\decision\\champion_v1\\decision_map_full.csv",
+    "domain_coverage": "artifacts\\decision\\champion_v1\\domain_coverage.csv",
+    "exemplars": "artifacts\\decision\\champion_v1\\exemplars.csv"
+  },
+  "acceptance": {
+    "profile_packs": true,
+    "human_names": true,
+    "explainability": true,
+    "fairness_pack": true,
+    "behavior_vs_demographic_documented": true,
+    "applications_ge_3": true,
+    "domains_covered": 6,
+    "decision_map_published": true,
+    "not_a_supervised_predictor": true
+  }
+}

@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import re
 import sys
-from datetime import UTC, datetime
+from datetime import datetime, timezone
+
+UTC = timezone.utc
 from pathlib import Path
 
 from customer_segmentation.config import data_path, load_data_config
