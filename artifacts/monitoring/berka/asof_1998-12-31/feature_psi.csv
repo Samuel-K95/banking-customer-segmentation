@@ -1,0 +1,9 @@
+feature,psi,review
+Transaction_Count,0.195,False
+Account_Balance,0.064,False
+Total_Credit,0.0426,False
+Total_Withdrawal,0.045,False
+Recency_Days,0.0,False
+Account_Age_Days,0.4774,True
+has_loan,0.0014,False
+has_card,0.0,False

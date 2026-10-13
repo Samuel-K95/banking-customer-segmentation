@@ -46,6 +46,11 @@ artifacts/segmentation/**/*.pkl
 !artifacts/decision/**/*.json
 !artifacts/decision/**/*.csv
 !artifacts/decision/**/*.png
+!artifacts/monitoring/
+!artifacts/monitoring/**
+!artifacts/monitoring/**/*.md
+!artifacts/monitoring/**/*.json
+!artifacts/monitoring/**/*.csv
 experiments/**
 !experiments/.gitkeep
 !experiments/**/.gitkeep
