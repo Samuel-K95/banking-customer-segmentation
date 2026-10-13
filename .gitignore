@@ -8,6 +8,7 @@ venv/
 !.env.example
 .idea/
 .vscode/
+.cursor/
 .DS_Store
 Thumbs.db
 

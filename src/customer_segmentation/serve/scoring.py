@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 import pandas as pd
@@ -10,6 +11,8 @@ from customer_segmentation.decision.applications import APPLICATION_PORTFOLIO
 from customer_segmentation.serve.deps import serving_contract, validate_contract
 from customer_segmentation.serve.schemas import FEATURE_FIELDS, FeatureRow
 from customer_segmentation.serve.validation import validate_feature_rows
+
+logger = logging.getLogger(__name__)
 
 
 def score_feature_rows(
@@ -58,12 +61,25 @@ def score_feature_rows(
         for sid in sorted(set(baseline) | set(batch_mix))
     }
 
+    records = scored.to_dict(orient="records")
+    try:
+        from customer_segmentation.db.audit import log_inference_requests
+
+        log_inference_requests(
+            records,
+            raw_rows,
+            model_version=champ.model_version,
+            as_of_date=as_of_date,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("Failed to persist inference audit log: %s", exc)
+
     return {
         "model": champ.run_id,
         "model_version": champ.model_version,
         "as_of_date": as_of_date,
         "n": len(scored),
-        "assignments": scored.to_dict(orient="records"),
+        "assignments": records,
         "monitoring": {
             "batch_segment_mix": {str(k): float(v) for k, v in batch_mix.items()},
             "drift_vs_baseline": drift,
