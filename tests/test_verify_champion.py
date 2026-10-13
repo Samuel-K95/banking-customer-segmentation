@@ -19,6 +19,7 @@ REPO = Path(__file__).resolve().parents[1]
 CHAMPION = REPO / "artifacts" / "segmentation" / "champion"
 
 
+@pytest.mark.requires_torch
 @pytest.mark.skipif(not CHAMPION.exists(), reason="champion missing")
 def test_integrity_report_requires_binaries():
     missing = missing_required_artifacts(CHAMPION)
@@ -34,6 +35,7 @@ def test_integrity_report_requires_binaries():
     not (CHAMPION / "encoder.pt").exists(),
     reason="encoder.pt not present",
 )
+@pytest.mark.requires_torch
 def test_champion_load_requires_encoder_and_hashes():
     champ = ChampionModel.load(CHAMPION)
     assert champ.encoder is not None
@@ -47,6 +49,7 @@ def test_champion_load_requires_encoder_and_hashes():
     not (CHAMPION / "encoder.pt").exists(),
     reason="encoder.pt not present",
 )
+@pytest.mark.requires_torch
 def test_production_candidate_fails_closed_without_serving_contract(tmp_path: Path):
     dest = tmp_path / "champion"
     shutil.copytree(CHAMPION, dest)
@@ -66,6 +69,7 @@ def test_production_candidate_fails_closed_without_serving_contract(tmp_path: Pa
     not (CHAMPION / "encoder.pt").exists(),
     reason="encoder.pt not present",
 )
+@pytest.mark.requires_torch
 def test_verify_champion_core_checks(monkeypatch):
     import os
 

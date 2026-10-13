@@ -39,6 +39,7 @@ def contract():
     return json.loads(CONTRACT.read_text(encoding="utf-8"))
 
 
+@pytest.mark.requires_torch
 def test_root_and_health(client):
     r = client.get("/")
     assert r.status_code == 200
@@ -57,6 +58,7 @@ def test_catalog(client):
     assert "model" in groups and "inference" in groups and "decisions" in groups
 
 
+@pytest.mark.requires_torch
 def test_model_and_segments(client):
     r = client.get("/v1/model")
     assert r.status_code == 200
@@ -66,6 +68,7 @@ def test_model_and_segments(client):
     assert segs.json()["n"] == 6
 
 
+@pytest.mark.requires_torch
 def test_decisions(client):
     s = client.get("/v1/decisions/summary")
     assert s.status_code == 200
@@ -89,6 +92,7 @@ def test_reports(client):
     assert len(raw.text) > 10
 
 
+@pytest.mark.requires_torch
 def test_inference_single_and_batch(client, contract):
     mv = contract["model_version"]
     asof = contract["as_of_date"]
@@ -135,6 +139,7 @@ def test_inference_single_and_batch(client, contract):
     assert batch.json()["n"] == 1
 
 
+@pytest.mark.requires_torch
 def test_inference_rejects_bad_contract(client):
     bad = client.post(
         "/v1/inference",
@@ -154,6 +159,7 @@ def test_inference_rejects_bad_contract(client):
     assert bad.status_code == 400
 
 
+@pytest.mark.requires_torch
 def test_inference_rejects_under_tenure(client, contract):
     bad = client.post(
         "/v1/inference",
@@ -174,6 +180,7 @@ def test_inference_rejects_under_tenure(client, contract):
     assert "ineligible" in bad.text.lower() or "tenure" in bad.text.lower() or "Account_Age" in bad.text
 
 
+@pytest.mark.requires_torch
 def test_inference_rejects_negative_and_fractional_txn(client, contract):
     base = {
         "model_version": contract["model_version"],
@@ -203,6 +210,7 @@ def test_inference_rejects_negative_and_fractional_txn(client, contract):
     assert client.post("/v1/inference", json=neg_credit).status_code == 400
 
 
+@pytest.mark.requires_torch
 def test_health_requires_encoder(client):
     h = client.get("/v1/health")
     assert h.status_code == 200
@@ -210,6 +218,7 @@ def test_health_requires_encoder(client):
     assert h.json().get("integrity") == "ok"
 
 
+@pytest.mark.requires_torch
 def test_monitoring(client):
     r = client.get("/v1/monitoring/segment-mix")
     assert r.status_code == 200
@@ -219,6 +228,7 @@ def test_monitoring(client):
     assert snap.json().get("has_encoder") is True
 
 
+@pytest.mark.requires_torch
 def test_legacy_customers_segment(client, contract):
     r = client.post(
         "/v1/customers/segment",
