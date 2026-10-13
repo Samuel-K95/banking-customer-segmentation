@@ -1,21 +1,61 @@
-# One image, two entrypoints. Only data-layer owns the build to avoid
-# "image already exists" races when Compose builds both services in parallel.
+# Banking Customer Intelligence Platform (BCIP) - Multi-Service Orchestration
 
 services:
+  # ----------------------------------------------------------------------
+  # Database Service: PostgreSQL 16 with pgvector extension
+  # ----------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: bcs-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-bcip_db}
+      POSTGRES_USER: ${POSTGRES_USER:-bcip_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bcip_secure_pass_2026}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5435}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/db/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-bcip_admin} -d $${POSTGRES_DB:-bcip_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - bcs-network
+
+  # ----------------------------------------------------------------------
+  # Data Layer Service (Ingestion & Feature Generation)
+  # ----------------------------------------------------------------------
   data-layer:
     build: .
     image: bcs-platform:latest
     container_name: bcs-data-layer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bcip_admin}:${POSTGRES_PASSWORD:-bcip_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-bcip_db}
     volumes:
       - ./data:/app/data
       # Works on Linux/macOS (HOME) and Windows Docker Desktop (USERPROFILE)
       - ${KAGGLE_CONFIG_DIR:-${HOME:-${USERPROFILE}}/.kaggle}:/root/.kaggle:ro
     command: ["./scripts/run_data_layer.sh"]
+    networks:
+      - bcs-network
 
+  # ----------------------------------------------------------------------
+  # Segmentation Layer (Training, Autoencoder, Champion Scoring)
+  # ----------------------------------------------------------------------
   segmentation-layer:
     image: bcs-platform:latest
     container_name: bcs-segmentation-layer
     pull_policy: never
+    depends_on:
+      postgres:
+        condition: service_healthy
     volumes:
       - ./data:/app/data
       - ./artifacts:/app/artifacts
@@ -24,6 +64,37 @@ services:
     environment:
       - MPLBACKEND=Agg
       - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bcip_admin}:${POSTGRES_PASSWORD:-bcip_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-bcip_db}
     command: ["./scripts/run_segmentation_layer.sh"]
-    # Run data-layer first when Berka CSVs are missing:
-    #   docker compose run --rm data-layer
+    networks:
+      - bcs-network
+
+  # ----------------------------------------------------------------------
+  # API Serving Layer (FastAPI champion inference & audit logging)
+  # ----------------------------------------------------------------------
+  api-service:
+    image: bcs-platform:latest
+    container_name: bcs-api-service
+    pull_policy: never
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bcip_admin}:${POSTGRES_PASSWORD:-bcip_secure_pass_2026}@postgres:5432/${POSTGRES_DB:-bcip_db}
+    volumes:
+      - ./artifacts:/app/artifacts
+      - ./configs:/app/configs
+    command: ["bcs", "serve", "--port", "8000", "--host", "0.0.0.0"]
+    networks:
+      - bcs-network
+
+volumes:
+  postgres_data:
+    name: bcs_postgres_data
+
+networks:
+  bcs-network:
+    name: bcs_network
+    driver: bridge

@@ -172,6 +172,18 @@ def main() -> None:
     p_serve.add_argument("--port", type=int, default=8000)
     p_serve.add_argument("--reload", action="store_true", help="Dev auto-reload")
 
+    sub.add_parser(
+        "db-status",
+        help="Check database connection and table counts across BCIP schemas",
+    )
+
+    p_db_seed = sub.add_parser(
+        "db-seed",
+        help="Seed PostgreSQL database from raw Berka files and champion artifacts",
+    )
+    p_db_seed.add_argument("--berka-dir", default="data/raw/berka")
+    p_db_seed.add_argument("--champion-dir", default="artifacts/segmentation/champion")
+
     args = parser.parse_args()
     if args.version:
         print(__version__)
@@ -364,6 +376,75 @@ def main() -> None:
             reload=args.reload,
         )
         return
+
+    if args.command == "db-status":
+        from sqlalchemy import text
+
+        from customer_segmentation.db import check_db_connection, get_db_session
+
+        status = check_db_connection()
+        if not status.get("connected"):
+            print(json.dumps({"status": "error", **status}, indent=2))
+            raise SystemExit(1)
+
+        tables = [
+            "ods.districts",
+            "ods.accounts",
+            "feature_store.account_features",
+            "ml_registry.models",
+            "ml_registry.evaluations",
+            "segmentation.assignments",
+            "decision.segment_catalog",
+            "decision.customer_actions",
+            "audit.inference_log",
+            "audit.drift_snapshots",
+        ]
+        counts = {}
+        with get_db_session() as session:
+            for t in tables:
+                try:
+                    c = session.execute(text(f"SELECT count(*) FROM {t}")).scalar()
+                    counts[t] = c
+                except Exception as e:  # noqa: BLE001
+                    counts[t] = f"error: {e}"
+
+        print(
+            json.dumps(
+                {"status": "ok", "connection": status, "table_counts": counts},
+                indent=2,
+            )
+        )
+        return
+
+    if args.command == "db-seed":
+        from pathlib import Path
+
+        from customer_segmentation.db import get_db_session
+        from customer_segmentation.db.seeder import (
+            seed_champion_assignments,
+            seed_champion_model,
+            seed_districts_and_accounts,
+            seed_segment_catalog,
+        )
+
+        with get_db_session() as session:
+            d_counts = seed_districts_and_accounts(session, args.berka_dir)
+            m_seeded = seed_champion_model(session, args.champion_dir)
+            cat_count = seed_segment_catalog(
+                session, Path(args.champion_dir) / "segment_catalog.json"
+            )
+            ass_count = seed_champion_assignments(
+                session, Path(args.champion_dir) / "assignments.csv"
+            )
+            result = {
+                "status": "ok",
+                "districts_and_accounts": d_counts,
+                "champion_model_registered": m_seeded,
+                "catalog_segments_seeded": cat_count,
+                "assignments_seeded": ass_count,
+            }
+            print(json.dumps(result, indent=2))
+            return
 
     parser.print_help()
 

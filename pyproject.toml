@@ -19,6 +19,8 @@ dependencies = [
   "uvicorn[standard]>=0.27",
   "python-multipart>=0.0.9",
   "pandera>=0.34.1",
+  "sqlalchemy>=2.0",
+  "psycopg2-binary>=2.9",
 ]
 
 [project.optional-dependencies]
