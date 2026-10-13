@@ -59,9 +59,13 @@ Features are **interpretable-scale** (`Transaction_Count`, `Account_Balance`, `T
 - `GET /v1/segments/{id}/applications` — plays for one segment
 
 ### Reports
-- `GET /v1/reports` — list markdown under `reports/champion/`
+- `GET /v1/reports` — list markdown under `reports/champion/` (`?scope=track_c|all` for Track C)
+- `GET /v1/reports/tracks/berka` — list Track C (`reports/track_c_berka/`) markdown
 - `GET /v1/reports/{slug}` — meta + preview
 - `GET /v1/reports/{slug}/raw` — full markdown (`?download=true` for file)
+
+### Comparison
+- `GET /v1/comparison/board` — champion comparison board JSON (`?board=explore` for explore bake-off)
 
 ### Inference
 - `POST /v1/inference` — single customer
