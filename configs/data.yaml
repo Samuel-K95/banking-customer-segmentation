@@ -45,6 +45,9 @@ tracks:
     source: santander
     output_prefix: track_b_features
     id_column: customer_id
+    # Unknown gender stays missing (not imputed) so the fairness analysis can see it.
+    # The DQ report counts these cells separately instead of failing on them.
+    nullable_columns: [gender, is_female]
   track_c:
     source: berka
     output_prefix: track_c_berka

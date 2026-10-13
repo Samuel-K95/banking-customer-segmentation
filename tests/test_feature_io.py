@@ -28,3 +28,13 @@ def test_source_files_resolve_under_raw_dir():
     (santander_csv,) = source_files("santander")
     assert santander_csv.parts[-3:] == ("raw", "santander", "train_ver2.csv")
     assert santander_csv.is_absolute()
+
+
+def test_nullable_columns_are_reported_but_not_counted(tmp_path):
+    interpretable = pd.DataFrame({"customer_id": [1, 2], "gender": ["H", None], "age": [30.0, None]})
+    model = interpretable.copy()
+
+    summary = save_matrices("track_b", interpretable, model, tmp_path)
+
+    assert summary["null_cells"] == 2  # age only: one per matrix
+    assert summary["allowed_null_cells"] == {"gender": 2}  # is_female absent from this frame
