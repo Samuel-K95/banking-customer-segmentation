@@ -24,10 +24,13 @@ jobs:
         run: uv sync --locked --extra dev --extra torch-cpu
 
       - name: Lint
-        run: uv run ruff check src tests scripts pipelines
+        run: uv run --locked --extra dev --extra torch-cpu ruff check src tests scripts pipelines
 
-      - name: Test
-        run: uv run pytest -q
+      # Explicit repository-only tier: no raw Berka CSVs or live PostgreSQL.
+      # Full historical replay / seeded database tests remain in the integration
+      # tier and must be run on a provisioned runner before release.
+      - name: Repository tests (offline)
+        run: uv run --locked --extra dev --extra torch-cpu python -m pytest -q -rs -m "not integration"
 
       - name: Airflow DAG syntax
-        run: uv run python -m py_compile pipelines/airflow/dags/*.py
+        run: uv run --locked --extra dev --extra torch-cpu python -m py_compile pipelines/airflow/dags/*.py

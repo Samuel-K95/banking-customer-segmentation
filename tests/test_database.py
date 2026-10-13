@@ -116,6 +116,7 @@ def test_audit_logging_resilient_to_db_failure(monkeypatch):
     )
 
 
+@pytest.mark.integration
 @requires_postgres
 def test_live_postgres_status_and_tables():
     """Verifies connectivity to live PostgreSQL container and queried tables."""
@@ -183,6 +184,7 @@ def test_live_postgres_status_and_tables():
         assert n_actions >= 3600
 
 
+@pytest.mark.integration
 @requires_postgres
 def test_audit_log_live_insertion():
     """Verifies that log_inference_requests writes records into audit.inference_log."""
@@ -222,6 +224,7 @@ def test_audit_log_live_insertion():
         session.commit()
 
 
+@pytest.mark.integration
 def test_cli_db_status_invocation(capsys):
     """Verifies that running 'bcs db-status' produces structured JSON output."""
     from customer_segmentation.cli import main

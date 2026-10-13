@@ -16,6 +16,7 @@ from customer_segmentation.models.champion import ChampionModel
 PROD = Path("artifacts/segmentation/champion")
 
 
+@pytest.mark.integration
 @pytest.mark.requires_torch
 @pytest.mark.skipif(not PROD.exists(), reason="production champion artifacts missing")
 def test_production_holdout_replay_matches_stored_labels():
@@ -26,6 +27,8 @@ def test_production_holdout_replay_matches_stored_labels():
     assign["account_id"] = assign["account_id"].astype(np.int64)
     hold_ids = set(split.loc[split["split"] == "holdout", "account_id"].tolist())
     hold = assign[assign["account_id"].isin(hold_ids)].sort_values("account_id")
+    assert len(hold_ids) == 901, "Unexpected frozen held-out cohort size"
+    assert len(hold) == 901 and hold["account_id"].is_unique
 
     # Rebuild as-of features for holdout IDs only
     from customer_segmentation.data.berka_dataset_loader import (
@@ -47,7 +50,9 @@ def test_production_holdout_replay_matches_stored_labels():
     )
     feats["account_id"] = feats["account_id"].astype(np.int64)
     feats = feats[feats["account_id"].isin(hold_ids)].sort_values("account_id")
-    hold = hold[hold["account_id"].isin(set(feats["account_id"]))].sort_values("account_id")
+    assert len(feats) == 901 and set(feats["account_id"]) == hold_ids, (
+        "Replay features do not cover the complete 901-account holdout"
+    )
     feats = feats.set_index("account_id").loc[hold["account_id"].to_numpy()].reset_index()
 
     assert champ.scaler is not None
