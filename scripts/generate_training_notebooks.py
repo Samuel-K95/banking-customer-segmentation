@@ -70,8 +70,8 @@ IMPORTS_A = [
 
 LOAD_A = [
     "# ── Try pipeline-processed files first; fall back to raw data FE ──────────",
-    "processed_model  = Path('../data/processed/track_a_features_model.csv')",
-    "processed_interp = Path('../data/processed/track_a_features_interpretable.csv')",
+    "processed_model  = Path('../data/processed/track_a/track_a_features_model.csv')",
+    "processed_interp = Path('../data/processed/track_a/track_a_features_interpretable.csv')",
     "",
     "if processed_model.exists() and processed_interp.exists():",
     "    df_model  = pd.read_csv(processed_model)",
@@ -559,7 +559,7 @@ cells_06 = [
     md(["# Track A — Segmentation: Indian Bank Transactions\n",
         "\n",
         "**Track:** A — RFM behavioral clustering \n",
-        "**Data:** `data/processed/track_a_features_model.csv` (or raw fallback)\n",
+        "**Data:** `data/processed/track_a/track_a_features_model.csv` (or raw fallback)\n",
         "**Methods:** K-Means · GMM · Hierarchical · Autoencoder+KMeans\n",
         "**Output:** `artifacts/experiments/bakeoffs/comparison_board_track_a.csv`\n",
         "\n",
@@ -624,8 +624,8 @@ IMPORTS_B = [
 
 LOAD_B = [
     "# ── Try pipeline outputs; fall back to chunked raw load ───────────────────",
-    "proc_b_model  = Path('../data/processed/track_b_features_model.csv')",
-    "proc_b_interp = Path('../data/processed/track_b_features_interpretable.csv')",
+    "proc_b_model  = Path('../data/processed/track_b/track_b_features_model.csv')",
+    "proc_b_interp = Path('../data/processed/track_b/track_b_features_interpretable.csv')",
     "# FE notebook 05 saves to a slightly different path — check both",
     "alt_b = Path('../data/processed/track_b_features.csv')",
     "",
@@ -1005,7 +1005,7 @@ cells_07 = [
     md(["# Track B — Segmentation: Santander Product Portfolio\n",
         "\n",
         "**Track:** B — Representation Learning (Autoencoder) vs K-Means baseline\n",
-        "**Data:** `data/processed/track_b_features_model.csv` (or raw fallback)\n",
+        "**Data:** `data/processed/track_b/track_b_features_model.csv` (or raw fallback)\n",
         "**Methods:** K-Means (continuous) · K-Means (full sparse) · AE+KMeans (latent 8/16/32)\n",
         "**Output:** `artifacts/experiments/comparison_board_track_b.csv`\n",
         "\n",
@@ -1068,7 +1068,7 @@ IMPORTS_C = [
 ]
 
 LOAD_C = [
-    "proc_c_model  = Path('../data/processed/track_c_berka_model.csv')",
+    "proc_c_model  = Path('../data/processed/track_c/track_c_berka_model.csv')",
     "proc_c_interp = Path('../data/processed/track_c/track_c_berka_interpretable.csv')",
     "",
     "if proc_c_model.exists() and proc_c_interp.exists():",
@@ -1476,7 +1476,7 @@ cells_08 = [
     md(["# Track C — Segmentation: Berka Czech Bank (Longitudinal RFM)\n",
         "\n",
         "**Track:** C — longitudinal RFM + product enrichment\n",
-        "**Data:** `data/processed/track_c_berka_model.csv` (or raw berka CSVs fallback)\n",
+        "**Data:** `data/processed/track_c/track_c_berka_model.csv` (or raw berka CSVs fallback)\n",
         "**Methods:** K-Means · GMM (soft membership) · Hierarchical (full dendrogram) · AE optional\n",
         "**Output:** `artifacts/experiments/bakeoffs/comparison_board_track_c.csv`\n",
         "\n",

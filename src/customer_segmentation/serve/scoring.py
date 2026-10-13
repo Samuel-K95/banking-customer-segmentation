@@ -62,7 +62,7 @@ def score_feature_rows(
         "model": champ.run_id,
         "model_version": champ.model_version,
         "as_of_date": as_of_date,
-        "n": int(len(scored)),
+        "n": len(scored),
         "assignments": scored.to_dict(orient="records"),
         "monitoring": {
             "batch_segment_mix": {str(k): float(v) for k, v in batch_mix.items()},

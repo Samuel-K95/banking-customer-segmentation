@@ -44,6 +44,7 @@ def test_incomplete_source_leaves_destination_untouched(tmp_path: Path):
     not (CHAMPION / "encoder.pt").exists() or not (CHAMPION / "scaler.joblib").exists(),
     reason="champion binaries missing locally",
 )
+@pytest.mark.requires_torch
 def test_complete_source_promotes_atomically(tmp_path: Path):
     src = tmp_path / "source"
     dest = tmp_path / "dest"
@@ -69,6 +70,7 @@ def test_complete_source_promotes_atomically(tmp_path: Path):
     not (CHAMPION / "encoder.pt").exists() or not (CHAMPION / "scaler.joblib").exists(),
     reason="champion binaries missing locally",
 )
+@pytest.mark.requires_torch
 def test_promote_rolls_back_when_cutover_move_fails(tmp_path: Path):
     """If live→backup succeeds but staging→live fails, restore the previous champion."""
     src = tmp_path / "source"
@@ -95,9 +97,8 @@ def test_promote_rolls_back_when_cutover_move_fails(tmp_path: Path):
     with patch(
         "customer_segmentation.pipelines.promote_production.shutil.move",
         side_effect=flaky_move,
-    ):
-        with pytest.raises(PromotionError, match="Failed to move staged champion"):
-            promote_production(source_dir=src, dest_dir=dest, backup=True)
+    ), pytest.raises(PromotionError, match="Failed to move staged champion"):
+        promote_production(source_dir=src, dest_dir=dest, backup=True)
 
     assert dest.is_dir()
     assert (dest / "encoder.pt").exists()

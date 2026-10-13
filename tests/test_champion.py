@@ -9,7 +9,10 @@ import pandas as pd
 import pytest
 
 from customer_segmentation.models.champion import ChampionModel
-from customer_segmentation.models.segment_intel import build_segment_catalog, name_from_centroid
+from customer_segmentation.models.segment_intel import (
+    build_segment_catalog,
+    name_from_centroid,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 CHAMP_DIR = ROOT / "artifacts" / "segmentation" / "champion"
@@ -60,6 +63,7 @@ def test_build_segment_catalog_keys():
     assert cat["segments"]["1"]["name"] == "Financially stressed / overdraft risk"
 
 
+@pytest.mark.requires_torch
 @pytest.mark.skipif(not (CHAMP_DIR / "kmeans.joblib").exists(), reason="champion bundle not registered")
 def test_champion_load_and_score():
     champ = ChampionModel.load(CHAMP_DIR)

@@ -7,14 +7,20 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
 from sklearn.metrics import adjusted_rand_score
+from sklearn.mixture import GaussianMixture
 
-from customer_segmentation.features.build_berka_features import build_and_save_berka_features
-from customer_segmentation.models.tabular_ae import TORCH_OK, train_ae_cluster, train_autoencoder
+from customer_segmentation.features.build_berka_features import (
+    build_and_save_berka_features,
+)
 from customer_segmentation.models import viz
 from customer_segmentation.models.stability import multi_seed_ari
-from sklearn.cluster import KMeans
-from sklearn.mixture import GaussianMixture
+from customer_segmentation.models.tabular_ae import (
+    TORCH_OK,
+    train_ae_cluster,
+    train_autoencoder,
+)
 
 RANDOM_STATE = 42
 LATENT_DIM = 4

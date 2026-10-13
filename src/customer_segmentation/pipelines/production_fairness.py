@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -56,7 +56,7 @@ def run_production_fairness(
     pack = build_fairness_pack(df, berka_dir=path, catalog=catalog)
     pack["owner_disponent"] = _disp_summary(disp)
     pack["policy_doc"] = str(POLICY_REPORT)
-    pack["generated_at"] = datetime.now(timezone.utc).isoformat()
+    pack["generated_at"] = datetime.now(UTC).isoformat()
     pack["model_version"] = metrics.get("model_version") or "production_candidate_v1"
     pack["compliance_signoff"] = "PENDING"
     pack["district_available"] = bool((pack.get("representation") or {}).get("available")) or bool(
@@ -80,7 +80,7 @@ def run_production_fairness(
         "fairness_pack": str(out),
         "policy_doc": str(POLICY_REPORT),
         "district_available": district_ok,
-        "n_accounts": int(len(df)),
+        "n_accounts": len(df),
     }
 
 

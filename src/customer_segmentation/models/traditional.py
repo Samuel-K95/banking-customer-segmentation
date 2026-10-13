@@ -77,7 +77,7 @@ def sweep_hierarchical(
         results[k] = {
             "model": agg,
             "labels": labels,
-            "n_used": int(len(X_fit)),
+            "n_used": len(X_fit),
             **metrics,
             "size": size_sanity(labels),
         }

@@ -7,9 +7,7 @@ import hashlib
 import itertools
 import json
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
-
-UTC = timezone.utc
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -1070,7 +1068,7 @@ def run_audit(root: Path, output_dir: Path) -> dict[str, Any]:
         "outputs": {name: str(output_dir / name) for name in outputs},
         "input_hashes": {
             "comparison_board_sha256": _sha256(root / "artifacts/experiments/comparison_board.csv"),
-            "interpretable_sha256": _sha256(root / "data/processed/track_a_features_interpretable.csv"),
+            "interpretable_sha256": _sha256(root / "data/processed/track_a/track_a_features_interpretable.csv"),
             "raw_transactions_sha256": _sha256(root / "data/raw/bank_transactions.csv"),
             "p1_preprocessor_sha256": _sha256(root / "artifacts/preprocessors/track_a.joblib"),
         },

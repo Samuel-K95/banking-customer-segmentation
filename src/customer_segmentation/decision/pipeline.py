@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
 from customer_segmentation.decision.applications import (
@@ -16,7 +15,10 @@ from customer_segmentation.decision.applications import (
 )
 from customer_segmentation.decision.explain import build_explainability_bundle
 from customer_segmentation.decision.fairness import build_fairness_pack
-from customer_segmentation.decision.profiles import FEATURE_COLS_DEFAULT, build_profile_packs
+from customer_segmentation.decision.profiles import (
+    FEATURE_COLS_DEFAULT,
+    build_profile_packs,
+)
 from customer_segmentation.models.champion import ChampionModel
 
 
@@ -112,7 +114,7 @@ def run_decision_layer(
             with torch.no_grad():
                 xhat, _ = champ.encoder(torch.tensor(X, dtype=torch.float32))
                 recon_mse = ((xhat.numpy() - X) ** 2).mean(axis=1)
-    except Exception as exc:  # pragma: no cover - explainability soft-fail
+    except Exception as exc:  # noqa: BLE001 - deliberate soft fail  # pragma: no cover - explainability soft-fail
         print(f"AE explainability skipped: {exc}")
 
     explain = build_explainability_bundle(df, feature_cols=feat_cols, z=z, recon_mse=recon_mse)
@@ -186,7 +188,7 @@ def run_decision_layer(
         fig3.tight_layout()
         fig3.savefig(fig / "domain_coverage.png", dpi=120, bbox_inches="tight")
         plt.close(fig3)
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:  # noqa: BLE001 - deliberate soft fail  # pragma: no cover
         print(f"Figure export skipped: {exc}")
 
     paths = {
@@ -210,10 +212,10 @@ def run_decision_layer(
     summary = {
         "champion_run_id": champ.run_id,
         "model_version": champ.model_version,
-        "n_accounts": int(len(df)),
+        "n_accounts": len(df),
         "n_segments": int(df["segment_id"].nunique()),
         "domains": list(DOMAINS),
-        "n_plays": int(len(decision_map)),
+        "n_plays": len(decision_map),
         "domain_coverage": coverage.to_dict(orient="records"),
         "artifact_dir": _rel(out),
         "files": {k: _rel(Path(v)) for k, v in paths.items()},
