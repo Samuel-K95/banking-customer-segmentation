@@ -172,7 +172,7 @@ def test_preflight_detects_identifier_order_mismatch(tmp_path):
 def test_preflight_selected_track_passes_without_other_track_files(tmp_path, capsys):
     config_path, contract = _write_synthetic_data(tmp_path)
     data_dir = tmp_path / "processed"
-    for track_key in ("track_b", "track_c"):
+    for track_key in ("track_b", "track_c", "track_d"):
         spec = contract["tracks"][track_key]
         (data_dir / spec["model_file"]).unlink()
         (data_dir / spec["interpretable_file"]).unlink()
@@ -183,7 +183,7 @@ def test_preflight_selected_track_passes_without_other_track_files(tmp_path, cap
 
     all_tracks_report = run_preflight(config_path)
     assert all_tracks_report["ready"] is False
-    assert set(all_tracks_report["tracks"]) == {"track_a", "track_b", "track_c"}
+    assert set(all_tracks_report["tracks"]) == {"track_a", "track_b", "track_c", "track_d"}
 
     assert main(["--config", str(config_path), "--tracks", "track_a"]) == 0
     assert "ML preflight: READY" in capsys.readouterr().out

@@ -33,16 +33,17 @@ def test_download_dataset_selector_defaults_to_all_and_accepts_track_selection(m
     monkeypatch.setattr(download_datasets, "download_bank_transactions", lambda: calls.append("track_a"))
     monkeypatch.setattr(download_datasets, "download_santander", lambda: calls.append("track_b"))
     monkeypatch.setattr(download_datasets, "download_berka", lambda: calls.append("track_c"))
+    monkeypatch.setattr(download_datasets, "download_banksim", lambda: calls.append("track_d"))
 
     download_datasets.download_datasets(["track_a"])
     assert calls == ["track_a"]
 
     calls.clear()
     download_datasets.download_datasets()
-    assert calls == ["track_a", "track_b", "track_c"]
+    assert calls == ["track_a", "track_b", "track_c", "track_d"]
 
     with pytest.raises(ValueError, match="Unknown track"):
-        download_datasets.download_datasets(["track_d"])
+        download_datasets.download_datasets(["track_z"])
 
 
 def test_kaggle_failure_is_raised_instead_of_reported_as_success(tmp_path, monkeypatch):

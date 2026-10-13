@@ -6,7 +6,7 @@ cd "$ROOT_DIR"
 
 SKIP_DOWNLOADS="${SKIP_DOWNLOADS:-0}"
 REUSE_PREPROCESSORS="${REUSE_PREPROCESSORS:-0}"
-TRACKS=(track_a track_b track_c)
+TRACKS=(track_a track_b track_c track_d)
 
 usage() {
   cat <<'EOF'
@@ -140,6 +140,10 @@ for track in "${TRACKS[@]}"; do
     track_c)
       echo "Building Track C Berka account features..."
       run_module customer_segmentation.features.build_berka_features "${REUSE_ARGS[@]}"
+      ;;
+    track_d)
+      echo "Building Track D BankSim customer features..."
+      run_module customer_segmentation.features.build_banksim_features "${REUSE_ARGS[@]}"
       ;;
   esac
 done

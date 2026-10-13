@@ -168,3 +168,48 @@ tracks:
         reason: Validate the meaning of the last transaction balance and assess skew/outliers.
       - feature: Account_Age_Days
         reason: Confirm the common reference date before cross-track or temporal comparisons.
+
+  track_d:
+    name: BankSim Synthetic Card Payments
+    grain: customer
+    model_file: track_d/track_d_banksim_model.csv
+    interpretable_file: track_d/track_d_banksim_interpretable.csv
+    min_rows: 1
+    identifier_columns: [customer_id]
+    model_features:
+      - txn_count
+      - active_days
+      - total_amount
+      - avg_amount
+      - std_amount
+      - max_amount
+      - recency_days
+      - tenure_days
+      - interarrival_days_median
+      - n_merchants
+      - n_categories
+      - share_transport
+      - share_food
+      - share_health_beauty
+      - share_shopping
+      - share_leisure_travel
+      - share_other
+    profile_features: [fraud_txn_count, any_fraud]
+    profile_categorical_features: [age_band, gender]
+    binary_features: []
+    excluded_features:
+      - customer_id
+      - age_band
+      - gender
+      - fraud_txn_count
+      - any_fraud
+    excluded_column_patterns: []
+    review_features:
+      - feature: age_band, gender
+        reason: Fairness and profiling only; never model inputs. gender E = enterprise accounts, U = unknown.
+      - feature: fraud_txn_count, any_fraud
+        reason: Outcome used to validate segments after fitting; never a model input.
+      - feature: recency_days, tenure_days
+        reason: Most customers are active through the last step, so both carry little signal.
+      - feature: share_*
+        reason: Amount shares sum to 1 across the six spend groups.
