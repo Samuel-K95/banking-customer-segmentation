@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -53,11 +54,16 @@ export default function SegmentDetailPage() {
   const pack = (data.profiles?.packs || []).find((p) => Number(p.segment_id) === Number(id));
   const pop = data.profiles?.population_means || {};
   const centroid = segment.centroid || pack?.centroid || {};
-  const chartData = FEAT_KEYS.filter((k) => centroid[k] != null).map((k) => ({
+  // Features are on very different scales (balances in the tens of thousands, flags in 0-1),
+  // so compare each one as segment mean / population mean: 1.0 = the average account.
+  const ratios = FEAT_KEYS.filter((k) => centroid[k] != null && Number(pop[k]) > 0).map((k) => ({
+    key: k,
     feature: k.replace(/_/g, " "),
-    segment: Number(centroid[k]),
-    population: pop[k] != null ? Number(pop[k]) : 0,
+    ratio: Number(centroid[k]) / Number(pop[k]),
   }));
+  const fmtRatio = (r) => `${r.feature} ×${r.ratio.toFixed(2)}`;
+  const over = ratios.filter((r) => r.ratio > 1.1).sort((a, b) => b.ratio - a.ratio);
+  const under = ratios.filter((r) => r.ratio < 0.9).sort((a, b) => a.ratio - b.ratio);
   const isEx = (data.contract?.exception_segment_ids || []).map(Number).includes(Number(id));
   const apps = (data.apps?.applications || []).slice(0, 6);
 
@@ -89,10 +95,10 @@ export default function SegmentDetailPage() {
 
       <div className="grid-2">
         <div className="panel">
-          <h3>Centroid vs population</h3>
+          <h3>Segment vs average account</h3>
           <div className="chart-wrap chart-wrap--bar">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData} margin={{ top: 4, right: 8, left: 0, bottom: 48 }}>
+              <BarChart data={ratios} margin={{ top: 4, right: 8, left: 0, bottom: 48 }}>
                 <CartesianGrid stroke="rgba(232,236,232,0.08)" vertical={false} />
                 <XAxis
                   dataKey="feature"
@@ -103,29 +109,27 @@ export default function SegmentDetailPage() {
                   tick={{ fill: "#8fa3ab", fontSize: 10 }}
                 />
                 <YAxis tick={{ fill: "#8fa3ab", fontSize: 10 }} width={42} />
+                <ReferenceLine y={1} stroke="#8fa3ab" strokeDasharray="4 4" />
                 <Tooltip
                   contentStyle={{ background: "#122027", border: "1px solid #2a3d33" }}
+                  formatter={(v) => [`×${Number(v).toFixed(2)} of average`, "Segment"]}
                 />
-                <Bar dataKey="segment" fill="#2db8a4" name="Segment" />
-                <Bar dataKey="population" fill="#5a7380" name="Population" />
+                <Bar dataKey="ratio" fill="#2db8a4" name="Segment" />
               </BarChart>
             </ResponsiveContainer>
           </div>
+          <p className="chart-caption muted">Segment mean ÷ population mean; dashed line = average account.</p>
         </div>
         <div className="panel">
           <h3>What distinguishes this group</h3>
           <dl className="kv">
             <div>
-              <dt>Over-indexed</dt>
-              <dd>
-                {(pack?.behavioral_signature?.over_indexed || []).slice(0, 4).join(", ") || "—"}
-              </dd>
+              <dt>Above average</dt>
+              <dd>{over.slice(0, 4).map(fmtRatio).join(", ") || "—"}</dd>
             </div>
             <div>
-              <dt>Under-indexed</dt>
-              <dd>
-                {(pack?.behavioral_signature?.under_indexed || []).slice(0, 4).join(", ") || "—"}
-              </dd>
+              <dt>Below average</dt>
+              <dd>{under.slice(0, 4).map(fmtRatio).join(", ") || "—"}</dd>
             </div>
             <div>
               <dt>Size</dt>
