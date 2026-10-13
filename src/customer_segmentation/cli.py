@@ -390,6 +390,11 @@ def main() -> None:
         tables = [
             "ods.districts",
             "ods.accounts",
+            "ods.clients",
+            "ods.dispositions",
+            "ods.cards",
+            "ods.loans",
+            "ods.transactions",
             "feature_store.account_features",
             "ml_registry.models",
             "ml_registry.evaluations",
@@ -417,33 +422,12 @@ def main() -> None:
         return
 
     if args.command == "db-seed":
-        from pathlib import Path
-
         from customer_segmentation.db import get_db_session
-        from customer_segmentation.db.seeder import (
-            seed_champion_assignments,
-            seed_champion_model,
-            seed_districts_and_accounts,
-            seed_segment_catalog,
-        )
+        from customer_segmentation.db.seeder import seed_all
 
         with get_db_session() as session:
-            d_counts = seed_districts_and_accounts(session, args.berka_dir)
-            m_seeded = seed_champion_model(session, args.champion_dir)
-            cat_count = seed_segment_catalog(
-                session, Path(args.champion_dir) / "segment_catalog.json"
-            )
-            ass_count = seed_champion_assignments(
-                session, Path(args.champion_dir) / "assignments.csv"
-            )
-            result = {
-                "status": "ok",
-                "districts_and_accounts": d_counts,
-                "champion_model_registered": m_seeded,
-                "catalog_segments_seeded": cat_count,
-                "assignments_seeded": ass_count,
-            }
-            print(json.dumps(result, indent=2))
+            result = seed_all(session, args.berka_dir, args.champion_dir)
+            print(json.dumps({"status": "ok", **result}, indent=2))
             return
 
     parser.print_help()

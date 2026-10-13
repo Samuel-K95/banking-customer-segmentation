@@ -16,12 +16,19 @@ from customer_segmentation.db.connection import (
 )
 from customer_segmentation.db.models import (
     Account,
+    AccountFeature,
     AssignmentRecord,
+    Card,
+    Client,
+    CustomerActionRecord,
+    Disposition,
     District,
     EvaluationRecord,
     InferenceLogRecord,
+    Loan,
     ModelRecord,
     SegmentCatalogRecord,
+    Transaction,
 )
 
 
@@ -125,6 +132,25 @@ def test_live_postgres_status_and_tables():
         n_accounts = session.query(Account).count()
         assert n_accounts >= 4500
 
+        n_clients = session.query(Client).count()
+        assert n_clients >= 5300
+
+        n_disps = session.query(Disposition).count()
+        assert n_disps >= 5300
+
+        n_cards = session.query(Card).count()
+        assert n_cards >= 800
+
+        n_loans = session.query(Loan).count()
+        assert n_loans >= 600
+
+        n_trans = session.query(Transaction).count()
+        assert n_trans >= 1000000
+
+        # Check feature store populated
+        n_feats = session.query(AccountFeature).count()
+        assert n_feats >= 4500
+
         # Check champion model registered
         champ = (
             session.query(ModelRecord)
@@ -151,6 +177,10 @@ def test_live_postgres_status_and_tables():
         # Check assignments
         n_assignments = session.query(AssignmentRecord).count()
         assert n_assignments >= 3600
+
+        # Check customer actions
+        n_actions = session.query(CustomerActionRecord).count()
+        assert n_actions >= 3600
 
 
 @requires_postgres
