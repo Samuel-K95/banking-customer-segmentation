@@ -64,8 +64,14 @@ bcs serve --port 8000
 ```
 
 ```bash
+# Terminal 1 — champion API
+uv run bcs serve --port 8000
+# Terminal 2 — analyst UI (Vite proxies /v1 → :8000)
 cd frontend && npm install && npm run dev
+# → http://127.0.0.1:5173
 ```
+
+Frontend runbook: [`frontend/README.md`](frontend/README.md) — champion home, comparison, segments, decisions, EDA, governance, reports, score playground.
 
 ## Layout
 

@@ -75,7 +75,14 @@ def api_catalog() -> dict[str, Any]:
                 "/v1/decisions/domain-coverage",
                 "/v1/segments/{segment_id}/applications",
             ],
-            "reports": ["/v1/reports", "/v1/reports/{slug}", "/v1/reports/{slug}/raw"],
+            "reports": [
+                "/v1/reports",
+                "/v1/reports?scope=track_c",
+                "/v1/reports/tracks/berka",
+                "/v1/reports/{slug}",
+                "/v1/reports/{slug}/raw",
+            ],
+            "comparison": ["/v1/comparison/board", "/v1/comparison/board?board=explore"],
             "inference": [
                 "/v1/inference",
                 "/v1/inference/batch",
