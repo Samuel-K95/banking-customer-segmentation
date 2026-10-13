@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [staging, main]
+  push:
+    branches: [staging]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      # torch-cpu so the champion/API tests (marked requires_torch) run here
+      # instead of being skipped as they are on installs without PyTorch.
+      - name: Install
+        run: uv sync --locked --extra dev --extra torch-cpu
+
+      - name: Lint
+        run: uv run --locked --extra dev --extra torch-cpu ruff check src tests scripts pipelines
+
+      # Explicit repository-only tier: no raw Berka CSVs or live PostgreSQL.
+      # Full historical replay / seeded database tests remain in the integration
+      # tier and must be run on a provisioned runner before release.
+      - name: Repository tests (offline)
+        run: uv run --locked --extra dev --extra torch-cpu python -m pytest -q -rs -m "not integration"
+
+      - name: Airflow DAG syntax
+        run: uv run --locked --extra dev --extra torch-cpu python -m py_compile pipelines/airflow/dags/*.py

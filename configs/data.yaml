@@ -1,14 +1,72 @@
-primary_source:
-  name: kaggle_bank_customer_segmentation
-  kaggle_slug: shivamb/bank-customer-segmentation
-  grain: customer  # analytical grain after aggregation
+# Data-layer settings. Paths are relative to the project root
+# (BCIP_PROJECT_DIR if set, otherwise the repo root).
 
 paths:
   raw_dir: data/raw
-  standardized_dir: artifacts/data/standardized
-  features_dir: artifacts/features
+  processed_dir: data/processed
   quality_dir: artifacts/quality
 
+# `required_columns` is what the raw check (validate/raw_checks.py) looks for in each
+# file header before any feature code runs; `sep` is the file's delimiter.
+sources:
+  indian_bank:
+    kaggle: shivamb/bank-customer-segmentation
+    files: [bank_transactions.csv]
+    sep: ","
+    required_columns:
+      bank_transactions.csv: [TransactionID, CustomerID, CustomerDOB, CustGender, CustLocation,
+                              CustAccountBalance, TransactionDate, TransactionTime, "TransactionAmount (INR)"]
+  santander:
+    kaggle_competition: santander-product-recommendation
+    kaggle_mirror: silviosantana/s-product-recomendation
+    files: [santander/train_ver2.csv]
+    sep: ","
+    snapshot_date: "2016-05-28"
+    required_columns:
+      santander/train_ver2.csv: [fecha_dato, ncodpers, age, antiguedad, renta, segmento, sexo, nomprov,
+                                 ind_actividad_cliente, ind_cco_fin_ult1, ind_recibo_ult1]
+  berka:
+    kaggle: marceloventura/the-berka-dataset
+    files: [berka/trans.csv, berka/account.csv, berka/client.csv]
+    sep: ";"
+    required_columns:
+      berka/trans.csv: [trans_id, account_id, date, type, amount, balance]
+      berka/account.csv: [account_id, date]
+      berka/client.csv: [client_id]
+  banksim:
+    # Synthetic card payments (BankSim, Madrid 2014): 180 days, ~4.1k customers. Added as an
+    # unseen dataset to test onboarding a new source end to end.
+    kaggle: ealaxi/banksim1
+    files: [banksim/bs140513_032310.csv]
+    sep: ","
+    required_columns:
+      banksim/bs140513_032310.csv: [step, customer, age, gender, merchant, category, amount, fraud]
+
+# One feature track per source. Outputs land in processed_dir/<track>/ as
+# <output_prefix>_interpretable.csv and <output_prefix>_model.csv.
+tracks:
+  track_a:
+    source: indian_bank
+    output_prefix: track_a_features
+    id_column: CustomerID
+  track_b:
+    source: santander
+    output_prefix: track_b_features
+    id_column: customer_id
+    # Unknown gender stays missing (not imputed) so the fairness analysis can see it.
+    # The DQ report counts these cells separately instead of failing on them.
+    nullable_columns: [gender, is_female]
+  track_c:
+    source: berka
+    output_prefix: track_c_berka
+    id_column: account_id
+  track_d:
+    source: banksim
+    output_prefix: track_d_banksim
+    id_column: customer_id
+
+# Gates for the DQ report (validate/report.py). A failing gate fails the run.
 quality:
-  fail_on_duplicate_customer_id: true
   min_rows: 1000
+  max_null_cells: 0
+  max_duplicate_ids: 0

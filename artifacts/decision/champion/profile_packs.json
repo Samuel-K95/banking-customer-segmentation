@@ -1,0 +1,990 @@
+{
+  "population_means": {
+    "Transaction_Count": 197.64214325374792,
+    "Account_Balance": 38937.80344253193,
+    "Total_Credit": 602970.322654081,
+    "Total_Withdrawal": 564232.9244863965,
+    "Recency_Days": 0.9938922820655192,
+    "Account_Age_Days": 1048.227928928373,
+    "has_loan": 0.13825652415324818,
+    "has_card": 0.19933370349805662
+  },
+  "centroids": [
+    {
+      "segment_id": 0,
+      "Transaction_Count": 95.375,
+      "Account_Balance": 29352.324744897956,
+      "Total_Credit": 201497.2324829932,
+      "Total_Withdrawal": 172265.06454081633,
+      "Recency_Days": 1.0501700680272108,
+      "Account_Age_Days": 616.6904761904761,
+      "has_loan": 0.0008503401360544217,
+      "has_card": 0.005952380952380952
+    },
+    {
+      "segment_id": 1,
+      "Transaction_Count": 268.9112114371708,
+      "Account_Balance": 38297.99924755455,
+      "Total_Credit": 687043.107599699,
+      "Total_Withdrawal": 648948.5854778029,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1417.1264108352145,
+      "has_loan": 0.0,
+      "has_card": 0.0
+    },
+    {
+      "segment_id": 2,
+      "Transaction_Count": 243.46830265848672,
+      "Account_Balance": 44811.49304703477,
+      "Total_Credit": 1029835.0779141105,
+      "Total_Withdrawal": 985282.8938650307,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1060.484662576687,
+      "has_loan": 1.0,
+      "has_card": 0.25766871165644173
+    },
+    {
+      "segment_id": 3,
+      "Transaction_Count": 203.93835616438355,
+      "Account_Balance": 56427.17773972603,
+      "Total_Credit": 867624.9568493151,
+      "Total_Withdrawal": 811511.3356164383,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1061.0787671232877,
+      "has_loan": 0.0,
+      "has_card": 1.0
+    },
+    {
+      "segment_id": 4,
+      "Transaction_Count": 222.77777777777777,
+      "Account_Balance": -4919.283333333333,
+      "Total_Credit": 630999.4555555555,
+      "Total_Withdrawal": 635930.7166666667,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1140.888888888889,
+      "has_loan": 0.4444444444444444,
+      "has_card": 0.05555555555555555
+    },
+    {
+      "segment_id": 5,
+      "Transaction_Count": 32.833333333333336,
+      "Account_Balance": 9974.716666666667,
+      "Total_Credit": 36291.450000000004,
+      "Total_Withdrawal": 26316.666666666668,
+      "Recency_Days": 390.8333333333333,
+      "Account_Age_Days": 1390.8333333333333,
+      "has_loan": 0.0,
+      "has_card": 0.0
+    }
+  ],
+  "lift": [
+    {
+      "segment_id": 0,
+      "Transaction_Count": 0.4825640849155859,
+      "Account_Balance": 0.7538259005343966,
+      "Total_Credit": 0.33417437792969196,
+      "Total_Withdrawal": 0.30530842328569147,
+      "Recency_Days": 1.0566236271044729,
+      "Account_Age_Days": 0.5883171581021817,
+      "has_loan": 0.006150452148730979,
+      "has_card": 0.029861387451916698
+    },
+    {
+      "segment_id": 1,
+      "Transaction_Count": 1.3605965155514543,
+      "Account_Balance": 0.9835685596409757,
+      "Total_Credit": 1.139431049567343,
+      "Total_Withdrawal": 1.150143065593913,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1.3519258280820419,
+      "has_loan": 0.0,
+      "has_card": 0.0
+    },
+    {
+      "segment_id": 2,
+      "Transaction_Count": 1.2318643111752927,
+      "Account_Balance": 1.1508479956547057,
+      "Total_Credit": 1.7079365919389007,
+      "Total_Withdrawal": 1.7462343140679053,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1.0116928134712497,
+      "has_loan": 7.232931726907631,
+      "has_card": 1.2926499991455476
+    },
+    {
+      "segment_id": 3,
+      "Transaction_Count": 1.0318566314197073,
+      "Account_Balance": 1.4491618106554616,
+      "Total_Credit": 1.4389181759896734,
+      "Total_Withdrawal": 1.4382559053162869,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1.0122595838560153,
+      "has_loan": 0.0,
+      "has_card": 5.016713091922006
+    },
+    {
+      "segment_id": 4,
+      "Transaction_Count": 1.1271775043026062,
+      "Account_Balance": -0.12633695017218097,
+      "Total_Credit": 1.0464850952831297,
+      "Total_Withdrawal": 1.127071266260356,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1.0883977209567819,
+      "has_loan": 3.2146363230700583,
+      "has_card": 0.27870628288455584
+    },
+    {
+      "segment_id": 5,
+      "Transaction_Count": 0.16612516335232927,
+      "Account_Balance": 0.25617050230859306,
+      "Total_Credit": 0.06018778808259872,
+      "Total_Withdrawal": 0.046641494185441064,
+      "Recency_Days": 393.2351024208566,
+      "Account_Age_Days": 1.326842469037448,
+      "has_loan": 0.0,
+      "has_card": 0.0
+    }
+  ],
+  "contrast": [
+    {
+      "segment_id": 0,
+      "nearest_segment_id": 4,
+      "distance": 3.694,
+      "top_diff_features": "Total_Withdrawal, Total_Credit, Account_Balance"
+    },
+    {
+      "segment_id": 1,
+      "nearest_segment_id": 4,
+      "distance": 2.6711,
+      "top_diff_features": "Total_Credit, Account_Balance, Total_Withdrawal"
+    },
+    {
+      "segment_id": 2,
+      "nearest_segment_id": 4,
+      "distance": 3.2714,
+      "top_diff_features": "Total_Credit, Total_Withdrawal, Account_Balance"
+    },
+    {
+      "segment_id": 3,
+      "nearest_segment_id": 1,
+      "distance": 3.3673,
+      "top_diff_features": "Total_Credit, Total_Withdrawal, Account_Balance"
+    },
+    {
+      "segment_id": 4,
+      "nearest_segment_id": 1,
+      "distance": 2.6711,
+      "top_diff_features": "Total_Credit, Account_Balance, Total_Withdrawal"
+    },
+    {
+      "segment_id": 5,
+      "nearest_segment_id": 0,
+      "distance": 4.1836,
+      "top_diff_features": "Total_Credit, Total_Withdrawal, Account_Balance"
+    }
+  ],
+  "exemplars": [
+    {
+      "segment_id": 0,
+      "rank": 1,
+      "account_id": 4488,
+      "Transaction_Count": 97,
+      "Account_Balance": 27220.7,
+      "Total_Credit": 209139.6,
+      "Total_Withdrawal": 181933.6,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 616.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 0,
+      "rank": 2,
+      "account_id": 76,
+      "Transaction_Count": 99,
+      "Account_Balance": 26764.5,
+      "Total_Credit": 196889.2,
+      "Total_Withdrawal": 170139.0,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 594.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 0,
+      "rank": 3,
+      "account_id": 824,
+      "Transaction_Count": 110,
+      "Account_Balance": 30857.9,
+      "Total_Credit": 204627.7,
+      "Total_Withdrawal": 173784.2,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 650.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 1,
+      "rank": 1,
+      "account_id": 3378,
+      "Transaction_Count": 259,
+      "Account_Balance": 32486.0,
+      "Total_Credit": 631291.9,
+      "Total_Withdrawal": 598805.6,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1388.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 1,
+      "rank": 2,
+      "account_id": 4013,
+      "Transaction_Count": 286,
+      "Account_Balance": 39148.9,
+      "Total_Credit": 725954.1,
+      "Total_Withdrawal": 686905.0,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1545.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 1,
+      "rank": 3,
+      "account_id": 1269,
+      "Transaction_Count": 295,
+      "Account_Balance": 41333.2,
+      "Total_Credit": 616677.3,
+      "Total_Withdrawal": 575358.6,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1374.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 2,
+      "rank": 1,
+      "account_id": 5650,
+      "Transaction_Count": 240,
+      "Account_Balance": 44370.6,
+      "Total_Credit": 993638.7,
+      "Total_Withdrawal": 949367.2,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1088.0,
+      "has_loan": 1,
+      "has_card": 0
+    },
+    {
+      "segment_id": 2,
+      "rank": 2,
+      "account_id": 2268,
+      "Transaction_Count": 208,
+      "Account_Balance": 39873.5,
+      "Total_Credit": 882908.9,
+      "Total_Withdrawal": 843035.0,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1054.0,
+      "has_loan": 1,
+      "has_card": 0
+    },
+    {
+      "segment_id": 2,
+      "rank": 3,
+      "account_id": 9493,
+      "Transaction_Count": 220,
+      "Account_Balance": 39038.6,
+      "Total_Credit": 864451.5,
+      "Total_Withdrawal": 825411.8,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1004.0,
+      "has_loan": 1,
+      "has_card": 0
+    },
+    {
+      "segment_id": 3,
+      "rank": 1,
+      "account_id": 3167,
+      "Transaction_Count": 198,
+      "Account_Balance": 55358.6,
+      "Total_Credit": 936384.4,
+      "Total_Withdrawal": 881025.6,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1241.0,
+      "has_loan": 0,
+      "has_card": 1
+    },
+    {
+      "segment_id": 3,
+      "rank": 2,
+      "account_id": 716,
+      "Transaction_Count": 187,
+      "Account_Balance": 62498.8,
+      "Total_Credit": 843110.0,
+      "Total_Withdrawal": 780611.0,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1193.0,
+      "has_loan": 0,
+      "has_card": 1
+    },
+    {
+      "segment_id": 3,
+      "rank": 3,
+      "account_id": 4283,
+      "Transaction_Count": 177,
+      "Account_Balance": 62696.9,
+      "Total_Credit": 890438.9,
+      "Total_Withdrawal": 827756.4,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1172.0,
+      "has_loan": 0,
+      "has_card": 1
+    },
+    {
+      "segment_id": 4,
+      "rank": 1,
+      "account_id": 2260,
+      "Transaction_Count": 234,
+      "Account_Balance": -5472.5,
+      "Total_Credit": 424766.6,
+      "Total_Withdrawal": 430238.9,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 1303.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 4,
+      "rank": 2,
+      "account_id": 8998,
+      "Transaction_Count": 150,
+      "Account_Balance": -1778.4,
+      "Total_Credit": 774438.2,
+      "Total_Withdrawal": 776216.4,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 952.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 4,
+      "rank": 3,
+      "account_id": 2144,
+      "Transaction_Count": 147,
+      "Account_Balance": -851.0,
+      "Total_Credit": 569865.2,
+      "Total_Withdrawal": 570716.0,
+      "Recency_Days": 0.0,
+      "Account_Age_Days": 894.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 5,
+      "rank": 1,
+      "account_id": 2029,
+      "Transaction_Count": 36,
+      "Account_Balance": 8900.0,
+      "Total_Credit": 39000.0,
+      "Total_Withdrawal": 30100.0,
+      "Recency_Days": 387.0,
+      "Account_Age_Days": 1677.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 5,
+      "rank": 2,
+      "account_id": 138,
+      "Transaction_Count": 16,
+      "Account_Balance": 10800.0,
+      "Total_Credit": 25200.0,
+      "Total_Withdrawal": 14400.0,
+      "Recency_Days": 384.0,
+      "Account_Age_Days": 834.0,
+      "has_loan": 0,
+      "has_card": 0
+    },
+    {
+      "segment_id": 5,
+      "rank": 3,
+      "account_id": 459,
+      "Transaction_Count": 49,
+      "Account_Balance": 8100.0,
+      "Total_Credit": 45800.0,
+      "Total_Withdrawal": 37700.0,
+      "Recency_Days": 305.0,
+      "Account_Age_Days": 1805.0,
+      "has_loan": 0,
+      "has_card": 0
+    }
+  ],
+  "confidence_by_segment": [
+    {
+      "segment_id": 0,
+      "mean_conf": 0.7126333333333333,
+      "median_conf": 0.7274,
+      "low_conf_frac": 0.07738095238095238
+    },
+    {
+      "segment_id": 1,
+      "mean_conf": 0.7187464258841234,
+      "median_conf": 0.7312,
+      "low_conf_frac": 0.06847253574115876
+    },
+    {
+      "segment_id": 2,
+      "mean_conf": 0.7378137014314929,
+      "median_conf": 0.7335,
+      "low_conf_frac": 0.00408997955010225
+    },
+    {
+      "segment_id": 3,
+      "mean_conf": 0.7066154109589041,
+      "median_conf": 0.694,
+      "low_conf_frac": 0.011986301369863013
+    },
+    {
+      "segment_id": 4,
+      "mean_conf": 0.8328,
+      "median_conf": 0.8308,
+      "low_conf_frac": 0.0
+    },
+    {
+      "segment_id": 5,
+      "mean_conf": 0.8504833333333334,
+      "median_conf": 0.8327500000000001,
+      "low_conf_frac": 0.0
+    }
+  ],
+  "packs": [
+    {
+      "segment_id": 0,
+      "name": "New basic accounts",
+      "model_version": "production_candidate_v1",
+      "n": 1176,
+      "pct": 32.65,
+      "one_liner": "Newer accounts with light product depth; still active \u2014 onboarding window is open.",
+      "centroid": {
+        "Transaction_Count": 95.375,
+        "Account_Balance": 29352.324744897956,
+        "Total_Credit": 201497.2324829932,
+        "Total_Withdrawal": 172265.06454081633,
+        "Recency_Days": 1.0501700680272108,
+        "Account_Age_Days": 616.6904761904761,
+        "has_loan": 0.0008503401360544217,
+        "has_card": 0.005952380952380952
+      },
+      "behavioral_signature": {
+        "over_indexed": [
+          {
+            "feature": "Recency_Days",
+            "lift": 1.057
+          },
+          {
+            "feature": "Account_Balance",
+            "lift": 0.754
+          },
+          {
+            "feature": "Account_Age_Days",
+            "lift": 0.588
+          },
+          {
+            "feature": "Transaction_Count",
+            "lift": 0.483
+          }
+        ],
+        "under_indexed": [
+          {
+            "feature": "has_card",
+            "lift": 0.03
+          },
+          {
+            "feature": "has_loan",
+            "lift": 0.006
+          }
+        ]
+      },
+      "contrast": {
+        "segment_id": 0,
+        "nearest_segment_id": 4,
+        "distance": 3.694,
+        "top_diff_features": "Total_Withdrawal, Total_Credit, Account_Balance"
+      },
+      "confidence": {
+        "segment_id": 0,
+        "mean_conf": 0.7126333333333333,
+        "median_conf": 0.7274,
+        "low_conf_frac": 0.07738095238095238
+      },
+      "product_penetration": {
+        "has_loan_rate": 0.0009,
+        "has_card_rate": 0.006,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 0.9932
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 564.5,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0077,
+        "share_tenure_lt_730": 0.7832,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1012,
+        "top_district_id": 1,
+        "risk_note": "Monitor district mix; no demographic targeting from segment_id"
+      },
+      "default_play": "First card / digital activation; watch early dormancy.",
+      "decision": {
+        "play": "Onboarding + first card",
+        "evidence": "Short tenure, low loan/card penetration, still recent activity",
+        "owner": "CRM / Digital",
+        "kpi": "Card attach rate; 90-day activation",
+        "guardrail": "Suitability checks; no aggressive credit"
+      }
+    },
+    {
+      "segment_id": 1,
+      "name": "Long-tenure high-activity basic",
+      "model_version": "production_candidate_v1",
+      "n": 1329,
+      "pct": 36.9,
+      "one_liner": "Loyal, high-activity, almost no loan/card. Trust exists; monetization does not.",
+      "centroid": {
+        "Transaction_Count": 268.9112114371708,
+        "Account_Balance": 38297.99924755455,
+        "Total_Credit": 687043.107599699,
+        "Total_Withdrawal": 648948.5854778029,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1417.1264108352145,
+        "has_loan": 0.0,
+        "has_card": 0.0
+      },
+      "behavioral_signature": {
+        "over_indexed": [
+          {
+            "feature": "Transaction_Count",
+            "lift": 1.361
+          },
+          {
+            "feature": "Account_Age_Days",
+            "lift": 1.352
+          },
+          {
+            "feature": "Total_Withdrawal",
+            "lift": 1.15
+          },
+          {
+            "feature": "Total_Credit",
+            "lift": 1.139
+          }
+        ],
+        "under_indexed": [
+          {
+            "feature": "has_loan",
+            "lift": 0.0
+          },
+          {
+            "feature": "has_card",
+            "lift": 0.0
+          }
+        ]
+      },
+      "contrast": {
+        "segment_id": 1,
+        "nearest_segment_id": 4,
+        "distance": 2.6711,
+        "top_diff_features": "Total_Credit, Account_Balance, Total_Withdrawal"
+      },
+      "confidence": {
+        "segment_id": 1,
+        "mean_conf": 0.7187464258841234,
+        "median_conf": 0.7312,
+        "low_conf_frac": 0.06847253574115876
+      },
+      "product_penetration": {
+        "has_loan_rate": 0.0,
+        "has_card_rate": 0.0,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 1.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 1514.0,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.0414,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1242,
+        "top_district_id": 1,
+        "risk_note": "Monitor district mix; no demographic targeting from segment_id"
+      },
+      "default_play": "Highest-value cross-sell: pre-approved card / personal loan from txn history.",
+      "decision": {
+        "play": "Priority cross-sell (card -> personal loan)",
+        "evidence": "Highest activity + long tenure + ~0 credit products",
+        "owner": "Product / CRM",
+        "kpi": "Product/household lift; offer acceptance",
+        "guardrail": "Use txn history for pre-approve; consent + eligibility"
+      }
+    },
+    {
+      "segment_id": 2,
+      "name": "Loan-centric high-volume",
+      "model_version": "production_candidate_v1",
+      "n": 489,
+      "pct": 13.58,
+      "one_liner": "Credit relationship already established; high flows around loan servicing.",
+      "centroid": {
+        "Transaction_Count": 243.46830265848672,
+        "Account_Balance": 44811.49304703477,
+        "Total_Credit": 1029835.0779141105,
+        "Total_Withdrawal": 985282.8938650307,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1060.484662576687,
+        "has_loan": 1.0,
+        "has_card": 0.25766871165644173
+      },
+      "behavioral_signature": {
+        "over_indexed": [
+          {
+            "feature": "has_loan",
+            "lift": 7.233
+          },
+          {
+            "feature": "Total_Withdrawal",
+            "lift": 1.746
+          },
+          {
+            "feature": "Total_Credit",
+            "lift": 1.708
+          },
+          {
+            "feature": "has_card",
+            "lift": 1.293
+          }
+        ],
+        "under_indexed": [
+          {
+            "feature": "Account_Age_Days",
+            "lift": 1.012
+          },
+          {
+            "feature": "Recency_Days",
+            "lift": 0.0
+          }
+        ]
+      },
+      "contrast": {
+        "segment_id": 2,
+        "nearest_segment_id": 4,
+        "distance": 3.2714,
+        "top_diff_features": "Total_Credit, Total_Withdrawal, Account_Balance"
+      },
+      "confidence": {
+        "segment_id": 2,
+        "mean_conf": 0.7378137014314929,
+        "median_conf": 0.7335,
+        "low_conf_frac": 0.00408997955010225
+      },
+      "product_penetration": {
+        "has_loan_rate": 1.0,
+        "has_card_rate": 0.2577,
+        "both_products_rate": 0.2577,
+        "neither_product_rate": 0.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 997.0,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.3415,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1207,
+        "top_district_id": 1,
+        "risk_note": "Monitor district mix; no demographic targeting from segment_id"
+      },
+      "default_play": "Card attach, PPI/protection, refinance / top-up retention.",
+      "decision": {
+        "play": "Card attach + loan protection / refinance",
+        "evidence": "~100% loan holding, high credit/withdrawal flows",
+        "owner": "Lending + Cards",
+        "kpi": "Card penetration among borrowers; retention at refinance",
+        "guardrail": "Avoid over-leverage; PPI disclosure rules"
+      }
+    },
+    {
+      "segment_id": 3,
+      "name": "Card-centric active savers",
+      "model_version": "production_candidate_v1",
+      "n": 584,
+      "pct": 16.21,
+      "one_liner": "High card penetration, healthy balances, no loan \u2014 solvent, engaged spenders.",
+      "centroid": {
+        "Transaction_Count": 203.93835616438355,
+        "Account_Balance": 56427.17773972603,
+        "Total_Credit": 867624.9568493151,
+        "Total_Withdrawal": 811511.3356164383,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1061.0787671232877,
+        "has_loan": 0.0,
+        "has_card": 1.0
+      },
+      "behavioral_signature": {
+        "over_indexed": [
+          {
+            "feature": "has_card",
+            "lift": 5.017
+          },
+          {
+            "feature": "Account_Balance",
+            "lift": 1.449
+          },
+          {
+            "feature": "Total_Credit",
+            "lift": 1.439
+          },
+          {
+            "feature": "Total_Withdrawal",
+            "lift": 1.438
+          }
+        ],
+        "under_indexed": [
+          {
+            "feature": "Recency_Days",
+            "lift": 0.0
+          },
+          {
+            "feature": "has_loan",
+            "lift": 0.0
+          }
+        ]
+      },
+      "contrast": {
+        "segment_id": 3,
+        "nearest_segment_id": 1,
+        "distance": 3.3673,
+        "top_diff_features": "Total_Credit, Total_Withdrawal, Account_Balance"
+      },
+      "confidence": {
+        "segment_id": 3,
+        "mean_conf": 0.7066154109589041,
+        "median_conf": 0.694,
+        "low_conf_frac": 0.011986301369863013
+      },
+      "product_penetration": {
+        "has_loan_rate": 0.0,
+        "has_card_rate": 1.0,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 0.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 988.5,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.3545,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "mass_campaign_eligible_with_guardrails",
+        "district_max_share": 0.1558,
+        "top_district_id": 1,
+        "risk_note": "Elevated district concentration \u2014 do not target by geography from segment_id"
+      },
+      "default_play": "Premium card upgrade + careful first-loan offer; savings/invest.",
+      "decision": {
+        "play": "Premium card + first loan to solvent customers",
+        "evidence": "High card penetration + highest balances + no loan",
+        "owner": "Cards / Wealth",
+        "kpi": "Interchange / premium upgrade; responsible first-loan take-up",
+        "guardrail": "Credit assessment still required"
+      }
+    },
+    {
+      "segment_id": 4,
+      "name": "Financially stressed / overdraft risk",
+      "model_version": "production_candidate_v1",
+      "n": 18,
+      "pct": 0.5,
+      "one_liner": "Negative mean balance; withdrawals dominate credits.",
+      "centroid": {
+        "Transaction_Count": 222.77777777777777,
+        "Account_Balance": -4919.283333333333,
+        "Total_Credit": 630999.4555555555,
+        "Total_Withdrawal": 635930.7166666667,
+        "Recency_Days": 0.0,
+        "Account_Age_Days": 1140.888888888889,
+        "has_loan": 0.4444444444444444,
+        "has_card": 0.05555555555555555
+      },
+      "behavioral_signature": {
+        "over_indexed": [
+          {
+            "feature": "has_loan",
+            "lift": 3.215
+          },
+          {
+            "feature": "Transaction_Count",
+            "lift": 1.127
+          },
+          {
+            "feature": "Total_Withdrawal",
+            "lift": 1.127
+          },
+          {
+            "feature": "Account_Age_Days",
+            "lift": 1.088
+          }
+        ],
+        "under_indexed": [
+          {
+            "feature": "Recency_Days",
+            "lift": 0.0
+          },
+          {
+            "feature": "Account_Balance",
+            "lift": -0.126
+          }
+        ]
+      },
+      "contrast": {
+        "segment_id": 4,
+        "nearest_segment_id": 1,
+        "distance": 2.6711,
+        "top_diff_features": "Total_Credit, Account_Balance, Total_Withdrawal"
+      },
+      "confidence": {
+        "segment_id": 4,
+        "mean_conf": 0.8328,
+        "median_conf": 0.8308,
+        "low_conf_frac": 0.0
+      },
+      "product_penetration": {
+        "has_loan_rate": 0.4444,
+        "has_card_rate": 0.0556,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 0.5
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 1151.0,
+        "median_recency_days": 0.0,
+        "share_recency_gt_30": 0.0,
+        "share_tenure_lt_730": 0.2222,
+        "share_negative_balance": 1.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "exception_queue_not_mass_campaign",
+        "district_max_share": 0.2222,
+        "top_district_id": 1,
+        "risk_note": "Elevated district concentration \u2014 do not target by geography from segment_id"
+      },
+      "default_play": "Service + risk review, budgeting tools \u2014 not investment pitches.",
+      "decision": {
+        "play": "Service & risk review; budgeting tools",
+        "evidence": "Negative mean balance; withdrawals >= credits",
+        "owner": "Risk / Customer Care",
+        "kpi": "Overdraft cure rate; complaint reduction",
+        "guardrail": "Do NOT pitch investments; limit new unsecured credit"
+      }
+    },
+    {
+      "segment_id": 5,
+      "name": "Dormant long-term accounts",
+      "model_version": "production_candidate_v1",
+      "n": 6,
+      "pct": 0.17,
+      "one_liner": "Long recency gap \u2014 relationship effectively elsewhere.",
+      "centroid": {
+        "Transaction_Count": 32.833333333333336,
+        "Account_Balance": 9974.716666666667,
+        "Total_Credit": 36291.450000000004,
+        "Total_Withdrawal": 26316.666666666668,
+        "Recency_Days": 390.8333333333333,
+        "Account_Age_Days": 1390.8333333333333,
+        "has_loan": 0.0,
+        "has_card": 0.0
+      },
+      "behavioral_signature": {
+        "over_indexed": [
+          {
+            "feature": "Recency_Days",
+            "lift": 393.235
+          },
+          {
+            "feature": "Account_Age_Days",
+            "lift": 1.327
+          },
+          {
+            "feature": "Account_Balance",
+            "lift": 0.256
+          },
+          {
+            "feature": "Transaction_Count",
+            "lift": 0.166
+          }
+        ],
+        "under_indexed": [
+          {
+            "feature": "has_loan",
+            "lift": 0.0
+          },
+          {
+            "feature": "has_card",
+            "lift": 0.0
+          }
+        ]
+      },
+      "contrast": {
+        "segment_id": 5,
+        "nearest_segment_id": 0,
+        "distance": 4.1836,
+        "top_diff_features": "Total_Credit, Total_Withdrawal, Account_Balance"
+      },
+      "confidence": {
+        "segment_id": 5,
+        "mean_conf": 0.8504833333333334,
+        "median_conf": 0.8327500000000001,
+        "low_conf_frac": 0.0
+      },
+      "product_penetration": {
+        "has_loan_rate": 0.0,
+        "has_card_rate": 0.0,
+        "both_products_rate": 0.0,
+        "neither_product_rate": 1.0
+      },
+      "lifecycle_mix": {
+        "median_account_age_days": 1534.5,
+        "median_recency_days": 385.5,
+        "share_recency_gt_30": 1.0,
+        "share_tenure_lt_730": 0.0,
+        "share_negative_balance": 0.0
+      },
+      "fairness_notes": {
+        "usage": "CRM/journey only - not credit eligibility or pricing",
+        "size_policy": "exception_queue_not_mass_campaign",
+        "district_max_share": 0.1667,
+        "top_district_id": 22,
+        "risk_note": "Elevated district concentration \u2014 do not target by geography from segment_id"
+      },
+      "default_play": "Win-back then close; do not push sales hard.",
+      "decision": {
+        "play": "Win-back then closure path",
+        "evidence": "Recency >> other segments (months-years inactive)",
+        "owner": "Retention / Ops",
+        "kpi": "Reactivation rate; dormant balance recovered / closed",
+        "guardrail": "Not a churn model \u2014 strategy from dormancy proxy only"
+      }
+    }
+  ]
+}

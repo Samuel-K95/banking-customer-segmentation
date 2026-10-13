@@ -1,0 +1,37 @@
+version: berka_rfm_product_v1
+output_name: track_c_berka_model.csv
+track: C
+id_column: account_id
+
+model_columns:
+  - Transaction_Count
+  - Account_Balance
+  - Total_Credit
+  - Total_Withdrawal
+  - Recency_Days
+  - Account_Age_Days
+  - has_loan
+  - has_card
+
+profile_columns:
+  - Transaction_Count
+  - Account_Balance
+  - Total_Credit
+  - Total_Withdrawal
+  - Recency_Days
+  - Account_Age_Days
+  - has_loan
+  - has_card
+
+fairness_columns:
+  - district_id   # from account/district join when available
+  # client sex / age available via disp→client; wire in fairness pass
+
+scaling:
+  method: standard
+  log1p_columns:
+    - Account_Balance
+    - Total_Credit
+    - Total_Withdrawal
+    - Account_Age_Days
+    - Transaction_Count

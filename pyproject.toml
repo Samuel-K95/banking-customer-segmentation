@@ -12,13 +12,30 @@ dependencies = [
   "pandas>=2.1",
   "numpy>=1.26",
   "scikit-learn>=1.4",
+  "matplotlib>=3.8",
+  "joblib>=1.3",
   "pyyaml>=6.0",
   "fastapi>=0.110",
   "uvicorn[standard]>=0.27",
+  "python-multipart>=0.0.9",
+  "pandera>=0.34.1",
+  "sqlalchemy>=2.0",
+  "psycopg2-binary>=2.9",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "ruff>=0.3"]
+dev = ["pytest>=8.0", "ruff>=0.3", "httpx>=0.27"]
+data = ["kaggle>=1.6"]
+# Local AE training without Docker (Docker image installs CPU torch separately)
+segmentation = ["torch>=2.1"]
+torch-cpu = [
+    "torch>=2.14.1",
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
 
 [project.scripts]
 bcs = "customer_segmentation.cli:main"
@@ -28,4 +45,12 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
+markers = ["integration: requires full Berka raw data and/or a seeded live PostgreSQL database"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI declares request parameters with these calls as defaults.
+extend-immutable-calls = ["fastapi.File", "fastapi.Form", "fastapi.Query", "fastapi.Depends", "fastapi.Body"]

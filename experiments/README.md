@@ -1,3 +1,3 @@
-# Experiments
+# Experiments (repo-root)
 
-Model comparison runs, configs snapshots, and tracking exports. Do not commit large binary artifacts.
+Scratch / local experiment notes. Versioned bake-off CSVs live under `artifacts/experiments/`.

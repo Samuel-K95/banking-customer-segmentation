@@ -1,0 +1,13 @@
+{
+  "feature_version": "berka_rfm_product_v1_leakage_safe",
+  "columns": [
+    "Transaction_Count",
+    "Account_Balance",
+    "Total_Credit",
+    "Total_Withdrawal",
+    "Recency_Days",
+    "Account_Age_Days",
+    "has_loan",
+    "has_card"
+  ]
+}

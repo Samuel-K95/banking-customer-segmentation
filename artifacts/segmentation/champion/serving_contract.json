@@ -1,0 +1,35 @@
+{
+  "model_version": "production_candidate_v1",
+  "as_of_date": "1997-12-31",
+  "minimum_tenure_days": 365,
+  "artifact_sha256": {
+    "scaler.joblib": "1ad6dc96713b0316028fb51d34be2a5d37667c157070bfe92ac6a78f5d6222ff",
+    "kmeans.joblib": "504583a9cb44d18612ac4a1a63c005a9ab2812b6038761c8a669797bf4d3f14c",
+    "encoder.pt": "ea2cf8a7978cafcbfae397483957118cd2df74dab0e3100353d55b44f61b8005",
+    "account_split.csv": "9f67bd89076f4110b0153200acf7692eea1328dd6b44c10edd5402854c1afc3e",
+    "assignments.csv": "c4230ebb9b80af0263e4d09e5108c4c2b405c1beeb782b8543b2c2053df2b912"
+  },
+  "baseline_segment_mix": {
+    "0": 0.32648528595224874,
+    "1": 0.36896168795113826,
+    "2": 0.13575791227096057,
+    "3": 0.16213214880621876,
+    "4": 0.004997223764575236,
+    "5": 0.001665741254858412
+  },
+  "exception_segment_ids": [
+    4,
+    5
+  ],
+  "feature_columns": [
+    "Transaction_Count",
+    "Account_Balance",
+    "Total_Credit",
+    "Total_Withdrawal",
+    "Recency_Days",
+    "Account_Age_Days",
+    "has_loan",
+    "has_card"
+  ],
+  "updated_at": "2026-10-12T17:20:38.341095+00:00"
+}

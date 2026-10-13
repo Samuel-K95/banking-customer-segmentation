@@ -1,0 +1,15 @@
+# Declared composite scoring policy (03-segmentation-layer.md §10)
+# Used for transparent comparison; final champion may override max(score)
+# when business/behavioral coverage requires it (see champion_recommendation.md).
+
+weights:
+  silhouette: 0.25
+  stability_ARI: 0.25
+  interpretability: 0.20
+  size_sanity: 0.15
+  application_distinctness: 0.15
+
+notes: >
+  Interpretability and application_distinctness are scored manually (0-1)
+  after reviewing centroid heatmaps and banking plays.
+  Highest silhouette alone is not sufficient for champion selection.

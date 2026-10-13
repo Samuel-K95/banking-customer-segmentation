@@ -1,0 +1,215 @@
+version: 1
+description: >-
+  P2 baseline inputs selected explicitly from the P1 feature-builder output
+  schemas. Only model_features may be passed to baseline clustering models.
+data_dir: ../../data/processed
+chunk_size: 50000
+
+tracks:
+  track_a:
+    name: Indian Bank Transactions
+    grain: customer
+    model_file: track_a/track_a_features_model.csv
+    interpretable_file: track_a/track_a_features_interpretable.csv
+    min_rows: 1
+    identifier_columns: [CustomerID]
+    model_features:
+      - AccountBalance
+      - Transaction_Count
+      - Avg_Transaction_Amt
+      - Std_Transaction_Amt
+      - Total_Spend
+      - Avg_Spend_Ratio
+      - Recency_Days
+      - Weekend_Spend_Ratio
+      - Night_Spend_Ratio
+    profile_features:
+      - Age
+      - Gender_M
+      - Is_Tier_1_City
+    binary_features: []
+    excluded_features:
+      - CustomerID
+      - Age
+      - Gender_M
+      - Is_Tier_1_City
+    excluded_column_patterns: []
+    review_features:
+      - feature: Is_Tier_1_City
+        reason: Geographic proxy; retain for profiling and fairness review only.
+      - feature: Avg_Spend_Ratio
+        reason: Confirm the balance denominator and sensitivity to near-zero balances.
+
+  track_b:
+    name: Santander Product Portfolio
+    grain: customer at the 2016-05-28 snapshot
+    model_file: track_b/track_b_features_model.csv
+    interpretable_file: track_b/track_b_features_interpretable.csv
+    min_rows: 1
+    identifier_columns: [customer_id]
+    model_features:
+      - has_savings_account
+      - has_bank_guarantees
+      - has_current_account
+      - has_derivada_account
+      - has_payroll_account
+      - has_junior_account
+      - has_mas_particular_account
+      - has_particular_account
+      - has_particular_plus_account
+      - has_short_term_deposits
+      - has_medium_term_deposits
+      - has_long_term_deposits
+      - has_e_account
+      - has_funds
+      - has_mortgage
+      - has_pensions
+      - has_loans
+      - has_taxes
+      - has_credit_card
+      - has_securities
+      - has_home_account
+      - has_payroll
+      - has_pensions_nom
+      - has_direct_debit
+    profile_features:
+      - age
+      - gross_income
+      - seniority_months
+      - total_products_owned
+      - foreigner_index
+      - deceased_index
+      - spouse_index
+      - new_customer_index
+      - activity_index
+    profile_categorical_features:
+      - gender
+      - is_female
+    profile_column_patterns:
+      - '^customer_segment(?:_|$)'
+    binary_features:
+      - has_savings_account
+      - has_bank_guarantees
+      - has_current_account
+      - has_derivada_account
+      - has_payroll_account
+      - has_junior_account
+      - has_mas_particular_account
+      - has_particular_account
+      - has_particular_plus_account
+      - has_short_term_deposits
+      - has_medium_term_deposits
+      - has_long_term_deposits
+      - has_e_account
+      - has_funds
+      - has_mortgage
+      - has_pensions
+      - has_loans
+      - has_taxes
+      - has_credit_card
+      - has_securities
+      - has_home_account
+      - has_payroll
+      - has_pensions_nom
+      - has_direct_debit
+    excluded_features:
+      - customer_id
+      - age
+      - is_female
+      - gender
+      - gross_income
+      - foreigner_index
+      - deceased_index
+      - spouse_index
+      - new_customer_index
+      - customer_segment
+      - total_products_owned
+    excluded_column_patterns:
+      - '^customer_segment(?:_|$)'
+    review_features:
+      - feature: customer_segment
+        reason: Source-defined customer tier; any emitted one-hot columns are profile-only.
+      - feature: gross_income
+        reason: Socioeconomic attribute; profile-only pending fairness review.
+      - feature: seniority_months
+        reason: Potential relationship-tenure feature; assess purpose and leakage before a later model revision.
+      - feature: total_products_owned
+        reason: Deterministic sum of the binary product inputs and therefore redundant in this baseline.
+      - feature: activity_index
+        reason: Source-defined activity status; assess semantics before inclusion in a later model revision.
+      - feature: is_female
+        reason: H=1 female, V=0 male; unknown or missing source values remain null.
+
+  track_c:
+    name: Berka Financial Dataset
+    grain: account (not customer)
+    model_file: track_c/track_c_berka_model.csv
+    interpretable_file: track_c/track_c_berka_interpretable.csv
+    min_rows: 1
+    identifier_columns: [account_id]
+    model_features:
+      - Account_Age_Days
+      - Account_Balance
+      - Transaction_Count
+      - Total_Credit
+      - Total_Withdrawal
+      - Recency_Days
+    profile_features: []
+    binary_features: []
+    excluded_features:
+      - account_id
+    excluded_column_patterns: []
+    review_features:
+      - feature: account_id
+        reason: Account key, not a modeling input.
+      - feature: account grain
+        reason: The P1 builder does not link accounts to clients; this track is not customer-level segmentation.
+      - feature: Account_Balance
+        reason: Validate the meaning of the last transaction balance and assess skew/outliers.
+      - feature: Account_Age_Days
+        reason: Confirm the common reference date before cross-track or temporal comparisons.
+
+  track_d:
+    name: BankSim Synthetic Card Payments
+    grain: customer
+    model_file: track_d/track_d_banksim_model.csv
+    interpretable_file: track_d/track_d_banksim_interpretable.csv
+    min_rows: 1
+    identifier_columns: [customer_id]
+    model_features:
+      - txn_count
+      - active_days
+      - total_amount
+      - avg_amount
+      - std_amount
+      - max_amount
+      - recency_days
+      - tenure_days
+      - interarrival_days_median
+      - n_merchants
+      - n_categories
+      - share_transport
+      - share_food
+      - share_health_beauty
+      - share_shopping
+      - share_leisure_travel
+      - share_other
+    profile_features: [fraud_txn_count, any_fraud]
+    profile_categorical_features: [age_band, gender]
+    binary_features: []
+    excluded_features:
+      - customer_id
+      - age_band
+      - gender
+      - fraud_txn_count
+      - any_fraud
+    excluded_column_patterns: []
+    review_features:
+      - feature: age_band, gender
+        reason: Fairness and profiling only; never model inputs. gender E = enterprise accounts, U = unknown.
+      - feature: fraud_txn_count, any_fraud
+        reason: Outcome used to validate segments after fitting; never a model input.
+      - feature: recency_days, tenure_days
+        reason: Most customers are active through the last step, so both carry little signal.
+      - feature: share_*
+        reason: Amount shares sum to 1 across the six spend groups.

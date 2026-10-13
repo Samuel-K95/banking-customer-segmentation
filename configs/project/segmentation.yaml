@@ -1,0 +1,33 @@
+track: C
+dataset: berka
+random_state: 42
+k_range: [3, 4, 5, 6, 7, 8]
+
+traditional:
+  kmeans:
+    n_init: 20
+  gmm:
+    covariance_type: full
+    n_init: 3
+  hierarchical:
+    linkage: ward
+    k_values: [5, 6, 7]
+
+autoencoder:
+  latent_dims: [4, 8]
+  hidden: 32
+  epochs: 50
+  batch_size: 128
+  lr: 0.001
+  cluster_method: kmeans
+  n_clusters: 6
+
+stability:
+  multi_seed_n: 10
+  subsample_frac: 0.75
+  subsample_rounds: 5
+
+artifacts:
+  experiments_dir: artifacts/experiments
+  champion_dir: artifacts/segmentation/champion
+  figures_subdir: figures

@@ -1,0 +1,5 @@
+# Keep champion integrity hashes stable across OS checkouts (LF only).
+artifacts/segmentation/champion/*.csv text eol=lf
+artifacts/segmentation/champion/*.json text eol=lf
+artifacts/segmentation/research/leakage_safe_source/*.csv text eol=lf
+artifacts/segmentation/research/leakage_safe_source/*.json text eol=lf

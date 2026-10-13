@@ -1,0 +1,227 @@
+{
+  "experiment": "track_d_segmentation_v1",
+  "track": "track_d",
+  "selection": {
+    "selected": "gmm_k3",
+    "all_gates_met": true,
+    "eligible_candidates": [
+      "gmm_k3",
+      "gmm_k4"
+    ],
+    "mean_rank": 1.3333333333333333,
+    "runner_up": "gmm_k4",
+    "rules": {
+      "min_segment_fraction": 0.03,
+      "max_segment_fraction": 0.6,
+      "min_seed_ari": 0.8
+    }
+  },
+  "notes": {},
+  "segments": [
+    {
+      "segment": 0,
+      "name": "high n_merchants / high max_amount",
+      "size": 1362,
+      "share": 0.3312,
+      "top_drivers": [
+        {
+          "feature": "n_merchants",
+          "direction": "high",
+          "effect_sd": 0.602
+        },
+        {
+          "feature": "max_amount",
+          "direction": "high",
+          "effect_sd": 0.575
+        },
+        {
+          "feature": "std_amount",
+          "direction": "high",
+          "effect_sd": 0.552
+        }
+      ],
+      "representative_customers": [
+        "C1869939691",
+        "C56859969",
+        "C1453917071"
+      ]
+    },
+    {
+      "segment": 1,
+      "name": "low active_days / low txn_count",
+      "size": 272,
+      "share": 0.0661,
+      "top_drivers": [
+        {
+          "feature": "active_days",
+          "direction": "low",
+          "effect_sd": -2.655
+        },
+        {
+          "feature": "txn_count",
+          "direction": "low",
+          "effect_sd": -2.653
+        },
+        {
+          "feature": "share_transport",
+          "direction": "low",
+          "effect_sd": -2.364
+        }
+      ],
+      "representative_customers": [
+        "C706956926",
+        "C2130894809",
+        "C1590275312"
+      ]
+    },
+    {
+      "segment": 2,
+      "name": "high active_days / high txn_count",
+      "size": 2478,
+      "share": 0.6026,
+      "top_drivers": [
+        {
+          "feature": "active_days",
+          "direction": "high",
+          "effect_sd": 0.589
+        },
+        {
+          "feature": "txn_count",
+          "direction": "high",
+          "effect_sd": 0.579
+        },
+        {
+          "feature": "share_transport",
+          "direction": "high",
+          "effect_sd": 0.506
+        }
+      ],
+      "representative_customers": [
+        "C1258725927",
+        "C1814746822",
+        "C1510402289"
+      ]
+    }
+  ],
+  "explainability": {
+    "surrogate_tree_depth": 3,
+    "holdout_fidelity": 0.965,
+    "feature_importance": {
+      "active_days": 0.7361,
+      "share_other": 0.1197,
+      "share_leisure_travel": 0.0941,
+      "share_food": 0.0386,
+      "txn_count": 0.0115
+    }
+  },
+  "fairness": {
+    "columns": {
+      "age_band": {
+        "cramers_v": 0.0317,
+        "group_sizes": {
+          "2": 1291,
+          "3": 1024,
+          "4": 757,
+          "5": 424,
+          "1": 403,
+          "6": 182,
+          "0": 22,
+          "U": 9
+        },
+        "representation_ratio": {
+          "0": {
+            "1": 0.929,
+            "2": 1.02,
+            "3": 0.982,
+            "4": 1.033,
+            "5": 0.94,
+            "6": 1.111
+          },
+          "1": {
+            "1": 1.125,
+            "2": 0.902,
+            "3": 1.122,
+            "4": 1.038,
+            "5": 0.784,
+            "6": 0.748
+          },
+          "2": {
+            "1": 1.025,
+            "2": 1.0,
+            "3": 0.997,
+            "4": 0.978,
+            "5": 1.057,
+            "6": 0.966
+          }
+        },
+        "max_ratio": 1.125,
+        "min_ratio": 0.748
+      },
+      "gender": {
+        "cramers_v": 0.0281,
+        "group_sizes": {
+          "F": 2256,
+          "M": 1844,
+          "E": 9,
+          "U": 3
+        },
+        "representation_ratio": {
+          "0": {
+            "F": 1.018,
+            "M": 0.979
+          },
+          "1": {
+            "F": 1.072,
+            "M": 0.91
+          },
+          "2": {
+            "F": 0.982,
+            "M": 1.021
+          }
+        },
+        "max_ratio": 1.072,
+        "min_ratio": 0.91
+      }
+    },
+    "min_group_size_for_ratios": 30,
+    "demographics_only_accuracy": 0.5992,
+    "majority_class_accuracy": 0.5992
+  },
+  "outcome_validation": {
+    "any_fraud": {
+      "overall_rate": 0.3607,
+      "segments": [
+        {
+          "segment": 0,
+          "n": 1362,
+          "rate": 0.6557,
+          "ci95": [
+            0.63,
+            0.6804
+          ]
+        },
+        {
+          "segment": 1,
+          "n": 272,
+          "rate": 0.864,
+          "ci95": [
+            0.8181,
+            0.8997
+          ]
+        },
+        {
+          "segment": 2,
+          "n": 2478,
+          "rate": 0.1433,
+          "ci95": [
+            0.13,
+            0.1576
+          ]
+        }
+      ],
+      "chi2_p_value": 1.5903914355088276e-287,
+      "cramers_v": 0.5667
+    }
+  },
+  "outcome_caveat": "Fraudulent payments are part of the spend features (amounts and category shares), so part of any association between segments and fraud is mechanical, not independent."
+}

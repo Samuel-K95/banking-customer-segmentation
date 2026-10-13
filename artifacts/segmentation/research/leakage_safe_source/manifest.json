@@ -1,0 +1,25 @@
+{
+  "run_id": "c_ae_lat4_k6_leakage_safe",
+  "track": "berka",
+  "method": "ae_kmeans",
+  "model_version": "v1_leakage_safe",
+  "feature_version": "berka_rfm_product_v1_leakage_safe",
+  "registered_at": "2026-10-12T10:18:41.480101+00:00",
+  "tag": "prod_segmentation_v1_leakage_safe",
+  "n_customers": 3602,
+  "n_segments": 6,
+  "notes": "Leakage-safe twin of c_ae_lat4_k6. as_of=1997-12-31, tenure>=365, train-only scaler/AE/KMeans. Freeze BLOCKED.",
+  "files": {
+    "assignments": "assignments.csv",
+    "profiles": "segment_profiles.csv",
+    "comparison_board": "comparison_board.csv",
+    "metrics": "metrics.json",
+    "feature_columns": "feature_columns.json",
+    "segment_catalog": "segment_catalog.json",
+    "decision_map": "decision_map.csv",
+    "scaler": "scaler.joblib",
+    "kmeans": "kmeans.joblib",
+    "encoder": "encoder.pt"
+  },
+  "load": "customer_segmentation.models.champion.ChampionModel.load"
+}
