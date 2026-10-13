@@ -1,0 +1,19 @@
+|--- active_days <= 142.50
+|   |--- active_days <= 57.50
+|   |   |--- share_food <= 0.00
+|   |   |   |--- class: 1
+|   |   |--- share_food >  0.00
+|   |   |   |--- class: 0
+|   |--- active_days >  57.50
+|   |   |--- txn_count <= 141.50
+|   |   |   |--- class: 0
+|   |   |--- txn_count >  141.50
+|   |   |   |--- class: 0
+|--- active_days >  142.50
+|   |--- share_other <= 0.00
+|   |   |--- share_leisure_travel <= 0.19
+|   |   |   |--- class: 2
+|   |   |--- share_leisure_travel >  0.19
+|   |   |   |--- class: 0
+|   |--- share_other >  0.00
+|   |   |--- class: 0

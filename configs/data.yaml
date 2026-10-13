@@ -33,8 +33,16 @@ sources:
       berka/trans.csv: [trans_id, account_id, date, type, amount, balance]
       berka/account.csv: [account_id, date]
       berka/client.csv: [client_id]
+  banksim:
+    # Synthetic card payments (BankSim, Madrid 2014): 180 days, ~4.1k customers. Added as an
+    # unseen dataset to test onboarding a new source end to end.
+    kaggle: ealaxi/banksim1
+    files: [banksim/bs140513_032310.csv]
+    sep: ","
+    required_columns:
+      banksim/bs140513_032310.csv: [step, customer, age, gender, merchant, category, amount, fraud]
 
-# One feature track per source. Outputs land in processed_dir as
+# One feature track per source. Outputs land in processed_dir/<track>/ as
 # <output_prefix>_interpretable.csv and <output_prefix>_model.csv.
 tracks:
   track_a:
@@ -52,6 +60,10 @@ tracks:
     source: berka
     output_prefix: track_c_berka
     id_column: account_id
+  track_d:
+    source: banksim
+    output_prefix: track_d_banksim
+    id_column: customer_id
 
 # Gates for the DQ report (validate/report.py). A failing gate fails the run.
 quality:

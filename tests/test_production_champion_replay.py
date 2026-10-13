@@ -16,8 +16,22 @@ from customer_segmentation.models.champion import ChampionModel
 PROD = Path("artifacts/segmentation/champion")
 
 
+def _berka_raw_available() -> bool:
+    from customer_segmentation.data.berka_dataset_loader import resolve_berka_dir
+
+    try:
+        resolve_berka_dir()
+    except FileNotFoundError:
+        return False
+    return True
+
+
 @pytest.mark.requires_torch
 @pytest.mark.skipif(not PROD.exists(), reason="production champion artifacts missing")
+@pytest.mark.skipif(
+    not _berka_raw_available(),
+    reason="raw Berka data is not downloaded (bash scripts/run_data_layer.sh fetches it)",
+)
 def test_production_holdout_replay_matches_stored_labels():
     champ = ChampionModel.load(PROD)
     split = pd.read_csv(PROD / "account_split.csv")

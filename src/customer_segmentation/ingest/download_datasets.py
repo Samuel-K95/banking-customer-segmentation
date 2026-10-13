@@ -241,12 +241,37 @@ def download_berka(raw_dir: str | Path = "data/raw/berka") -> list[Path]:
     return [path for path in resolved if path is not None]
 
 
+def download_banksim(raw_dir: str | Path = "data/raw/banksim") -> Path:
+    """Ensure the configured BankSim payments CSV exists and is non-empty."""
+    (target_csv,) = _configured_source_paths(
+        "banksim", raw_dir, default_argument="data/raw/banksim"
+    )
+    target_csv.parent.mkdir(parents=True, exist_ok=True)
+    if _is_nonempty_file(target_csv):
+        print("BankSim dataset already exists; skipping download.")
+        return target_csv
+
+    source = load_data_config()["sources"]["banksim"]
+    dataset_slug = source["kaggle"].rsplit("/", 1)[-1]
+    archive = target_csv.parent / f"{dataset_slug}.zip"
+    print("Downloading BankSim dataset from Kaggle...")
+    _run_kaggle(
+        ["kaggle", "datasets", "download", "-d", source["kaggle"], "-p", str(target_csv.parent)],
+        "BankSim",
+    )
+    extract_zip(archive, target_csv.parent)
+    _require_files([target_csv], "BankSim")
+    _remove_archive(archive)
+    return target_csv
+
+
 def _current_downloaders() -> dict[str, Callable[..., object]]:
     """Build a call-time map so monkeypatched/public downloader functions remain usable."""
     return {
         "indian_bank": download_bank_transactions,
         "santander": download_santander,
         "berka": download_berka,
+        "banksim": download_banksim,
     }
 
 

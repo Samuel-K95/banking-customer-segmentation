@@ -177,13 +177,14 @@ mirror of the same `train_ver2.csv`.
 ## Airflow (data-layer DAG)
 
 `pipelines/airflow/` runs `scripts/run_data_layer.sh` step for step as an Airflow 3 DAG,
-`bcip_data_layer`, then segments Berka:
+`bcip_data_layer`, then runs the segmentation stages:
 
 ```text
 download_<source> → check_raw_<source> → build_<track>     (one chain per selected track, in parallel)
     → dq_report → feature_contract
     → berka_snapshot → berka_baselines → berka_feature_sensitivity
                                        → berka_temporal_validation
+    → track_d_segmentation
 ```
 
 - Each task calls the project's own code from the repo root (mounted into the containers),
@@ -193,13 +194,14 @@ download_<source> → check_raw_<source> → build_<track>     (one chain per se
   and fails the run if any track breaks a gate in `configs/data.yaml` (`quality:`).
   Columns listed under a track's `nullable_columns` are reported but do not fail the gate.
 - `feature_contract` is shell step 4 (`models.preflight` against `configs/models/feature_contracts.yaml`).
-- The Berka segmentation stage runs only when `track_c` is selected.
+- A segmentation stage runs only when its track is selected, and is skipped (not failed)
+  when its versioned output already exists; bump the version in its config to rebuild.
 
 Run parameters (Trigger → "Trigger DAG w/ config" in the UI) mirror the shell flags:
 
 | Parameter | Shell flag | Default |
 |---|---|---|
-| `tracks` | `--tracks` | `["track_a", "track_b", "track_c"]` |
+| `tracks` | `--tracks` | `["track_a", "track_b", "track_c", "track_d"]` |
 | `skip_downloads` | `--skip-downloads` | `false` |
 | `reuse_preprocessors` | `--reuse-preprocessors` | `false` |
 
@@ -215,3 +217,27 @@ docker compose down                # stop; add -v to also drop Airflow's databas
 ```
 
 Downloads are skipped when the files are already in `data/raw/`.
+
+## Adding a new dataset
+
+Track D (BankSim, `ealaxi/banksim1`, 4,112 customers) was onboarded as an unseen dataset to
+prove the flow; it is the template for the next one.
+
+1. `configs/data.yaml`: add the source (Kaggle slug, files, separator, required columns) and a
+   track (`source`, `output_prefix`, `id_column`). The raw check and DQ report need nothing else.
+2. `ingest/download_datasets.py`: a downloader, registered in `_current_downloaders()`.
+3. `data/<name>_dataset_loader.py` and `features/build_<name>_features.py` with `run()`; keep
+   demographics and outcomes out of the model matrix (`prepare_model_matrix`).
+4. `configs/models/feature_contracts.yaml`: the track's model, profile and excluded features.
+5. A segmentation config like `configs/models/track_d/segmentation_v1.yaml`, run by
+   `python -m customer_segmentation.pipelines.run_track_segmentation --config <file>`:
+   K-Means / GMM / autoencoder+K-Means scored on one holdout in one feature space, seed and
+   subsample stability, rule-based selection, profiles, surrogate-tree explanations,
+   fairness and outcome validation, written to a versioned `artifacts/segmentation/<track>/`.
+6. Add the track to `TRACKS` in the DAG and `scripts/run_data_layer.sh`, plus a segmentation
+   stage in `SEGMENTATION_STAGES`.
+
+`python -m customer_segmentation.pipelines.score_new_period` covers the other "new data"
+case: it scores a later Berka period (default 1998-12-31) with the frozen champion and
+reports segment transitions, accounts never seen in training, and feature drift (PSI)
+under `artifacts/monitoring/berka/`. It needs PyTorch (`torch-cpu` extra).
