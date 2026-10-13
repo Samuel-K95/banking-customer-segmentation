@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 
+
 def md(src): return {"cell_type": "markdown", "metadata": {}, "source": src}
 def code(src): return {"cell_type": "code", "execution_count": None, "metadata": {}, "outputs": [], "source": src}
 

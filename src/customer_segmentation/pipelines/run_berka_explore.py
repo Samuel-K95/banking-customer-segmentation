@@ -15,10 +15,10 @@ from typing import Any
 import numpy as np
 import pandas as pd
 from sklearn.cluster import (
-    AgglomerativeClustering,
-    Birch,
     DBSCAN,
     HDBSCAN,
+    AgglomerativeClustering,
+    Birch,
     KMeans,
     MiniBatchKMeans,
     SpectralClustering,
@@ -27,10 +27,12 @@ from sklearn.decomposition import PCA
 from sklearn.mixture import GaussianMixture
 from sklearn.neighbors import NearestNeighbors
 
-from customer_segmentation.features.build_berka_features import build_and_save_berka_features
-from customer_segmentation.models.tabular_ae import TORCH_OK, train_autoencoder
-from customer_segmentation.models.metrics import evaluate_clustering, size_sanity
+from customer_segmentation.features.build_berka_features import (
+    build_and_save_berka_features,
+)
 from customer_segmentation.models import viz
+from customer_segmentation.models.metrics import evaluate_clustering, size_sanity
+from customer_segmentation.models.tabular_ae import TORCH_OK, train_autoencoder
 
 warnings.filterwarnings("ignore")
 RANDOM_STATE = 42
@@ -73,7 +75,7 @@ def _label_stats(labels: np.ndarray) -> dict[str, Any]:
     valid = labels[labels >= 0]
     if len(valid) == 0 or len(np.unique(valid)) < 2:
         return {
-            "n_clusters": int(len(np.unique(valid))),
+            "n_clusters": len(np.unique(valid)),
             "noise_frac": noise_frac,
             "min_frac": None,
             "max_frac": None,
@@ -81,7 +83,7 @@ def _label_stats(labels: np.ndarray) -> dict[str, Any]:
             "counts": [],
         }
     base = size_sanity(valid)
-    base["n_clusters"] = int(len(np.unique(valid)))
+    base["n_clusters"] = len(np.unique(valid))
     base["noise_frac"] = noise_frac
     return base
 
@@ -285,7 +287,7 @@ def run_explore(
             )
 
         viz.plot_ae_loss(
-            {k: v for k, v in ae_loss_curves.items() if k.startswith("ae_lat") or k.startswith("dae")},
+            {k: v for k, v in ae_loss_curves.items() if k.startswith(("ae_lat", "dae"))},
             fig_dir / "ae_recon_curves.png",
         )
 
@@ -316,7 +318,7 @@ def run_explore(
     fam.to_csv(out_dir / "family_summary.csv")
 
     summary = {
-        "n_runs": int(len(board)),
+        "n_runs": len(board),
         "best_overall": board.iloc[0].to_dict() if len(board) else {},
         "best_by_family": {
             fam_name: board[board["family"] == fam_name].iloc[0].to_dict()

@@ -12,9 +12,7 @@ import threading
 import time
 import uuid
 import warnings
-from datetime import datetime, timezone
-
-UTC = timezone.utc
+from datetime import UTC, datetime
 from pathlib import Path
 from types import TracebackType
 from typing import Any, Self

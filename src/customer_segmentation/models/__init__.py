@@ -1,15 +1,19 @@
 """Segmentation models: traditional, AE, and loadable champion."""
 
 from customer_segmentation.models.metrics import evaluate_clustering, size_sanity
-from customer_segmentation.models.traditional import sweep_gmm, sweep_hierarchical, sweep_kmeans
+from customer_segmentation.models.traditional import (
+    sweep_gmm,
+    sweep_hierarchical,
+    sweep_kmeans,
+)
 
 __all__ = [
+    "ChampionModel",
     "evaluate_clustering",
     "size_sanity",
-    "sweep_kmeans",
     "sweep_gmm",
     "sweep_hierarchical",
-    "ChampionModel",
+    "sweep_kmeans",
 ]
 
 

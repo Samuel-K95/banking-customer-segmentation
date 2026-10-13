@@ -13,7 +13,7 @@ from customer_segmentation.models.metrics import evaluate_clustering, size_sanit
 
 try:
     import torch
-    import torch.nn as nn
+    from torch import nn
     from torch.utils.data import DataLoader, TensorDataset
 
     TORCH_OK = True

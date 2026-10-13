@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -86,9 +86,9 @@ def register_champion(
         "method": method,
         "model_version": model_version,
         "feature_version": feature_version,
-        "registered_at": datetime.now(timezone.utc).isoformat(),
+        "registered_at": datetime.now(UTC).isoformat(),
         "tag": f"prod_segmentation_{model_version}",
-        "n_customers": int(len(assignments)),
+        "n_customers": len(assignments),
         "n_segments": int(assignments["segment_id"].nunique()) if "segment_id" in assignments else None,
         "notes": notes,
         "files": {k: str(v.relative_to(out_dir)) for k, v in paths.items()},

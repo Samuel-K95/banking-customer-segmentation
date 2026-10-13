@@ -206,7 +206,7 @@ def enrich_champion_evaluation(
         "holdout_metrics": hold_metrics,
         "stability_seed_ari": seed_stability,
         "stability_subsample_ari": sub_stability,
-        "comparison_board_rows": int(len(board)),
+        "comparison_board_rows": len(board),
         "files": {
             "metrics": str(champ_dir / "metrics.json"),
             "comparison_board": str(champ_dir / "comparison_board.csv"),

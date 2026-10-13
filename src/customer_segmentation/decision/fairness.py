@@ -10,11 +10,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-import numpy as np
 import pandas as pd
 
-from customer_segmentation.data.berka_dataset_loader import resolve_berka_dir, _read_table
-
+from customer_segmentation.data.berka_dataset_loader import (
+    _read_table,
+    resolve_berka_dir,
+)
 
 RISK_REGISTER: list[dict[str, str]] = [
     {
@@ -72,7 +73,7 @@ def try_join_district(
     try:
         path = resolve_berka_dir(berka_dir)
         account = _read_table(path, "account")
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate soft fail
         return None
     if "district_id" not in account.columns:
         return None
@@ -97,7 +98,7 @@ def district_concentration(df: pd.DataFrame, *, segment_col: str = "segment_id")
         rows.append(
             {
                 "segment_id": int(sid),
-                "n": int(len(g)),
+                "n": len(g),
                 "n_districts": int(g["district_id"].nunique(dropna=True)),
                 "max_district_share": round(float(vc.iloc[0]), 4),
                 "top_district_id": vc.index[0],
@@ -186,7 +187,7 @@ def build_fairness_pack(
                 berka_dir=berka_dir,
                 as_of_year=as_of_year,
             )
-        except Exception as exc:  # pragma: no cover - soft fail keeps pack publishable
+        except Exception as exc:  # noqa: BLE001 - deliberate soft fail  # pragma: no cover - soft fail keeps pack publishable
             behavior_vs_demo = {
                 **behavior_vs_demographic_note(),
                 "ablation_status": f"failed:{type(exc).__name__}",

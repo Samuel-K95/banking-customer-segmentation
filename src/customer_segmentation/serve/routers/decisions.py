@@ -8,7 +8,10 @@ from typing import Any
 import pandas as pd
 from fastapi import APIRouter, HTTPException, Query
 
-from customer_segmentation.decision.applications import APPLICATION_PORTFOLIO, expand_decision_map
+from customer_segmentation.decision.applications import (
+    APPLICATION_PORTFOLIO,
+    expand_decision_map,
+)
 from customer_segmentation.serve.deps import decision_dir, require_champion
 
 router = APIRouter(tags=["decisions"])
@@ -37,7 +40,7 @@ def decisions_map(domain: str | None = Query(default=None)) -> dict[str, Any]:
         frame = frame[frame["domain"] == domain]
         if frame.empty:
             raise HTTPException(status_code=404, detail=f"No plays for domain={domain!r}")
-    return {"n": int(len(frame)), "domain": domain, "rows": frame.to_dict(orient="records")}
+    return {"n": len(frame), "domain": domain, "rows": frame.to_dict(orient="records")}
 
 
 @router.get("/decisions/map/full")
@@ -48,7 +51,7 @@ def decisions_map_full(domain: str | None = Query(default=None)) -> dict[str, An
     frame = pd.read_csv(path)
     if domain:
         frame = frame[frame["domain"] == domain]
-    return {"n": int(len(frame)), "domain": domain, "rows": frame.to_dict(orient="records")}
+    return {"n": len(frame), "domain": domain, "rows": frame.to_dict(orient="records")}
 
 
 @router.get("/decisions/domains")
@@ -56,7 +59,7 @@ def decisions_domains() -> dict[str, Any]:
     path = decision_dir() / "domain_coverage.csv"
     if path.exists():
         frame = pd.read_csv(path)
-        return {"n": int(len(frame)), "rows": frame.to_dict(orient="records")}
+        return {"n": len(frame), "rows": frame.to_dict(orient="records")}
     summary = decisions_summary()
     return {"n": len(summary.get("domains") or []), "domains": summary.get("domains"), "rows": summary.get("domain_coverage")}
 

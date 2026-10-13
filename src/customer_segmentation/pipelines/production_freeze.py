@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -119,7 +119,7 @@ def assemble_freeze_readiness(*, production_dir: str | Path | None = None) -> di
         "champion_run_id": metrics.get("run_id") or manifest.get("run_id"),
         "model_version": MODEL_VERSION,
         "as_of_date": metrics.get("as_of_date") or "1997-12-31",
-        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "evaluated_at": datetime.now(UTC).isoformat(),
         "gates": gates,
         "serving_contract": {
             "model_version": contract.get("model_version"),
@@ -300,10 +300,10 @@ def _write_report(path: Path, payload: dict[str, Any]) -> None:
     lines = [
         "# Production freeze readiness — PROVISIONAL",
         "",
-        f"**Overall verdict: {payload['overall_verdict']}.** "
+        (f"**Overall verdict: {payload['overall_verdict']}.** "
         "Engineering gates for the leakage-safe AE+k=6 production candidate are evaluated "
         "from live integrity / replay / pack checks. "
-        "This is **not** a full bank production freeze.",
+        "This is **not** a full bank production freeze."),
         "",
         "## Gates",
         "",
@@ -318,9 +318,9 @@ def _write_report(path: Path, payload: dict[str, Any]) -> None:
             "",
             "## Rollback",
             "",
-            "Point CLI/API defaults to `artifacts/segmentation/archive/fullbook_demo/` "
+            ("Point CLI/API defaults to `artifacts/segmentation/archive/fullbook_demo/` "
             "(archive demo) or re-promote a prior hashed research twin from "
-            "`artifacts/segmentation/research/leakage_safe_source/`.",
+            "`artifacts/segmentation/research/leakage_safe_source/`."),
             "",
         ]
     )

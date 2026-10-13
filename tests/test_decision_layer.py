@@ -10,7 +10,10 @@ from customer_segmentation.decision.applications import (
     domain_coverage_summary,
     expand_decision_map,
 )
-from customer_segmentation.decision.profiles import compute_centroids_and_lift, nearest_segment_contrast
+from customer_segmentation.decision.profiles import (
+    compute_centroids_and_lift,
+    nearest_segment_contrast,
+)
 
 
 def test_application_portfolio_covers_all_champion_names():

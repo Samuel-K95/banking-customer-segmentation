@@ -5,7 +5,13 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from customer_segmentation import __version__
-from customer_segmentation.serve.routers import decisions, inference, meta, model, reports
+from customer_segmentation.serve.routers import (
+    decisions,
+    inference,
+    meta,
+    model,
+    reports,
+)
 
 app = FastAPI(
     title="Banking Customer Segmentation API",

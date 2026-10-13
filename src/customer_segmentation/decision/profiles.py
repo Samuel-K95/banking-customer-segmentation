@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
-
 FEATURE_COLS_DEFAULT = [
     "Transaction_Count",
     "Account_Balance",
@@ -143,7 +142,7 @@ def build_profile_packs(
     for sid_str, meta in catalog.get("segments", {}).items():
         sid = int(sid_str)
         g = df.loc[df[segment_col] == sid]
-        n_seg = int(len(g))
+        n_seg = len(g)
         lift_row = lift.loc[sid].sort_values(ascending=False) if sid in lift.index else pd.Series(dtype=float)
         top_lift = [{"feature": f, "lift": round(float(v), 3)} for f, v in lift_row.head(4).items()]
         bottom_lift = [{"feature": f, "lift": round(float(v), 3)} for f, v in lift_row.tail(2).items()]

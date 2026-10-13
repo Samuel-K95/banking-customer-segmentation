@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -56,7 +56,7 @@ def _stamp_bundle(dst: Path, *, source_dir: Path) -> dict[str, Any]:
             "as_of_date": AS_OF_DATE,
             "freeze_status": "PROVISIONAL",
             "tag": f"prod_segmentation_{MODEL_VERSION}",
-            "promoted_at": datetime.now(timezone.utc).isoformat(),
+            "promoted_at": datetime.now(UTC).isoformat(),
             "source_research_dir": str(source_dir),
             "archive_demo_dir": str(ARCHIVE_DIR),
             "notes": (
@@ -94,7 +94,7 @@ def _stamp_bundle(dst: Path, *, source_dir: Path) -> dict[str, Any]:
             "baseline_segment_mix": _baseline_mix(dst / "assignments.csv"),
             "exception_segment_ids": _exception_segments(dst),
             "feature_columns": list(feature_columns),
-            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(UTC).isoformat(),
         }
     )
     _write_json(dst / "serving_contract.json", contract)
@@ -128,7 +128,7 @@ def promote_production(
             + "\n- ".join(preflight_errors)
         )
 
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     staging = dst.parent / f".champion_promote_tmp_{stamp}"
     if staging.exists():
         shutil.rmtree(staging)
@@ -172,7 +172,7 @@ def promote_production(
 
         try:
             shutil.move(str(staging), str(dst))
-        except Exception as move_exc:  # noqa: BLE001 — must restore serving path
+        except Exception as move_exc:
             _restore_promoted_backup(dst, backup_root if live_swapped else None)
             raise PromotionError(
                 "Failed to move staged champion into serving path; "

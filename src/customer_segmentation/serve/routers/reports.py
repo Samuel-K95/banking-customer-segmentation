@@ -8,7 +8,11 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import FileResponse, PlainTextResponse
 
-from customer_segmentation.serve.deps import CURRENT_CHAMPION_MD, reports_dir, resolve_path
+from customer_segmentation.serve.deps import (
+    CURRENT_CHAMPION_MD,
+    reports_dir,
+    resolve_path,
+)
 
 router = APIRouter(tags=["reports"])
 

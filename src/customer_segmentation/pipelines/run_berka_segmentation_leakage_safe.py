@@ -8,8 +8,7 @@ Does **not** overwrite ``artifacts/segmentation/archive/fullbook_demo``.
 from __future__ import annotations
 
 import hashlib
-import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -181,7 +180,7 @@ def run_berka_segmentation_leakage_safe(
     # ── Parallel research twin: raw K-Means k=2 on train-scaled matrix ──
     print(f"=== Parallel K-Means k={parallel_k} (research twin) ===")
     km2 = KMeans(n_clusters=parallel_k, n_init=20, random_state=random_state)
-    km2_train_labels = km2.fit_predict(X_train)
+    km2.fit_predict(X_train)
     km2_hold_labels = km2.predict(X_hold)
     km2_hold_metrics = evaluate_clustering(X_hold, km2_hold_labels)
     km2_seed = _seed_ari(X_train, n_clusters=parallel_k, seeds=seeds)
@@ -340,9 +339,9 @@ def run_berka_segmentation_leakage_safe(
         "latent_dim": latent_dim,
         "as_of_date": as_of,
         "minimum_tenure_days": min_tenure,
-        "n_eligible": int(len(interpretable)),
-        "n_train": int(len(train_df)),
-        "n_holdout": int(len(holdout_df)),
+        "n_eligible": len(interpretable),
+        "n_train": len(train_df),
+        "n_holdout": len(holdout_df),
         "split_seed": int(split_cfg.get("random_seed", 8675309)),
         "holdout_silhouette": hold_metrics["silhouette"],
         "holdout_db_index": hold_metrics["db_index"],
@@ -419,7 +418,7 @@ def run_berka_segmentation_leakage_safe(
         "champion_run_id": run_id,
         "as_of_date": as_of,
         "minimum_tenure_days": min_tenure,
-        "evaluated_at": datetime.now(timezone.utc).isoformat(),
+        "evaluated_at": datetime.now(UTC).isoformat(),
         "gates": {
             "artifact_integrity": {"verdict": "PASS", "detail": "SHA-256 fingerprints written"},
             "snapshot_split_train_only_fit": {
@@ -507,10 +506,10 @@ def _write_freeze_report(
     lines = [
         "# Berka Champion Leakage-Safe Freeze Readiness",
         "",
-        f"**Overall verdict: {freeze['overall_verdict']}.** "
+        (f"**Overall verdict: {freeze['overall_verdict']}.** "
         "This is a leakage-disciplined twin of the CRM champion feature family — "
         "not an approved production freeze, and it does **not** replace "
-        "`artifacts/segmentation/archive/fullbook_demo`.",
+        "`artifacts/segmentation/archive/fullbook_demo`."),
         "",
         "## What changed vs original champion_v1",
         "",
@@ -539,16 +538,16 @@ def _write_freeze_report(
     lines.extend(
         [
             "",
-            f"AE+k=6 holdout silhouette **{m['holdout_silhouette']:.4f}**; "
-            f"k=2 twin holdout silhouette **{k2['silhouette']:.4f}**.",
+            (f"AE+k=6 holdout silhouette **{m['holdout_silhouette']:.4f}**; "
+            f"k=2 twin holdout silhouette **{k2['silhouette']:.4f}**."),
             "",
             "## Why k=6 stays the product path",
             "",
-            "Under this leakage contract, **k=2** is the honest simple partition "
+            ("Under this leakage contract, **k=2** is the honest simple partition "
             "(scale/activity twin on the same 8 features). **k=6** remains the CRM "
             "segmentation because loan/card + behavior still support named personas "
             "and the decision-layer playbook. Tiny stressed/dormant cells are "
-            "**exception queues**, not mass campaigns.",
+            "**exception queues**, not mass campaigns."),
             "",
             "## Freeze gates",
             "",
@@ -564,15 +563,15 @@ def _write_freeze_report(
             "## Artifacts",
             "",
             f"- Bundle: `{summary['champion_dir']}`",
-            "- Parallel k=2 holdout assignments: "
-            f"`{summary['parallel_k2']['assignments']}`",
+            ("- Parallel k=2 holdout assignments: "
+            f"`{summary['parallel_k2']['assignments']}`"),
             "- Fingerprints: `freeze_readiness.json` → `artifact_sha256`",
             "",
             "## Bottom line",
             "",
-            "Leakage discipline and freeze honesty are applied to the **AE+k=6 product path**. "
+            ("Leakage discipline and freeze honesty are applied to the **AE+k=6 product path**. "
             "Mahider’s original 13-feature k=2 research baseline remains separate. "
-            "Neither candidate is freeze-approved.",
+            "Neither candidate is freeze-approved."),
             "",
         ]
     )

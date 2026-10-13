@@ -6,7 +6,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from customer_segmentation.models.artifact_integrity import integrity_report, preflight_bundle
+from customer_segmentation.models.artifact_integrity import (
+    integrity_report,
+    preflight_bundle,
+)
 from customer_segmentation.pipelines.promote_production import (
     PRODUCTION_DIR,
     RESEARCH_DIR,
@@ -21,7 +24,7 @@ def _berka_available() -> bool:
 
         resolve_berka_dir(None)
         return True
-    except Exception:
+    except Exception:  # noqa: BLE001 - deliberate soft fail
         return False
 
 
