@@ -1,0 +1,51 @@
+version: 1
+experiment: track_d_segmentation_v1
+description: >-
+  Segmentation of the BankSim customer features (Track D), used to test that a new,
+  unseen dataset goes through the whole flow: features, candidate comparison
+  (traditional vs autoencoder), evaluation, stability, selection, profiles,
+  explainability, fairness and outcome validation.
+
+track: track_d
+contract: configs/models/feature_contracts.yaml
+
+split:
+  holdout_fraction: 0.25
+  random_seed: 20261013
+
+candidates:
+  k_values: [2, 3, 4, 5, 6, 7, 8]
+  kmeans: {n_init: 20}
+  gmm: {covariance_type: full, n_init: 3}
+  autoencoder:              # skipped with a note when PyTorch is not installed
+    latent_dim: 4
+    epochs: 60
+    batch_size: 128
+    lr: 0.001
+
+stability:
+  seeds: 5                  # refits with other seeds, ARI vs the base fit
+  subsample_rounds: 5       # refits on 75% subsets, ARI on the shared rows
+
+selection:
+  # A candidate is eligible when every segment holds 3%-60% of holdout customers and
+  # mean seed ARI is at least min_seed_ari. Eligible candidates are ranked on holdout
+  # silhouette, Davies-Bouldin and seed ARI (equal weight); ties go to the smaller k.
+  min_segment_fraction: 0.03
+  max_segment_fraction: 0.60
+  min_seed_ari: 0.80
+
+explainability:
+  surrogate_tree_depth: 3
+
+fairness:
+  columns: [age_band, gender]
+
+outcomes:
+  columns: [any_fraud]      # validated after fitting, never used as inputs
+  caveat: >-
+    Fraudulent payments are part of the spend features (amounts and category shares), so
+    part of any association between segments and fraud is mechanical, not independent.
+
+artifacts:
+  output_directory: artifacts/segmentation/track_d/v1
