@@ -1,14 +1,15 @@
-"""Data layer + Berka segmentation, step for step with scripts/run_data_layer.sh.
+"""Data layer + segmentation, step for step with scripts/run_data_layer.sh.
 
     download_<source> -> check_raw_<source> -> build_<track>      (per selected track)
         -> dq_report -> feature_contract
         -> berka_snapshot -> berka_baselines -> berka_feature_sensitivity
                                              -> berka_temporal_validation
+        -> track_d_segmentation
 
 Run parameters mirror the shell flags: `tracks` (--tracks), `skip_downloads`
 (--skip-downloads) and `reuse_preprocessors` (--reuse-preprocessors). Unselected tracks
-are skipped, not failed. The Berka segmentation stage runs only when track_c is selected,
-and each of its stages is skipped when its versioned output already exists.
+are skipped, not failed. A segmentation stage runs only when its track is selected, and is
+skipped when its versioned output already exists.
 
 Every task calls the project's own code from /opt/project (see docker-compose.yaml), the
 same working directory the shell script uses, so repo-relative paths such as
@@ -25,13 +26,14 @@ from airflow.exceptions import AirflowSkipException
 from airflow.sdk import Param, dag, get_current_context, task
 
 PROJECT_DIR = os.environ.get("BCIP_PROJECT_DIR", "/opt/project")
-ALL_TRACKS = ["track_a", "track_b", "track_c"]
+ALL_TRACKS = ["track_a", "track_b", "track_c", "track_d"]
 
 # track -> (source in configs/data.yaml, feature builder module)
 TRACKS = {
     "track_a": ("indian_bank", "build_indian_bank_features"),
     "track_b": ("santander", "build_santander_features"),
     "track_c": ("berka", "build_berka_features"),
+    "track_d": ("banksim", "build_banksim_features"),
 }
 
 
@@ -106,44 +108,55 @@ def feature_contract() -> str:
     )
 
 
-# Berka stages write versioned outputs once and refuse to overwrite them.
-# stage -> (module to run, module whose DEFAULT_CONFIG names the output, keys to that output)
-BERKA_STAGES = {
+# Segmentation stages write versioned outputs once and refuse to overwrite them.
+# stage -> (track it needs, module to run, module whose DEFAULT_CONFIG names the output,
+#           keys to that output)
+SEGMENTATION_STAGES = {
     "berka_snapshot": (
+        "track_c",
         "features.build_berka_snapshot_features",
         "models.berka_behavioral_baselines",
         ("data", "snapshot_directory"),
     ),
     "berka_baselines": (
+        "track_c",
         "models.berka_behavioral_baselines",
         "models.berka_behavioral_baselines",
         ("data", "output_directory"),
     ),
     "berka_feature_sensitivity": (
+        "track_c",
         "models.berka_feature_sensitivity",
         "models.berka_feature_sensitivity",
         ("data", "output_directory"),
     ),
     "berka_temporal_validation": (
+        "track_c",
         "models.berka_temporal_validation",
         "models.berka_temporal_validation",
+        ("artifacts", "output_directory"),
+    ),
+    "track_d_segmentation": (
+        "track_d",
+        "pipelines.run_track_segmentation",
+        "pipelines.run_track_segmentation",
         ("artifacts", "output_directory"),
     ),
 }
 
 
 def write_once_command(stage: str) -> str:
-    """Runs a Berka stage unless this version's output already exists (exit 99 = skipped).
+    """Runs a stage unless this version's output already exists (exit 99 = skipped).
 
-    Needs track_c. Rebuilding means bumping the version/output path in the stage's config,
-    which is how the stages are designed to be versioned. The config path comes from the
-    module itself, so moving configs only needs a change there.
+    Rebuilding means bumping the version/output path in the stage's config, which is how
+    the stages are designed to be versioned. The config path comes from the module itself,
+    so moving configs only needs a change there.
     """
-    if "track_c" not in selected_tracks():
-        raise AirflowSkipException("Berka segmentation needs track_c, which is not selected")
+    track, module, config_owner, keys = SEGMENTATION_STAGES[stage]
+    if track not in selected_tracks():
+        raise AirflowSkipException(f"{stage} needs {track}, which is not selected")
     import yaml
 
-    module, config_owner, keys = BERKA_STAGES[stage]
     config = importlib.import_module(f"customer_segmentation.{config_owner}").DEFAULT_CONFIG
     with open(os.path.join(PROJECT_DIR, config)) as f:
         output = yaml.safe_load(f)
@@ -177,9 +190,15 @@ def berka_temporal_validation() -> str:
     return write_once_command("berka_temporal_validation")
 
 
+@task.bash(cwd=PROJECT_DIR)
+def track_d_segmentation() -> str:
+    """BankSim: candidate comparison, selection, profiles, explainability, fairness, outcomes."""
+    return write_once_command("track_d_segmentation")
+
+
 @dag(
     dag_id="bcip_data_layer",
-    description="Ingest, check and featurize the banking datasets, gate on DQ + feature contract, segment Berka",
+    description="Ingest, check and featurize the banking datasets, gate on DQ + feature contract, then segment",
     schedule=None,  # the Kaggle sources are static snapshots; trigger by hand
     start_date=datetime(2026, 10, 1),
     catchup=False,
@@ -210,6 +229,7 @@ def bcip_data_layer():
     baselines = berka_baselines()
     contract >> berka_snapshot() >> baselines
     baselines >> [berka_feature_sensitivity(), berka_temporal_validation()]
+    contract >> track_d_segmentation()
 
 
 bcip_data_layer()
