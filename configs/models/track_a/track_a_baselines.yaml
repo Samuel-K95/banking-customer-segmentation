@@ -6,7 +6,7 @@ description: >-
   preprocessor; this runner does not fit or apply another scaler.
 
 data:
-  model_file: data/processed/track_a_features_model.csv
+  model_file: data/processed/track_a/track_a_features_model.csv
   identifier_column: CustomerID
   feature_contract_file: configs/models/feature_contracts.yaml
   preprocessor_artifact: artifacts/preprocessors/track_a.joblib

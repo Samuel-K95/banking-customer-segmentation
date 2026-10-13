@@ -6,8 +6,8 @@ from customer_segmentation.features.io import save_matrices, track_outputs
 
 def test_track_outputs_follow_config_prefix(tmp_path):
     interpretable, model = track_outputs("track_c", tmp_path)
-    assert interpretable == tmp_path / "track_c_berka_interpretable.csv"
-    assert model == tmp_path / "track_c_berka_model.csv"
+    assert interpretable == tmp_path / "track_c" / "track_c_berka_interpretable.csv"
+    assert model == tmp_path / "track_c" / "track_c_berka_model.csv"
 
 
 def test_save_matrices_writes_both_files_and_counts_dq_issues(tmp_path):

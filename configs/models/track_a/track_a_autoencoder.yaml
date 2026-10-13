@@ -5,8 +5,8 @@ description: >-
   Track A Task 05 training and evaluation customer manifests.
 
 data:
-  model_file: data/processed/track_a_features_model.csv
-  interpretable_file: data/processed/track_a_features_interpretable.csv
+  model_file: data/processed/track_a/track_a_features_model.csv
+  interpretable_file: data/processed/track_a/track_a_features_interpretable.csv
   identifier_column: CustomerID
   feature_contract_file: configs/models/feature_contracts.yaml
   preprocessor_artifact: artifacts/preprocessors/track_a.joblib

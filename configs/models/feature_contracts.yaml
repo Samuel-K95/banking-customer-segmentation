@@ -9,8 +9,8 @@ tracks:
   track_a:
     name: Indian Bank Transactions
     grain: customer
-    model_file: track_a_features_model.csv
-    interpretable_file: track_a_features_interpretable.csv
+    model_file: track_a/track_a_features_model.csv
+    interpretable_file: track_a/track_a_features_interpretable.csv
     min_rows: 1
     identifier_columns: [CustomerID]
     model_features:
@@ -43,8 +43,8 @@ tracks:
   track_b:
     name: Santander Product Portfolio
     grain: customer at the 2016-05-28 snapshot
-    model_file: track_b_features_model.csv
-    interpretable_file: track_b_features_interpretable.csv
+    model_file: track_b/track_b_features_model.csv
+    interpretable_file: track_b/track_b_features_interpretable.csv
     min_rows: 1
     identifier_columns: [customer_id]
     model_features:
@@ -143,8 +143,8 @@ tracks:
   track_c:
     name: Berka Financial Dataset
     grain: account (not customer)
-    model_file: track_c_berka_model.csv
-    interpretable_file: track_c_berka_interpretable.csv
+    model_file: track_c/track_c_berka_model.csv
+    interpretable_file: track_c/track_c_berka_interpretable.csv
     min_rows: 1
     identifier_columns: [account_id]
     model_features:

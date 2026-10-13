@@ -6,7 +6,7 @@ description: >-
 
 data:
   raw_transactions_file: data/raw/bank_transactions.csv
-  interpretable_file: data/processed/track_a_features_interpretable.csv
+  interpretable_file: data/processed/track_a/track_a_features_interpretable.csv
   feature_contract_file: configs/models/feature_contracts.yaml
   identifier_column: CustomerID
   row_count: 837951
