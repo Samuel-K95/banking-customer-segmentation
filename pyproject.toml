@@ -46,6 +46,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src", "."]
+markers = ["integration: requires full Berka raw data and/or a seeded live PostgreSQL database"]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }

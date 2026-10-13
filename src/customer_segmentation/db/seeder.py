@@ -394,6 +394,92 @@ def seed_champion_assignments(
     return count
 
 
+def seed_transactions(
+    session: Session,
+    berka_dir: Path | str = "data/raw/berka",
+    *,
+    batch_size: int = 2000,
+) -> int:
+    """Import Berka transactions efficiently and idempotently into PostgreSQL.
+
+    PostgreSQL conflict handling makes repeat runs safe; all writes use the
+    caller's current SQLAlchemy transaction. No commit happens in this helper.
+    """
+    from decimal import Decimal
+
+    from psycopg2.extras import execute_values
+
+    path = Path(berka_dir) / "trans.csv"
+    if not path.is_file():
+        raise FileNotFoundError(f"Missing Berka transaction file: {path}")
+    if batch_size < 1:
+        raise ValueError("batch_size must be positive")
+
+    sql = """INSERT INTO ods.transactions
+        (trans_id, account_id, trans_date, trans_type, operation, amount,
+         balance_after, k_symbol, bank_partner, account_partner)
+        VALUES %s
+        ON CONFLICT (trans_id) DO NOTHING
+    """
+
+    # The parent account records were just added by seed_districts_and_accounts.
+    session.flush()
+    raw_conn = session.connection().connection
+    inserted = 0
+
+    def flush_batch(cursor, rows):
+        if not rows:
+            return 0
+        # One execute_values page per batch makes cursor.rowcount the number
+        # of newly inserted rows, including when conflicting IDs are ignored.
+        execute_values(cursor, sql, rows, page_size=len(rows))
+        return cursor.rowcount
+
+    with path.open("r", encoding="utf-8-sig", newline="") as handle:
+        reader = csv.DictReader(handle, delimiter=";", quotechar='"')
+        required = {
+            "trans_id", "account_id", "date", "type", "operation",
+            "amount", "balance", "k_symbol", "bank", "account",
+        }
+        if not required.issubset(reader.fieldnames or []):
+            raise ValueError(
+                f"Unexpected trans.csv columns: {reader.fieldnames}; "
+                f"missing {sorted(required - set(reader.fieldnames or []))}"
+            )
+        batch = []
+        with raw_conn.cursor() as cursor:
+            for line_no, row in enumerate(reader, start=2):
+                try:
+                    short_date = (row["date"] or "").strip()
+                    if len(short_date) != 6 or not short_date.isdigit():
+                        raise ValueError("Expected YYMMDD date")
+                    trans_date = datetime.strptime(
+                        "19" + short_date, "%Y%m%d"
+                    ).date()
+                    partner = (row["account"] or "").strip()
+                    batch.append((
+                        int(row["trans_id"]),
+                        int(row["account_id"]),
+                        trans_date,
+                        (row["type"] or "").strip(),
+                        (row["operation"] or "").strip() or None,
+                        Decimal(row["amount"]),
+                        Decimal(row["balance"]),
+                        (row["k_symbol"] or "").strip() or None,
+                        (row["bank"] or "").strip() or None,
+                        int(partner) if partner else None,
+                    ))
+                except (ValueError, TypeError, KeyError) as exc:
+                    raise ValueError(
+                        f"Invalid transaction CSV row {line_no}: {exc}"
+                    ) from exc
+                if len(batch) >= batch_size:
+                    inserted += flush_batch(cursor, batch)
+                    batch.clear()
+            inserted += flush_batch(cursor, batch)
+    return inserted
+
+
 def seed_feature_store(
     session: Session,
     features_csv: Path | str = "data/processed/track_c_berka_interpretable.csv",
@@ -406,17 +492,14 @@ def seed_feature_store(
         return 0
 
     as_of_date = datetime.strptime(as_of_date_str, "%Y-%m-%d").date()
-    loan_accs = {row[0] for row in session.query(Loan.account_id).all()}
-    card_accs = {
-        row[0]
-        for row in session.query(Disposition.account_id)
-        .join(Card, Disposition.disp_id == Card.disp_id)
-        .all()
-    }
+    # The CSV is built at the 1997-12-31 cutoff. Do not recompute product
+    # ownership from all-time loan/card tables, which can leak future events.
 
     count = 0
     with open(path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
+        if not {"has_loan", "has_card"}.issubset(reader.fieldnames or []):
+            raise ValueError("Feature CSV must contain cutoff-safe has_loan and has_card")
         for row in reader:
             acc_id = int(row.get("account_id") or 0)
             if not acc_id:
@@ -437,8 +520,10 @@ def seed_feature_store(
                 wdr = float(row.get("Total_Withdrawal", 0.0))
                 rec = int(float(row.get("Recency_Days", 0)))
                 tenure = int(float(row.get("Account_Age_Days", 365)))
-                has_l = 1 if acc_id in loan_accs else 0
-                has_c = 1 if acc_id in card_accs else 0
+                has_l = int(row["has_loan"])
+                has_c = int(row["has_card"])
+                if has_l not in (0, 1) or has_c not in (0, 1):
+                    raise ValueError(f"Non-binary product flags for account {acc_id}")
                 feat_json = {
                     "Transaction_Count": tc,
                     "Account_Balance": bal,
@@ -520,6 +605,11 @@ def seed_all(
     d_and_a = seed_districts_and_accounts(session, berka_dir)
     c_and_d = seed_clients_and_dispositions(session, berka_dir)
     c_and_l = seed_cards_and_loans(session, berka_dir)
+    trans_cnt = seed_transactions(session, berka_dir)
+    if not Path(features_csv).is_file():
+        raise FileNotFoundError(
+            f"Required historical Berka features missing: {features_csv}"
+        )
     champ_ok = seed_champion_model(session, champion_dir)
     cat_cnt = seed_segment_catalog(
         session, Path(champion_dir) / "segment_catalog.json"
@@ -537,6 +627,7 @@ def seed_all(
         "dispositions": c_and_d.get("dispositions", 0),
         "cards": c_and_l.get("cards", 0),
         "loans": c_and_l.get("loans", 0),
+        "transactions": trans_cnt,
         "champion_model_seeded": champ_ok,
         "catalog_segments": cat_cnt,
         "assignments": ass_cnt,
