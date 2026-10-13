@@ -16,7 +16,9 @@ from customer_segmentation.data.berka_dataset_loader import (
     load_berka_raw_data,
     resolve_berka_dir,
 )
-from customer_segmentation.features.build_berka_segmentation_features import MODEL_COLUMNS
+from customer_segmentation.features.build_berka_segmentation_features import (
+    MODEL_COLUMNS,
+)
 
 
 def berka_age_gender(birth_number: int, *, as_of_year: int = 1997) -> tuple[int, int]:
@@ -97,7 +99,7 @@ def run_behavior_vs_demographic_ablation(
 
     ari_beh_full = float(adjusted_rand_score(lab_beh, lab_full))
     out: dict[str, Any] = {
-        "n": int(len(work)),
+        "n": len(work),
         "k": int(n_clusters),
         "behavior_features": list(cols),
         "added_demographics": ["age", "is_female", "district_top15_onehot"],

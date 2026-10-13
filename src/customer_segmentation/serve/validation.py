@@ -9,7 +9,6 @@ from fastapi import HTTPException
 
 from customer_segmentation.serve.schemas import FEATURE_FIELDS
 
-
 ALLOWED_EXTRA = frozenset({"account_id"})
 
 
@@ -38,7 +37,7 @@ def validate_feature_payload(
     if not isinstance(row, dict):
         raise HTTPException(status_code=400, detail=f"{prefix}expected object")
 
-    unknown = [k for k in row.keys() if k not in required_features and k not in ALLOWED_EXTRA]
+    unknown = [k for k in row if k not in required_features and k not in ALLOWED_EXTRA]
     if unknown:
         raise HTTPException(
             status_code=400,

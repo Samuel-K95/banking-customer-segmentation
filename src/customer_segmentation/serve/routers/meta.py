@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import APIRouter
-
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 
 from customer_segmentation import __version__
-from customer_segmentation.serve.deps import champion_integrity, require_champion, serving_contract
+from customer_segmentation.serve.deps import (
+    champion_integrity,
+    require_champion,
+    serving_contract,
+)
 
 router = APIRouter(tags=["meta"])
 

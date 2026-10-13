@@ -6,7 +6,7 @@ Retrospective and development-informed — not an independent prospective freeze
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -108,12 +108,12 @@ def run_production_temporal(
         ),
         "train_as_of": TRAIN_ASOF,
         "future_as_of": FUTURE_ASOF,
-        "n_common_accounts": int(len(ids)),
+        "n_common_accounts": len(ids),
         "ari_replay_vs_stored_1997": ari_stored,
         "ari_1997_vs_1998_assignments": ari_temporal,
         "agreement_rate_1997_vs_1998": agree,
         "segment_profiles": prof,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "model_version": champ.model_version,
     }
     (dst / "temporal_validation.json").write_text(

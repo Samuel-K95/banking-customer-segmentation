@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from datetime import UTC
 from pathlib import Path
 from typing import Any
 
@@ -85,9 +86,9 @@ def sync_serving_contract_hashes(
     contract.setdefault("model_version", "production_candidate_v1")
     contract.setdefault("as_of_date", "1997-12-31")
     contract.setdefault("minimum_tenure_days", 365)
-    from datetime import datetime, timezone
+    from datetime import datetime
 
-    contract["updated_at"] = datetime.now(timezone.utc).isoformat()
+    contract["updated_at"] = datetime.now(UTC).isoformat()
     contract_path.write_text(json.dumps(contract, indent=2, default=str) + "\n", encoding="utf-8")
     return contract
 

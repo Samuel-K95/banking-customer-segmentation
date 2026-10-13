@@ -21,11 +21,11 @@ from customer_segmentation.features.build_berka_segmentation_features import (
     MODEL_COLUMNS,
     transform_berka_model_matrix,
 )
-from customer_segmentation.models.tabular_ae import TORCH_OK, distance_confidence
 from customer_segmentation.models.segment_intel import (
     build_segment_catalog,
     decision_map_frame,
 )
+from customer_segmentation.models.tabular_ae import TORCH_OK, distance_confidence
 
 
 @dataclass

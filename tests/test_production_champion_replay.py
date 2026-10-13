@@ -16,6 +16,7 @@ from customer_segmentation.models.champion import ChampionModel
 PROD = Path("artifacts/segmentation/champion")
 
 
+@pytest.mark.requires_torch
 @pytest.mark.skipif(not PROD.exists(), reason="production champion artifacts missing")
 def test_production_holdout_replay_matches_stored_labels():
     champ = ChampionModel.load(PROD)
@@ -73,6 +74,7 @@ def test_serving_contract_has_version_and_asof():
         assert verify_serving_contract(PROD) == []
 
 
+@pytest.mark.requires_torch
 @pytest.mark.skipif(not (PROD / "encoder.pt").exists(), reason="encoder missing")
 def test_production_load_has_encoder():
     champ = ChampionModel.load(PROD)

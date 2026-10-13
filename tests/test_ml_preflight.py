@@ -47,6 +47,7 @@ def _write_synthetic_data(tmp_path: Path) -> tuple[Path, dict]:
 
         model_columns = [identifier, *spec["model_features"]]
         interpretable_columns = list(frame.columns)
+        (data_dir / spec["model_file"]).parent.mkdir(parents=True, exist_ok=True)  # per-track subdirectory
         frame[model_columns].to_csv(data_dir / spec["model_file"], index=False)
         frame[interpretable_columns].to_csv(data_dir / spec["interpretable_file"], index=False)
 

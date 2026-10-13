@@ -9,9 +9,7 @@ import os
 import tempfile
 import time
 import uuid
-from datetime import datetime, timezone
-
-UTC = timezone.utc
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 

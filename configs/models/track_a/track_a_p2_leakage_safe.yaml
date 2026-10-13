@@ -5,9 +5,9 @@ description: >-
   before training-fitted transformations; recency uses the fixed as-of date.
 
 data:
-  interpretable_file: data/processed/track_a_features_interpretable.csv
+  interpretable_file: data/processed/track_a/track_a_features_interpretable.csv
   raw_transactions_file: data/raw/bank_transactions.csv
-  model_file_reference_only: data/processed/track_a_features_model.csv
+  model_file_reference_only: data/processed/track_a/track_a_features_model.csv
   feature_contract_file: configs/models/feature_contracts.yaml
   preprocessor_artifact_reference_only: artifacts/preprocessors/track_a.joblib
   identifier_column: CustomerID

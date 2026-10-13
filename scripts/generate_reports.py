@@ -2,13 +2,14 @@
 Generate three segmentation PDF reports — plain-English, high-contrast, beginner-friendly.
 """
 
+from pathlib import Path
+
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.patches import FancyBboxPatch
-from pathlib import Path
 
 OUT_DIR = Path("reports")
 OUT_DIR.mkdir(exist_ok=True)
@@ -45,7 +46,7 @@ def cover_page(pdf, track_letter, track_name, subtitle, champion_line, metrics_l
     # decorative top stripe
     draw_filled_rect(ax, 0, 0.90, 1, 0.10, color=GRN)
 
-    ax.text(0.5, 0.93, f"Banking Customer Segmentation  ·  Week 4 Project Report",
+    ax.text(0.5, 0.93, "Banking Customer Segmentation  ·  Week 4 Project Report",
             color='white', fontsize=10, ha='center', va='center')
 
     ax.text(0.5, 0.78, f"Track {track_letter}", color='white',
@@ -199,7 +200,7 @@ def sil_chart(ax, board, title):
     colors = [method_color(m) for m in board['method']]
     vals   = board['silhouette'].values
     labs   = board['run_id'].values
-    bars   = ax.barh(range(len(vals)), vals, color=colors, height=0.65)
+    ax.barh(range(len(vals)), vals, color=colors, height=0.65)
     ax.set_yticks(range(len(vals)))
     ax.set_yticklabels(labs, fontsize=7)
     ax.set_xlabel('Silhouette Score  (higher = better separated clusters)', fontsize=8)
@@ -218,7 +219,7 @@ def sil_chart(ax, board, title):
 
 def results_table(ax, board, cols, headers):
     ax.axis('off')
-    n = len(board)
+    len(board)
     col_xs = np.linspace(0, 1, len(cols)+1)[:-1]
     col_w  = 1 / len(cols)
 
@@ -506,14 +507,6 @@ def make_track_a(pdf):
     plt.close(fig)
 
     # ── Page 5: Segment profiles ──────────────────────────────────────────────
-    seg_data = {
-        'Segment': ['Seg 0','Seg 1','Seg 2','Seg 3','Seg 4','Seg 5'],
-        'Size':    ['~172k','~217k','~138k','~131k','~179k','~1k (outlier)'],
-        'Avg Balance (INR)': ['105,551','152,038','118,815','130,744','121,300','—'],
-        'Avg Spend (INR)':   ['1,466','2,264','1,592','1,903','1,750','—'],
-        'Persona':           ['Low-balance saver','Affluent active spender','Mid-balance core mass',
-                              'Above-average value seeker','Regular mainstream','Outlier / special case'],
-    }
 
     def chart_sizes(ax):
         sizes = [172, 217, 138, 131, 179, 1]
@@ -834,7 +827,7 @@ def make_track_b(pdf):
             [0.88, 0.05, 0.60, 0.42, 0.35, 0.28, 0.45, 0.55],
             [0.75, 0.10, 0.15, 0.08, 0.05, 0.62, 0.58, 0.42],
         ])
-        im = ax.imshow(seg_pcts, aspect='auto', cmap='YlGn', vmin=0, vmax=1)
+        ax.imshow(seg_pcts, aspect='auto', cmap='YlGn', vmin=0, vmax=1)
         ax.set_xticks(range(len(products)))
         ax.set_xticklabels(products, fontsize=7, rotation=20, ha='right')
         ax.set_yticks([0,1,2])
@@ -1086,8 +1079,6 @@ def make_track_c(pdf):
     k_range_c = list(range(3, 9))
     km_sil_c  = [0.314, 0.320, 0.332, 0.363, 0.300, 0.320]
     gmm_sil_c = [0.271, 0.308, 0.308, 0.231, 0.215, 0.235]
-    ae_lat_c  = [4, 8]
-    ae_sil_c  = [0.417, 0.399]
 
     def chart_c_sweep(ax):
         ax.plot(k_range_c, km_sil_c, 'o-', color=BLU, lw=2, ms=6, label='K-Means')
@@ -1155,7 +1146,7 @@ def make_track_c(pdf):
         sizes  = [1535, 1596, 655, 661, 12, 41]
         labels = [f'Seg {i}' for i in range(6)]
         colors = [BLU, GRN, AMB, PUR, RED, ORG]
-        bars = ax.barh(labels, sizes, color=colors, height=0.55)
+        ax.barh(labels, sizes, color=colors, height=0.55)
         ax.set_xlabel('Number of accounts', fontsize=8)
         ax.set_title('Cluster sizes  (k=6 AE+KMeans)', fontsize=9,
                      fontweight='bold', color=NAV)

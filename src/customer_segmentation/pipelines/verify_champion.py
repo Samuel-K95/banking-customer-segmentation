@@ -116,10 +116,13 @@ def _check_decision(decision_dir: Path) -> dict[str, Any]:
                 cand = Path(path)
             else:
                 cand = path
-            if not cand.exists() and not (Path.cwd() / path).exists():
-                # also try under decision_dir by filename
-                if not (decision_dir / Path(str(rel)).name).exists():
-                    errors.append(f"decision files[{key}] missing: {rel}")
+            # also try under decision_dir by filename
+            if (
+                not cand.exists()
+                and not (Path.cwd() / path).exists()
+                and not (decision_dir / Path(str(rel)).name).exists()
+            ):
+                errors.append(f"decision files[{key}] missing: {rel}")
     if not map_path.exists():
         errors.append("decision_map_full.csv missing")
     else:
@@ -146,10 +149,9 @@ def _check_stale_paths(root: Path) -> dict[str, Any]:
             except UnicodeDecodeError:
                 continue
             for label, regex in FORBIDDEN_PATTERNS:
+                # only enforce old bake-off ban on the docker entrypoint script
                 if label == "docker_old_bakeoff_entrypoint" and "run_segmentation_layer.sh" not in rel:
-                    # only enforce old bake-off ban on the docker entrypoint script
-                    if not rel.endswith("run_segmentation_layer.sh"):
-                        continue
+                    continue
                 for i, line in enumerate(text.splitlines(), start=1):
                     if regex.search(line):
                         # allow comments describing migration away from old paths in docs
@@ -237,7 +239,7 @@ def _check_replay(champion_dir: Path) -> dict[str, Any]:
 
         try:
             resolve_berka_dir(None)
-        except Exception:
+        except Exception:  # noqa: BLE001 - deliberate soft fail
             return {
                 "name": "holdout_replay",
                 "ok": True,

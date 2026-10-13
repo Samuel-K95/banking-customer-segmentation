@@ -6,7 +6,6 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-
 FEATURE_FIELDS = (
     "Transaction_Count",
     "Account_Balance",

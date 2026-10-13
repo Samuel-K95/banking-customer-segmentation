@@ -10,24 +10,25 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 
-from customer_segmentation.features.build_berka_features import build_and_save_berka_features
+from customer_segmentation.features.build_berka_features import (
+    build_and_save_berka_features,
+)
+from customer_segmentation.models import viz
+from customer_segmentation.models.registry import register_champion
+from customer_segmentation.models.segment_intel import build_segment_catalog
+from customer_segmentation.models.stability import multi_seed_ari, subsample_ari
 from customer_segmentation.models.tabular_ae import (
     TORCH_OK,
     distance_confidence,
     train_ae_cluster,
-    train_ae_kmeans,
     train_autoencoder,
 )
-from customer_segmentation.models.registry import register_champion
-from customer_segmentation.models.segment_intel import build_segment_catalog
-from customer_segmentation.models.stability import multi_seed_ari, subsample_ari
 from customer_segmentation.models.traditional import (
     best_by_silhouette,
     sweep_gmm,
     sweep_hierarchical,
     sweep_kmeans,
 )
-from customer_segmentation.models import viz
 
 RANDOM_STATE = 42
 K_RANGE = list(range(3, 9))

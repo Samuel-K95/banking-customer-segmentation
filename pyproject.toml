@@ -47,3 +47,7 @@ pythonpath = ["src", "."]
 
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI declares request parameters with these calls as defaults.
+extend-immutable-calls = ["fastapi.File", "fastapi.Form", "fastapi.Query", "fastapi.Depends", "fastapi.Body"]

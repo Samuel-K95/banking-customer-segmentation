@@ -178,7 +178,9 @@ def main() -> None:
         return
 
     if args.command == "segment-berka":
-        from customer_segmentation.pipelines.run_berka_segmentation import run_berka_segmentation
+        from customer_segmentation.pipelines.run_berka_segmentation import (
+            run_berka_segmentation,
+        )
 
         summary = run_berka_segmentation(
             berka_dir=args.berka_dir,
@@ -253,11 +255,13 @@ def main() -> None:
         return
 
     if args.command == "promote-production":
+        from customer_segmentation.pipelines.production_freeze import (
+            assemble_freeze_readiness,
+        )
         from customer_segmentation.pipelines.promote_production import (
             PromotionError,
             promote_production,
         )
-        from customer_segmentation.pipelines.production_freeze import assemble_freeze_readiness
 
         try:
             summary = promote_production(
@@ -269,8 +273,12 @@ def main() -> None:
             print(json.dumps({"status": "error", "detail": str(exc)}, indent=2))
             raise SystemExit(1) from exc
         if not args.skip_checks:
-            from customer_segmentation.pipelines.production_fairness import run_production_fairness
-            from customer_segmentation.pipelines.production_temporal import run_production_temporal
+            from customer_segmentation.pipelines.production_fairness import (
+                run_production_fairness,
+            )
+            from customer_segmentation.pipelines.production_temporal import (
+                run_production_temporal,
+            )
 
             summary["fairness"] = run_production_fairness(production_dir=args.dest)
             summary["temporal"] = {
@@ -287,7 +295,9 @@ def main() -> None:
         return
 
     if args.command == "freeze-status":
-        from customer_segmentation.pipelines.promote_production import load_freeze_status
+        from customer_segmentation.pipelines.promote_production import (
+            load_freeze_status,
+        )
 
         print(json.dumps(load_freeze_status(args.production_dir), indent=2, default=str))
         return

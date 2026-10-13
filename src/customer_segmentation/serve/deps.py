@@ -9,7 +9,6 @@ from typing import Any
 
 from fastapi import HTTPException
 
-
 CHAMPION_REL = Path("artifacts") / "segmentation" / "champion"
 DECISION_REL = Path("artifacts") / "decision" / "champion"
 REPORTS_REL = Path("reports") / "champion"
