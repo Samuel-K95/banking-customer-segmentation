@@ -106,27 +106,27 @@ def feature_contract() -> str:
     )
 
 
-# Berka stages write versioned outputs once and refuse to overwrite them (see configs/models).
-# stage -> (module, config, keys to the output it creates)
+# Berka stages write versioned outputs once and refuse to overwrite them.
+# stage -> (module to run, module whose DEFAULT_CONFIG names the output, keys to that output)
 BERKA_STAGES = {
     "berka_snapshot": (
         "features.build_berka_snapshot_features",
-        "berka_behavioral_baselines_v1_1.yaml",
+        "models.berka_behavioral_baselines",
         ("data", "snapshot_directory"),
     ),
     "berka_baselines": (
         "models.berka_behavioral_baselines",
-        "berka_behavioral_baselines_v1_1.yaml",
+        "models.berka_behavioral_baselines",
         ("data", "output_directory"),
     ),
     "berka_feature_sensitivity": (
         "models.berka_feature_sensitivity",
-        "berka_feature_sensitivity_v1.yaml",
+        "models.berka_feature_sensitivity",
         ("data", "output_directory"),
     ),
     "berka_temporal_validation": (
         "models.berka_temporal_validation",
-        "berka_temporal_validation_v1.yaml",
+        "models.berka_temporal_validation",
         ("artifacts", "output_directory"),
     ),
 }
@@ -136,20 +136,22 @@ def write_once_command(stage: str) -> str:
     """Runs a Berka stage unless this version's output already exists (exit 99 = skipped).
 
     Needs track_c. Rebuilding means bumping the version/output path in the stage's config,
-    which is how the stages are designed to be versioned.
+    which is how the stages are designed to be versioned. The config path comes from the
+    module itself, so moving configs only needs a change there.
     """
     if "track_c" not in selected_tracks():
         raise AirflowSkipException("Berka segmentation needs track_c, which is not selected")
     import yaml
 
-    module, config, keys = BERKA_STAGES[stage]
-    with open(os.path.join(PROJECT_DIR, "configs", "models", config)) as f:
+    module, config_owner, keys = BERKA_STAGES[stage]
+    config = importlib.import_module(f"customer_segmentation.{config_owner}").DEFAULT_CONFIG
+    with open(os.path.join(PROJECT_DIR, config)) as f:
         output = yaml.safe_load(f)
     for key in keys:
         output = output[key]
     if stage == "berka_snapshot":
         output = os.path.join(output, "berka_account_snapshot_features.csv")
-    message = f"{output} already exists for this version; reusing it (bump configs/models/{config} to rebuild)"
+    message = f"{output} already exists for this version; reusing it (bump {config} to rebuild)"
     return f'if [ -e "{output}" ]; then echo "{message}"; exit 99; fi; {module_command(module)}'
 
 
