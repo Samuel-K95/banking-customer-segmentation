@@ -225,6 +225,7 @@ def test_audit_log_live_insertion():
 
 
 @pytest.mark.integration
+@requires_postgres
 def test_cli_db_status_invocation(capsys):
     """Verifies that running 'bcs db-status' produces structured JSON output."""
     from customer_segmentation.cli import main

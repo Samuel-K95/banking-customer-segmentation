@@ -1,0 +1,18 @@
+{
+  "config": "configs/models/track_d/segmentation_v1.yaml",
+  "config_sha256": "5fc0b29e4177c639b4ef569d850f1925907cdbf152246a55a03cca46fbace02c",
+  "inputs_sha256": {
+    "track_d_banksim_model.csv": "fa317f7af3a306e774ac231e6c501d9a05fd7642c4113c23d783298954b4fcf4",
+    "track_d_banksim_interpretable.csv": "207bc8db37bcd0b934e854e902f63494e63b2b41787454c557afcf2f29689832"
+  },
+  "n_customers": 4112,
+  "n_train": 3084,
+  "n_holdout": 1028,
+  "started_at": "2026-10-13T15:37:59+00:00",
+  "finished_at": "2026-10-13T15:44:29+00:00",
+  "python": "3.13.11",
+  "numpy": "2.5.3",
+  "pandas": "3.0.6",
+  "scikit_learn": "1.9.1",
+  "torch_available": true
+}
